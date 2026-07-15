@@ -1,0 +1,1078 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Python Programming}
+\rhead{Day 2}
+\cfoot{\thepage}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% Python code style
+% -------------------------------------------------
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstset{style=pythonstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{checkpointbox}{
+    colback=green!5,
+    colframe=green!45!black,
+    title=\textbf{체크 질문},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries Python Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 2: 반복문과 함수\par}
+
+    \vspace{2cm}
+
+    {\large \texttt{for}, \texttt{while}, \texttt{break}, \texttt{continue}, 함수, 반환값, 변수의 범위\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item 반복문이 필요한 이유
+    \item \texttt{for}문과 \texttt{range()}의 동작 방식
+    \item 리스트와 문자열을 순회하는 방법
+    \item \texttt{while}문의 조건 기반 반복
+    \item \texttt{break}와 \texttt{continue}의 차이
+    \item 함수를 정의하고 호출하는 방법
+    \item 매개변수와 인자의 역할
+    \item \texttt{print()}와 \texttt{return}의 차이
+    \item 지역변수와 전역변수의 범위
+    \item 반복문과 함수를 결합한 간단한 프로그램 작성
+\end{itemize}
+\end{learningbox}
+
+% =================================================
+\section{반복문이 필요한 이유}
+% =================================================
+
+프로그램을 작성하다 보면 같은 작업을 여러 번 수행해야 하는 경우가 많다.
+예를 들어 같은 문장을 다섯 번 출력하려면 반복문을 배우기 전에는 다음과 같이 작성할 수 있다.
+
+\begin{lstlisting}
+print("Hello")
+print("Hello")
+print("Hello")
+print("Hello")
+print("Hello")
+\end{lstlisting}
+
+이 코드는 실행되지만 좋은 구조는 아니다. 반복 횟수가 100번, 1000번으로 늘어나면 코드가 지나치게 길어지고, 출력 문장을 수정할 때도 모든 줄을 직접 바꾸어야 한다.
+
+반복문을 사용하면 같은 작업을 간결하게 표현할 수 있다.
+
+\begin{lstlisting}
+for i in range(5):
+    print("Hello")
+\end{lstlisting}
+
+반복문은 단순히 코드를 줄이는 도구가 아니다. 여러 데이터에 같은 계산을 적용하거나, 조건이 만족될 때까지 작업을 계속하거나, 수치 계산을 누적하는 핵심 제어 구조이다.
+
+\begin{importantbox}
+반복문은 ``같은 코드를 복사하는 문법''이 아니라, 반복되는 계산 과정을 하나의 규칙으로 표현하는 문법이다.
+\end{importantbox}
+
+% =================================================
+\section{\texttt{for} 반복문}
+% =================================================
+
+Python의 \texttt{for}문은 반복 가능한 객체의 원소를 하나씩 꺼내어 같은 코드 블록을 실행한다.
+
+\begin{lstlisting}
+for variable in iterable:
+    statement
+\end{lstlisting}
+
+여기서 \texttt{iterable}은 원소를 차례대로 꺼낼 수 있는 객체를 의미한다. 대표적으로 \texttt{range}, 리스트, 문자열이 있다.
+
+가장 기본적인 예제는 다음과 같다.
+
+\begin{lstlisting}
+for i in range(5):
+    print(i)
+\end{lstlisting}
+
+출력 결과:
+
+\begin{verbatim}
+0
+1
+2
+3
+4
+\end{verbatim}
+
+실행 과정은 다음과 같이 이해할 수 있다.
+
+\begin{center}
+\begin{tabular}{ccc}
+\toprule
+반복 & \texttt{i}에 저장되는 값 & 실행되는 코드 \\
+\midrule
+1회 & 0 & \texttt{print(0)} \\
+2회 & 1 & \texttt{print(1)} \\
+3회 & 2 & \texttt{print(2)} \\
+4회 & 3 & \texttt{print(3)} \\
+5회 & 4 & \texttt{print(4)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{들여쓰기와 코드 블록}
+
+Python에서는 들여쓰기가 문법의 일부이다.
+
+\begin{lstlisting}
+for i in range(3):
+    print(i)
+    print("inside loop")
+
+print("outside loop")
+\end{lstlisting}
+
+들여쓰기된 두 줄은 매 반복마다 실행되지만, 마지막 줄은 반복문이 끝난 뒤 한 번만 실행된다.
+
+\begin{importantbox}
+Python에서는 중괄호 대신 들여쓰기로 코드 블록을 구분한다. 같은 블록에 속하는 코드는 동일한 깊이로 들여써야 한다.
+\end{importantbox}
+
+\begin{practicebox}
+\texttt{01\_for.py}에서 다음 출력이 나오도록 작성한다.
+\begin{verbatim}
+현재 숫자는 0입니다.
+현재 숫자는 1입니다.
+현재 숫자는 2입니다.
+현재 숫자는 3입니다.
+현재 숫자는 4입니다.
+\end{verbatim}
+\end{practicebox}
+
+% =================================================
+\section{\texttt{range()}와 정수 범위}
+% =================================================
+
+\texttt{range()}는 일정한 규칙으로 정수를 생성하는 객체이다. \texttt{for}문과 함께 매우 자주 사용한다.
+
+\subsection{\texttt{range(stop)}}
+
+\begin{lstlisting}
+for i in range(5):
+    print(i)
+\end{lstlisting}
+
+\texttt{range(5)}는 0부터 5 직전까지의 정수, 즉 0, 1, 2, 3, 4를 차례대로 제공한다.
+
+\subsection{\texttt{range(start, stop)}}
+
+\begin{lstlisting}
+for i in range(3, 8):
+    print(i)
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+3
+4
+5
+6
+7
+\end{verbatim}
+
+첫 번째 값은 포함하고 두 번째 값은 포함하지 않는다.
+
+\subsection{\texttt{range(start, stop, step)}}
+
+\begin{lstlisting}
+for i in range(2, 11, 2):
+    print(i)
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+2
+4
+6
+8
+10
+\end{verbatim}
+
+세 번째 인자는 증가량이다. 음수를 사용하면 감소하는 범위를 만들 수 있다.
+
+\begin{lstlisting}
+for i in range(10, 0, -1):
+    print(i)
+\end{lstlisting}
+
+\subsection{왜 끝값을 포함하지 않는가}
+
+끝값을 포함하지 않는 규칙은 길이와 인덱스를 다룰 때 편리하다. \texttt{range(5)}가 정확히 다섯 개의 값 0부터 4까지 생성하므로, 리스트의 인덱스와 자연스럽게 맞는다.
+
+\[
+\#\{0,1,2,3,4\}=5
+\]
+
+또한 일반적으로 양의 간격에서 생성되는 항의 개수는 구간 길이와 직접 연결된다.
+
+\begin{checkpointbox}
+\texttt{range(1, 10, 3)}이 만드는 값은 무엇인가? 마지막 값 10은 포함되는가?
+\end{checkpointbox}
+
+\begin{practicebox}
+\texttt{02\_range.py}에서 다음 두 코드를 작성한다.
+\begin{enumerate}
+    \item 3부터 7까지 출력
+    \item 10부터 1까지 역순 출력
+\end{enumerate}
+\end{practicebox}
+
+% =================================================
+\section{리스트와 문자열 순회}
+% =================================================
+
+Python의 \texttt{for}문은 숫자를 반복하는 문법이 아니다. 반복 가능한 객체의 원소를 하나씩 꺼내는 문법이다.
+
+\subsection{리스트 순회}
+
+\begin{lstlisting}
+fruits = ["apple", "banana", "orange"]
+
+for fruit in fruits:
+    print(fruit)
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+apple
+banana
+orange
+\end{verbatim}
+
+첫 번째 반복에서는 \texttt{fruit}가 \texttt{"apple"}을, 두 번째 반복에서는 \texttt{"banana"}를, 세 번째 반복에서는 \texttt{"orange"}를 가리킨다.
+
+반복 변수의 이름은 자유롭게 정할 수 있지만, 원소의 의미를 드러내는 이름을 사용하면 코드를 읽기 쉽다.
+
+\begin{lstlisting}
+scores = [85, 90, 78]
+
+for score in scores:
+    print(score)
+\end{lstlisting}
+
+\subsection{문자열 순회}
+
+문자열은 문자들의 순서 있는 모음이므로 한 글자씩 순회할 수 있다.
+
+\begin{lstlisting}
+for character in "Physics":
+    print(character)
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+P
+h
+y
+s
+i
+c
+s
+\end{verbatim}
+
+\begin{importantbox}
+\texttt{for x in data}는 ``data에서 원소를 하나 꺼내 x에 연결한 뒤 코드 블록을 실행한다''는 의미이다.
+\end{importantbox}
+
+\begin{practicebox}
+\texttt{03\_for\_list.py}에서 다음 리스트의 원소를 문장 형태로 출력한다.
+\begin{lstlisting}
+numbers = [3, 6, 9, 12, 15]
+\end{lstlisting}
+목표 출력은 \texttt{현재 숫자는 3입니다.}와 같은 형식이다.
+\end{practicebox}
+
+% =================================================
+\section{\texttt{while} 반복문}
+% =================================================
+
+\texttt{while}문은 조건이 참인 동안 코드 블록을 반복한다.
+
+\begin{lstlisting}
+while condition:
+    statement
+\end{lstlisting}
+
+예제:
+
+\begin{lstlisting}
+count = 1
+
+while count <= 5:
+    print(count)
+    count += 1
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+1
+2
+3
+4
+5
+\end{verbatim}
+
+실행 흐름은 다음과 같다.
+
+\begin{enumerate}
+    \item 조건 \texttt{count <= 5}를 검사한다.
+    \item 조건이 참이면 코드 블록을 실행한다.
+    \item \texttt{count += 1}로 상태를 바꾼다.
+    \item 다시 조건을 검사한다.
+    \item 조건이 거짓이면 반복을 종료한다.
+\end{enumerate}
+
+\subsection{상태 변화와 무한 반복}
+
+다음 코드는 종료되지 않는다.
+
+\begin{lstlisting}
+count = 1
+
+while count <= 5:
+    print(count)
+\end{lstlisting}
+
+\texttt{count}가 바뀌지 않으므로 조건은 계속 참이다. 이처럼 반복 조건이 영원히 참으로 유지되는 구조를 무한 루프라고 한다.
+
+\begin{importantbox}
+\texttt{while}문을 작성할 때는 ``어떤 코드가 조건을 거짓으로 바꾸는가?''를 반드시 확인해야 한다.
+\end{importantbox}
+
+\subsection{\texttt{for}와 \texttt{while}의 선택}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+상황 & 일반적으로 적합한 반복문 \\
+\midrule
+반복 횟수를 알고 있음 & \texttt{for} \\
+리스트나 문자열의 원소를 처리함 & \texttt{for} \\
+반복 횟수를 미리 알 수 없음 & \texttt{while} \\
+특정 조건이 만족될 때까지 반복함 & \texttt{while} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{practicebox}
+\texttt{04\_while.py}에서 \texttt{while}문을 이용하여 10부터 1까지 출력하고, 이어서 2부터 10까지 짝수만 출력한다.
+\end{practicebox}
+
+% =================================================
+\section{반복 제어: \texttt{break}}
+% =================================================
+
+\texttt{break}는 현재 실행 중인 반복문을 즉시 종료한다.
+
+\begin{lstlisting}
+for i in range(10):
+    if i == 5:
+        break
+
+    print(i)
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+0
+1
+2
+3
+4
+\end{verbatim}
+
+\texttt{i}가 5가 되면 \texttt{break}가 먼저 실행되므로 \texttt{print(i)}는 실행되지 않는다.
+
+\subsection{\texttt{while True}와 \texttt{break}}
+
+조건을 반복문 안에서 검사하고 싶을 때 다음 구조를 자주 사용한다.
+
+\begin{lstlisting}
+while True:
+    answer = input("Enter the answer: ")
+
+    if answer == "python":
+        break
+\end{lstlisting}
+
+\texttt{while True} 자체는 무한 반복이지만, 정답을 입력하면 \texttt{break}가 반복문을 종료한다.
+
+\begin{importantbox}
+\texttt{break}는 조건문을 종료하는 것이 아니라 자신을 감싸는 가장 가까운 반복문 하나를 종료한다.
+\end{importantbox}
+
+\begin{practicebox}
+\texttt{05\_break.py}에서 1부터 100까지 반복하되, 값이 50이 되는 순간 종료한다. 출력의 마지막 값이 49가 되는 이유도 설명한다.
+\end{practicebox}
+
+% =================================================
+\section{반복 제어: \texttt{continue}}
+% =================================================
+
+\texttt{continue}는 반복문 전체를 종료하지 않는다. 현재 반복에서 남은 코드를 건너뛰고 다음 반복으로 이동한다.
+
+\begin{lstlisting}
+for i in range(6):
+    if i == 3:
+        continue
+
+    print(i)
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+0
+1
+2
+4
+5
+\end{verbatim}
+
+\texttt{i == 3}일 때 \texttt{continue}가 실행되어 아래의 \texttt{print(i)}를 건너뛴다. 그러나 반복문은 계속된다.
+
+\subsection{홀수 건너뛰기}
+
+\begin{lstlisting}
+for i in range(1, 11):
+    if i % 2 == 1:
+        continue
+
+    print(i)
+\end{lstlisting}
+
+나머지 연산 \texttt{i \% 2}가 1이면 홀수이다. 홀수인 경우만 건너뛰므로 짝수만 출력된다.
+
+\subsection{\texttt{break}와 \texttt{continue} 비교}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+명령어 & 현재 반복 & 이후 반복 \\
+\midrule
+\texttt{break} & 즉시 중단 & 실행하지 않음 \\
+\texttt{continue} & 남은 부분 건너뜀 & 계속 실행 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{checkpointbox}
+다음 코드에서 출력되는 값과 마지막 문장을 예측한다.
+\begin{lstlisting}
+for i in range(5):
+    if i == 2:
+        continue
+    print(i)
+
+print("Loop finished")
+\end{lstlisting}
+\end{checkpointbox}
+
+\begin{practicebox}
+\texttt{06\_continue.py}에서 1부터 20까지 순회하며 3의 배수만 건너뛴다.
+\end{practicebox}
+
+% =================================================
+\section{함수의 필요성과 정의}
+% =================================================
+
+함수는 특정 작업을 수행하는 코드를 하나의 이름 아래 묶은 것이다. 같은 작업을 여러 번 사용할 수 있고, 프로그램을 작은 단위로 나누어 구조화할 수 있다.
+
+함수를 사용하지 않고 같은 코드를 반복하면 다음과 같다.
+
+\begin{lstlisting}
+print("Hello")
+print("Welcome")
+
+print("Hello")
+print("Welcome")
+\end{lstlisting}
+
+함수로 묶으면 다음과 같다.
+
+\begin{lstlisting}
+def greeting():
+    print("Hello")
+    print("Welcome")
+
+
+greeting()
+greeting()
+\end{lstlisting}
+
+\subsection{함수 정의와 호출}
+
+함수의 기본 구조는 다음과 같다.
+
+\begin{lstlisting}
+def function_name():
+    statement
+\end{lstlisting}
+
+\texttt{def}는 define의 약자이다. 함수를 정의하는 코드는 기능을 등록할 뿐 즉시 실행하지 않는다.
+
+\begin{lstlisting}
+def hello():
+    print("Hello")
+\end{lstlisting}
+
+위 코드만 실행하면 출력이 없다. 실제로 함수를 실행하려면 호출해야 한다.
+
+\begin{lstlisting}
+hello()
+\end{lstlisting}
+
+\begin{importantbox}
+함수 정의는 ``어떤 일을 할지 저장''하는 단계이고, 함수 호출은 ``그 일을 지금 실행''하는 단계이다.
+\end{importantbox}
+
+\subsection{매개변수와 인자}
+
+함수에 값을 전달하려면 매개변수를 사용한다.
+
+\begin{lstlisting}
+def hello(name):
+    print("Hello", name)
+
+
+hello("Kim")
+hello("Lee")
+\end{lstlisting}
+
+함수를 정의할 때의 \texttt{name}을 매개변수(parameter), 호출할 때 전달하는 \texttt{"Kim"}을 인자(argument)라고 한다.
+
+여러 매개변수를 사용할 수도 있다.
+
+\begin{lstlisting}
+def add(a, b):
+    print(a + b)
+
+
+add(3, 5)
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{07\_function.py}에서 구분선을 출력하는 \texttt{line()} 함수를 만들고 다섯 번 호출한다.
+\end{practicebox}
+
+% =================================================
+\section{반환값: \texttt{return}}
+% =================================================
+
+함수는 계산 결과를 호출한 곳으로 돌려줄 수 있다. 이때 \texttt{return}을 사용한다.
+
+\begin{lstlisting}
+def add(a, b):
+    return a + b
+
+
+result = add(3, 5)
+print(result)
+\end{lstlisting}
+
+함수 호출 과정을 식처럼 생각할 수 있다.
+
+\[
+\texttt{add(3, 5)} \longrightarrow 8
+\]
+
+따라서 다음 대입은
+
+\begin{lstlisting}
+result = add(3, 5)
+\end{lstlisting}
+
+개념적으로 다음과 같다.
+
+\begin{lstlisting}
+result = 8
+\end{lstlisting}
+
+\subsection{\texttt{print()}와 \texttt{return}의 차이}
+
+다음 함수를 보자.
+
+\begin{lstlisting}
+def double(x):
+    print(x * 2)
+
+
+result = double(7)
+print(result)
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+14
+None
+\end{verbatim}
+
+함수 내부의 \texttt{print()}는 14를 화면에 보여 주지만, 값을 함수 밖으로 전달하지 않는다. 명시적인 \texttt{return}이 없는 함수는 \texttt{None}을 반환한다.
+
+반면 다음 함수는 계산 결과를 반환한다.
+
+\begin{lstlisting}
+def double(x):
+    return x * 2
+
+
+result = double(7)
+print(result)
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+14
+\end{verbatim}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+기능 & \texttt{print()} & \texttt{return} \\
+\midrule
+화면에 표시 & 수행함 & 직접 수행하지 않음 \\
+함수 밖으로 값 전달 & 수행하지 않음 & 수행함 \\
+변수에 결과 저장 & 불가능 & 가능 \\
+후속 계산에 사용 & 불가능 & 가능 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{\texttt{return} 이후의 코드}
+
+\texttt{return}이 실행되면 함수는 즉시 종료된다.
+
+\begin{lstlisting}
+def test():
+    return 10
+    print("This line is not executed")
+\end{lstlisting}
+
+마지막 \texttt{print()}는 실행되지 않는다.
+
+\begin{practicebox}
+\texttt{08\_return.py}에서 다음 함수를 작성한다.
+\begin{enumerate}
+    \item 한 수의 제곱을 반환하는 \texttt{square(x)}
+    \item 세 수의 평균을 반환하는 \texttt{average(a, b, c)}
+\end{enumerate}
+\end{practicebox}
+
+% =================================================
+\section{변수의 범위: Scope}
+% =================================================
+
+변수의 범위(scope)는 변수를 사용할 수 있는 코드 영역을 의미한다. 이번 장에서는 지역변수와 전역변수를 구분한다.
+
+\subsection{지역변수}
+
+함수 내부에서 만들어진 변수는 기본적으로 그 함수 내부에서만 사용할 수 있다.
+
+\begin{lstlisting}
+def test():
+    number = 100
+    print(number)
+
+
+test()
+\end{lstlisting}
+
+함수 밖에서 같은 이름을 사용하면 오류가 발생한다.
+
+\begin{lstlisting}
+def test():
+    number = 100
+
+
+test()
+print(number)
+\end{lstlisting}
+
+\texttt{number}는 함수 내부의 지역변수이므로 함수 밖에서는 정의되지 않은 이름이다.
+
+\subsection{전역변수}
+
+함수 밖에서 정의된 변수는 전역변수이다.
+
+\begin{lstlisting}
+name = "Python"
+
+
+def show():
+    print(name)
+
+
+show()
+\end{lstlisting}
+
+함수는 전역변수를 읽을 수 있다.
+
+\subsection{같은 이름의 지역변수와 전역변수}
+
+\begin{lstlisting}
+x = 5
+
+
+def test():
+    x = 10
+    print(x)
+
+
+test()
+print(x)
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+10
+5
+\end{verbatim}
+
+함수 내부의 \texttt{x = 10}은 전역변수 \texttt{x}를 수정한 것이 아니라 새로운 지역변수를 만든 것이다. 같은 이름의 지역변수가 전역변수를 가리는 현상을 shadowing이라고 한다.
+
+\subsection{전역변수 수정과 \texttt{global}}
+
+전역변수를 함수 내부에서 수정하려면 \texttt{global} 선언이 필요하다.
+
+\begin{lstlisting}
+count = 0
+
+
+def increase():
+    global count
+    count += 1
+
+
+increase()
+print(count)
+\end{lstlisting}
+
+그러나 전역변수를 많이 수정하는 구조는 코드의 상태 변화를 추적하기 어렵게 만든다. 가능하면 반환값을 이용하는 편이 좋다.
+
+\begin{lstlisting}
+def increase(count):
+    return count + 1
+
+
+count = 0
+count = increase(count)
+print(count)
+\end{lstlisting}
+
+\begin{importantbox}
+지역변수는 함수 내부의 독립적인 작업 공간을 만든다. 함수가 외부 상태를 무분별하게 수정하지 않도록 해 주기 때문에 프로그램의 구조를 명확하게 만든다.
+\end{importantbox}
+
+\begin{practicebox}
+\texttt{09\_scope.py}에서 지역변수와 전역변수가 같은 이름을 가질 때 각각 어떤 값이 출력되는지 확인한다.
+\end{practicebox}
+
+% =================================================
+\section{종합 실습: \texttt{practice\_day02.py}}
+% =================================================
+
+Day 2의 종합 실습은 반복문과 함수를 함께 사용하여 작성한다.
+
+\subsection{1부터 100까지 출력}
+
+\begin{lstlisting}
+for number in range(1, 101):
+    print(number)
+\end{lstlisting}
+
+\subsection{1부터 100까지의 합}
+
+\begin{lstlisting}
+sum_1_to_100 = 0
+
+for number in range(1, 101):
+    sum_1_to_100 += number
+
+print(sum_1_to_100)
+\end{lstlisting}
+
+변수에 이전 결과를 계속 더하는 방식을 누적(accumulation)이라고 한다.
+
+\subsection{구구단 7단}
+
+\begin{lstlisting}
+for number in range(1, 10):
+    print(f"7 x {number} = {7 * number}")
+\end{lstlisting}
+
+\subsection{별 삼각형}
+
+\begin{lstlisting}
+for number in range(1, 6):
+    print("*" * number)
+\end{lstlisting}
+
+문자열과 정수의 곱셈은 문자열을 반복한다.
+
+\subsection{3의 배수 건너뛰기}
+
+\begin{lstlisting}
+for number in range(1, 21):
+    if number % 3 == 0:
+        continue
+
+    print(number)
+\end{lstlisting}
+
+\subsection{제곱 함수와 평균 함수}
+
+\begin{lstlisting}
+def square(number):
+    return number * number
+
+
+def average(number1, number2, number3):
+    return (number1 + number2 + number3) / 3
+\end{lstlisting}
+
+\subsection{1부터 \texttt{n}까지의 합}
+
+\begin{lstlisting}
+def sum_to_n(n):
+    result = 0
+
+    for number in range(1, n + 1):
+        result += number
+
+    return result
+\end{lstlisting}
+
+\subsection{함수를 이용한 덧셈 계산기}
+
+\begin{lstlisting}
+def add(x, y):
+    return x + y
+
+
+a = int(input("number 1: "))
+b = int(input("number 2: "))
+
+print("sum:", add(a, b))
+\end{lstlisting}
+
+\subsection{숫자 패턴 출력}
+
+\begin{lstlisting}
+for number in range(1, 6):
+    print(str(number) * number)
+\end{lstlisting}
+
+출력:
+
+\begin{verbatim}
+1
+22
+333
+4444
+55555
+\end{verbatim}
+
+\subsection{이름 선택 시 주의점}
+
+Python에는 \texttt{sum()}이라는 내장 함수가 있다. 따라서 합계를 저장하는 변수 이름으로 \texttt{sum}을 사용하면 내장 함수를 가리게 된다.
+
+\begin{lstlisting}
+sum = 0  # Not recommended
+\end{lstlisting}
+
+다음처럼 의미가 분명한 이름을 사용한다.
+
+\begin{lstlisting}
+result = 0
+sum_1_to_100 = 0
+\end{lstlisting}
+
+같은 파일에서 변수와 함수에 모두 \texttt{total}이라는 이름을 사용하는 것도 피하는 편이 좋다. 나중에 정의된 이름이 이전 객체를 덮어쓰기 때문이다.
+
+% =================================================
+\section{실습 파일 목록}
+% =================================================
+
+\begin{practicebox}
+Day 2의 학습 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_for.py}
+    \item \texttt{02\_range.py}
+    \item \texttt{03\_for\_list.py}
+    \item \texttt{04\_while.py}
+    \item \texttt{05\_break.py}
+    \item \texttt{06\_continue.py}
+    \item \texttt{07\_function.py}
+    \item \texttt{08\_return.py}
+    \item \texttt{09\_scope.py}
+    \item \texttt{practice\_day02.py}
+\end{itemize}
+\end{practicebox}
+
+% =================================================
+\section{핵심 요약}
+% =================================================
+
+\begin{enumerate}
+    \item \texttt{for}문은 반복 가능한 객체의 원소를 하나씩 꺼내어 처리한다.
+    \item \texttt{range(start, stop, step)}에서 \texttt{stop}은 포함되지 않는다.
+    \item 리스트와 문자열도 \texttt{for}문으로 순회할 수 있다.
+    \item \texttt{while}문은 조건이 참인 동안 반복한다.
+    \item \texttt{while}문에서는 조건을 변화시키는 코드가 없으면 무한 반복이 발생할 수 있다.
+    \item \texttt{break}는 반복문을 즉시 종료한다.
+    \item \texttt{continue}는 현재 반복의 남은 부분만 건너뛴다.
+    \item 함수는 \texttt{def}로 정의하고 함수 이름 뒤에 괄호를 붙여 호출한다.
+    \item 함수 정의는 실행이 아니며, 호출해야 함수 본문이 동작한다.
+    \item 매개변수는 함수가 입력을 받을 수 있게 한다.
+    \item \texttt{print()}는 값을 화면에 표시하고, \texttt{return}은 값을 호출한 곳으로 전달한다.
+    \item 반환값이 없는 함수는 \texttt{None}을 반환한다.
+    \item 지역변수는 함수 내부에서만 사용 가능하며, 전역변수와 같은 이름을 가질 수 있다.
+    \item 전역변수 수정에는 \texttt{global}을 사용할 수 있지만, 반환값을 이용한 구조가 일반적으로 더 명확하다.
+\end{enumerate}
+
+% =================================================
+\section{연습 문제}
+% =================================================
+
+\begin{enumerate}
+    \item \texttt{range(2, 15, 4)}가 만드는 값을 모두 쓰고, 끝값 15가 포함되지 않는 이유를 설명하라.
+    \item \texttt{for}문과 \texttt{while}문을 선택하는 기준을 각각 예제와 함께 설명하라.
+    \item 1부터 50까지의 수 중 5의 배수만 출력하는 코드를 작성하라.
+    \item 1부터 30까지 반복하되 4의 배수는 건너뛰고, 25를 만나면 반복을 종료하는 코드를 작성하라.
+    \item 문자열 \texttt{"Quantum"}의 문자를 한 줄에 하나씩 출력하라.
+    \item 두 수 중 더 큰 값을 반환하는 \texttt{maximum(a, b)} 함수를 작성하라.
+    \item 양의 정수 \texttt{n}을 받아 1부터 \texttt{n}까지의 짝수 합을 반환하는 함수를 작성하라.
+    \item \texttt{print()}와 \texttt{return}의 차이를 변수 저장 가능 여부와 후속 계산 가능 여부를 중심으로 설명하라.
+    \item 지역변수와 전역변수가 같은 이름을 가질 때 Python이 어떤 변수를 사용하는지 설명하라.
+    \item \texttt{global}을 사용하지 않고 함수 호출 횟수를 증가시키는 구조를 반환값으로 작성하라.
+\end{enumerate}
+
+\end{document}
