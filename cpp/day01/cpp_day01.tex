@@ -128,9 +128,6 @@
 
     \vfill
 
-    {\large Summer Coding Study\par}
-    \vspace{0.5cm}
-    {\large \today\par}
 \end{titlepage}
 
 \tableofcontents
@@ -208,7 +205,7 @@ std::cout << "Hello";
 출력의 기본 형태는 다음과 같다.
 
 \begin{lstlisting}
-cout << 출력할_데이터;
+cout << value;
 \end{lstlisting}
 
 \texttt{<<}는 오른쪽 데이터를 왼쪽의 출력 스트림으로 전달한다.
@@ -324,7 +321,7 @@ int main()
 입력의 기본 형태는 다음과 같다.
 
 \begin{lstlisting}
-cin >> 변수;
+cin >> value;
 \end{lstlisting}
 
 \begin{lstlisting}
@@ -418,8 +415,8 @@ x -= 2;   // x = x - 2
 x *= 5;   // x = x * 5
 x /= 2;   // x = x / 2
 
-x++;      // x를 1 증가
-x--;      // x를 1 감소
+x++;      // Increase x by 1
+x--;      // Decrease x by 1
 \end{lstlisting}
 
 % =================================================
@@ -429,9 +426,9 @@ x--;      // x를 1 감소
 조건문은 조건의 참과 거짓에 따라 서로 다른 코드를 실행한다.
 
 \begin{lstlisting}
-if (조건)
+if (condition)
 {
-    실행할 코드;
+    statement;
 }
 \end{lstlisting}
 
@@ -513,9 +510,9 @@ else
 반복 횟수를 알고 있을 때 일반적으로 \texttt{for}문을 사용한다.
 
 \begin{lstlisting}
-for (초기식; 조건식; 증감식)
+for (initialization; condition; increment)
 {
-    반복할 코드;
+    statement;
 }
 \end{lstlisting}
 
@@ -568,9 +565,9 @@ for (int i = 0; i < 5; i++)
 \texttt{while}문은 조건이 참인 동안 반복한다.
 
 \begin{lstlisting}
-while (조건)
+while (condition)
 {
-    반복할 코드;
+    statement;
 }
 \end{lstlisting}
 
