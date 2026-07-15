@@ -1,0 +1,685 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C++ Programming}
+\rhead{Day 1}
+\cfoot{\thepage}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% C++ code style
+% -------------------------------------------------
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible
+}
+
+\lstset{style=cppstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{checkpointbox}{
+    colback=green!5,
+    colframe=green!45!black,
+    title=\textbf{체크 질문},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries C++ Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 1: C++ 기초 문법\par}
+
+    \vspace{2cm}
+
+    {\large 프로그램 구조, 입출력, 변수, 연산자, 조건문, 반복문\par}
+
+    \vfill
+
+    {\large Summer Coding Study\par}
+    \vspace{0.5cm}
+    {\large \today\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item C++ 프로그램의 기본 구조
+    \item 화면 출력과 사용자 입력
+    \item 변수와 기본 자료형
+    \item 산술 연산자와 자동 형변환
+    \item 조건문 \texttt{if}
+    \item 반복문 \texttt{for}, \texttt{while}
+\end{itemize}
+\end{learningbox}
+
+% =================================================
+\section{C++ 프로그램의 기본 구조}
+% =================================================
+
+가장 기본적인 C++ 프로그램은 다음과 같다.
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    cout << "Hello, C++!" << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{\texttt{\#include <iostream>}}
+
+\texttt{iostream}은 입력과 출력 기능을 제공하는 헤더이다.
+\texttt{cout}, \texttt{cin}, \texttt{endl}을 사용하려면 포함해야 한다.
+
+\subsection{\texttt{using namespace std;}}
+
+\texttt{cout}의 실제 이름은 \texttt{std::cout}이다.
+여기서 \texttt{std}는 C++ 표준 라이브러리의 이름 공간(namespace)이다.
+
+\begin{lstlisting}
+std::cout << "Hello";
+\end{lstlisting}
+
+\texttt{using namespace std;}를 작성하면 \texttt{std::}를 생략할 수 있다.
+
+\subsection{\texttt{int main()}}
+
+모든 C++ 프로그램은 \texttt{main()} 함수에서 시작한다.
+중괄호 \texttt{\{\}}는 함수에 포함되는 코드 범위를 나타낸다.
+
+\subsection{\texttt{return 0;}}
+
+프로그램이 정상적으로 종료되었다는 상태 코드 0을 운영체제에 반환한다.
+
+\begin{importantbox}
+\texttt{int}, \texttt{if}, \texttt{for}, \texttt{return} 등은 C++ 언어 자체의 문법이다.
+반면 \texttt{cout}, \texttt{cin}, \texttt{string}, \texttt{vector} 등은 표준 라이브러리에서 제공된다.
+\end{importantbox}
+
+% =================================================
+\section{출력: \texttt{cout}}
+% =================================================
+
+출력의 기본 형태는 다음과 같다.
+
+\begin{lstlisting}
+cout << 출력할_데이터;
+\end{lstlisting}
+
+\texttt{<<}는 오른쪽 데이터를 왼쪽의 출력 스트림으로 전달한다.
+
+\begin{lstlisting}
+cout << "Age : " << 20 << endl;
+\end{lstlisting}
+
+출력 결과:
+
+\begin{verbatim}
+Age : 20
+\end{verbatim}
+
+\subsection{\texttt{endl}과 줄바꿈}
+
+\begin{lstlisting}
+cout << "Hello" << endl;
+cout << "World" << endl;
+\end{lstlisting}
+
+\texttt{endl}은 줄바꿈을 수행하고 출력 버퍼도 비운다.
+단순 줄바꿈에는 \texttt{\textbackslash n}도 사용할 수 있다.
+
+\begin{lstlisting}
+cout << "Hello\n";
+cout << "World\n";
+\end{lstlisting}
+
+\subsection{예제: 학생 정보 출력}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    cout << "========== Student Info ==========" << endl;
+    cout << "Name  : Alice" << endl;
+    cout << "Major : Physics" << endl;
+    cout << "Grade : 2" << endl;
+    cout << "GPA   : 4.00" << endl;
+    cout << "==================================" << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+% =================================================
+\section{변수와 자료형}
+% =================================================
+
+변수는 \textbf{값이 저장된 메모리 공간에 붙인 이름}이다.
+
+\begin{lstlisting}
+int age = 20;
+\end{lstlisting}
+
+위 코드는 정수를 저장할 메모리 공간을 만들고, 그 공간에 \texttt{age}라는 이름을 붙인 뒤 20을 저장한다.
+
+\subsection{기본 자료형}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+자료형 & 의미 & 예시 \\
+\midrule
+\texttt{int} & 정수 & \texttt{20} \\
+\texttt{double} & 실수 & \texttt{3.14} \\
+\texttt{char} & 문자 한 개 & \texttt{'A'} \\
+\texttt{bool} & 참/거짓 & \texttt{true} \\
+\texttt{string} & 문자열 & \texttt{"Hello"} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+문자열을 사용할 때는 \texttt{<string>} 헤더를 포함하는 것이 원칙이다.
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    string name = "Alice";
+    int age = 20;
+    double gpa = 4.00;
+    char grade = 'A';
+    bool pass = true;
+
+    cout << "Name  : " << name << endl;
+    cout << "Age   : " << age << endl;
+    cout << "GPA   : " << gpa << endl;
+    cout << "Grade : " << grade << endl;
+    cout << "Pass  : " << pass << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{importantbox}
+\texttt{cout << 20;}은 값 20을 직접 출력한다.
+\texttt{cout << age;}는 메모리에서 \texttt{age}에 저장된 값을 읽어서 출력한다.
+\end{importantbox}
+
+% =================================================
+\section{입력: \texttt{cin}}
+% =================================================
+
+입력의 기본 형태는 다음과 같다.
+
+\begin{lstlisting}
+cin >> 변수;
+\end{lstlisting}
+
+\begin{lstlisting}
+int age;
+
+cout << "Enter age: ";
+cin >> age;
+
+cout << "Age : " << age << endl;
+\end{lstlisting}
+
+\subsection{여러 값 입력}
+
+\begin{lstlisting}
+int a;
+int b;
+
+cin >> a >> b;
+\end{lstlisting}
+
+다음 입력은 모두 동일하게 처리된다.
+
+\begin{verbatim}
+10 20
+\end{verbatim}
+
+또는
+
+\begin{verbatim}
+10
+20
+\end{verbatim}
+
+\texttt{cin}은 공백, 탭, 줄바꿈을 입력 구분자로 사용한다.
+
+\subsection{문자열 입력의 주의점}
+
+\begin{lstlisting}
+string name;
+cin >> name;
+\end{lstlisting}
+
+사용자가 \texttt{Hong Gil Dong}을 입력하면 \texttt{name}에는 \texttt{Hong}만 저장된다.
+공백을 포함한 문자열 전체는 이후에 \texttt{getline()}으로 입력받는다.
+
+% =================================================
+\section{산술 연산자}
+% =================================================
+
+\begin{center}
+\begin{tabular}{cll}
+\toprule
+연산자 & 의미 & 예시 \\
+\midrule
+\texttt{+} & 덧셈 & \texttt{a + b} \\
+\texttt{-} & 뺄셈 & \texttt{a - b} \\
+\texttt{*} & 곱셈 & \texttt{a * b} \\
+\texttt{/} & 나눗셈 & \texttt{a / b} \\
+\texttt{\%} & 나머지 & \texttt{a \% b} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{정수 나눗셈}
+
+\begin{lstlisting}
+int a = 7;
+int b = 3;
+
+cout << a / b << endl;
+\end{lstlisting}
+
+결과는 2이다. 두 피연산자가 모두 정수이므로 소수점 이하가 버려진다.
+
+\subsection{실수 나눗셈과 자동 형변환}
+
+\begin{lstlisting}
+int a = 7;
+double b = 3;
+
+cout << a / b << endl;
+\end{lstlisting}
+
+이 경우 \texttt{a}가 자동으로 \texttt{double}로 변환되어 결과는 약 2.33333이 된다.
+
+\subsection{복합 대입과 증감}
+
+\begin{lstlisting}
+x += 3;   // x = x + 3
+x -= 2;   // x = x - 2
+x *= 5;   // x = x * 5
+x /= 2;   // x = x / 2
+
+x++;      // x를 1 증가
+x--;      // x를 1 감소
+\end{lstlisting}
+
+% =================================================
+\section{조건문: \texttt{if}}
+% =================================================
+
+조건문은 조건의 참과 거짓에 따라 서로 다른 코드를 실행한다.
+
+\begin{lstlisting}
+if (조건)
+{
+    실행할 코드;
+}
+\end{lstlisting}
+
+\subsection{비교 연산자}
+
+\begin{center}
+\begin{tabular}{cl}
+\toprule
+연산자 & 의미 \\
+\midrule
+\texttt{==} & 같다 \\
+\texttt{!=} & 다르다 \\
+\texttt{>} & 크다 \\
+\texttt{<} & 작다 \\
+\texttt{>=} & 크거나 같다 \\
+\texttt{<=} & 작거나 같다 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+\texttt{=}는 값을 대입하는 연산자이고, \texttt{==}는 두 값이 같은지 비교하는 연산자이다.
+\end{importantbox}
+
+\subsection{\texttt{if-else}}
+
+\begin{lstlisting}
+if (score >= 60)
+{
+    cout << "Pass" << endl;
+}
+else
+{
+    cout << "Fail" << endl;
+}
+\end{lstlisting}
+
+\subsection{\texttt{else if}}
+
+\begin{lstlisting}
+if (score >= 90)
+{
+    cout << "A";
+}
+else if (score >= 80)
+{
+    cout << "B";
+}
+else if (score >= 70)
+{
+    cout << "C";
+}
+else
+{
+    cout << "F";
+}
+\end{lstlisting}
+
+위에서부터 조건을 검사하며, 처음으로 참이 된 블록 하나만 실행한다.
+
+\subsection{논리 연산자}
+
+\begin{center}
+\begin{tabular}{cl}
+\toprule
+연산자 & 의미 \\
+\midrule
+\texttt{\&\&} & AND, 두 조건이 모두 참 \\
+\texttt{||} & OR, 둘 중 하나 이상 참 \\
+\texttt{!} & NOT, 참과 거짓을 반전 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% =================================================
+\section{반복문: \texttt{for}}
+% =================================================
+
+반복 횟수를 알고 있을 때 일반적으로 \texttt{for}문을 사용한다.
+
+\begin{lstlisting}
+for (초기식; 조건식; 증감식)
+{
+    반복할 코드;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+for (int i = 1; i <= 5; i++)
+{
+    cout << i << endl;
+}
+\end{lstlisting}
+
+실행 순서는 다음과 같다.
+
+\begin{enumerate}
+    \item 초기식 실행
+    \item 조건식 검사
+    \item 코드 블록 실행
+    \item 증감식 실행
+    \item 조건식으로 돌아감
+\end{enumerate}
+
+\subsection{누적}
+
+\begin{lstlisting}
+int sum = 0;
+
+for (int i = 1; i <= 10; i++)
+{
+    sum += i;
+}
+
+cout << sum << endl;
+\end{lstlisting}
+
+\texttt{sum}에 이전 결과를 계속 더하는 방식을 누적(accumulation)이라고 한다.
+
+\begin{checkpointbox}
+다음 반복문에서 마지막으로 출력되는 값은 4이지만, 조건 검사를 실패할 때의 \texttt{i} 값은 5이다.
+\begin{lstlisting}
+for (int i = 0; i < 5; i++)
+{
+    cout << i << endl;
+}
+\end{lstlisting}
+\end{checkpointbox}
+
+% =================================================
+\section{반복문: \texttt{while}}
+% =================================================
+
+\texttt{while}문은 조건이 참인 동안 반복한다.
+
+\begin{lstlisting}
+while (조건)
+{
+    반복할 코드;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+int i = 1;
+
+while (i <= 5)
+{
+    cout << i << endl;
+    i++;
+}
+\end{lstlisting}
+
+\subsection{\texttt{for}와 \texttt{while}의 선택}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+상황 & 추천 반복문 \\
+\midrule
+반복 횟수를 알고 있음 & \texttt{for} \\
+반복 횟수를 미리 알 수 없음 & \texttt{while} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+예를 들어 1부터 100까지 출력할 때는 \texttt{for}가 자연스럽고,
+비밀번호를 맞힐 때까지 입력받는 경우에는 \texttt{while}이 자연스럽다.
+
+\subsection{무한 반복}
+
+\begin{lstlisting}
+int i = 1;
+
+while (i <= 5)
+{
+    cout << i << endl;
+}
+\end{lstlisting}
+
+위 코드에서는 \texttt{i}가 변하지 않으므로 조건이 계속 참이다.
+따라서 반복문이 끝나지 않는다.
+
+\subsection{비밀번호 입력 예제}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    int true_password = 1234;
+    int input_password = 0;
+
+    while (input_password != true_password)
+    {
+        cout << "Enter password: ";
+        cin >> input_password;
+
+        if (input_password == true_password)
+        {
+            cout << "Access Granted" << endl;
+        }
+        else
+        {
+            cout << "Wrong Password" << endl;
+            cout << endl;
+        }
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\texttt{while}은 조건을 먼저 검사하므로, 위 구조에서는
+\texttt{input\_password}에 초기값을 주어야 한다.
+초기화하지 않은 지역 변수에는 예측할 수 없는 값이 들어 있을 수 있다.
+
+% =================================================
+\section{실습 목록}
+% =================================================
+
+\begin{practicebox}
+Day 1 실습 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{practice/p01\_output.cpp}
+    \item \texttt{practice/p02\_variables.cpp}
+    \item \texttt{practice/p03\_rectangle\_input.cpp}
+    \item \texttt{practice/p04\_rectangle\_area.cpp}
+    \item \texttt{practice/p05\_even\_odd.cpp}
+    \item \texttt{practice/p06\_sum.cpp}
+    \item \texttt{practice/p07\_password.cpp}
+\end{itemize}
+\end{practicebox}
+
+% =================================================
+\section{핵심 요약}
+% =================================================
+
+\begin{enumerate}
+    \item C++ 프로그램은 \texttt{main()} 함수에서 시작한다.
+    \item \texttt{cout}은 출력, \texttt{cin}은 입력에 사용한다.
+    \item 변수는 메모리 공간에 붙인 이름이다.
+    \item \texttt{int / int}의 결과는 정수이며 소수점 이하는 버려진다.
+    \item 피연산자 중 하나가 \texttt{double}이면 자동 형변환이 발생할 수 있다.
+    \item \texttt{if-else if-else}에서는 첫 번째로 참인 블록만 실행된다.
+    \item 반복 횟수를 알면 \texttt{for}, 모르면 \texttt{while}이 일반적으로 자연스럽다.
+    \item 반복문에서는 조건을 변화시키는 코드가 없으면 무한 반복이 발생할 수 있다.
+\end{enumerate}
+
+\end{document}
