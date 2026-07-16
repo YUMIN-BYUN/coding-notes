@@ -39,6 +39,7 @@
 % Header / Footer
 % -------------------------------------------------
 \pagestyle{fancy}
+\setlength{\headheight}{14pt}
 \fancyhf{}
 \lhead{C++ Programming}
 \rhead{Day 2}
@@ -164,11 +165,11 @@ Day 2에서는 조건문과 반복문을 더 정교하게 사용하여 프로그
 \begin{lstlisting}
 if (condition)
 {
-    // condition이 true일 때 실행
+    // Runs when condition is true
 }
 else
 {
-    // condition이 false일 때 실행
+    // Runs when condition is false
 }
 \end{lstlisting}
 
@@ -210,8 +211,8 @@ int main()
 \subsection{비교와 대입의 차이}
 
 \begin{lstlisting}
-number = 10;   // 대입
-number == 10;  // 비교
+number = 10;   // assignment
+number == 10;  // comparison
 \end{lstlisting}
 
 \texttt{=}는 오른쪽 값을 왼쪽 변수에 저장하는 대입 연산자이고,
@@ -229,15 +230,15 @@ number == 10;  // 비교
 \begin{lstlisting}
 if (condition1)
 {
-    // condition1이 true
+    // condition1 is true
 }
 else if (condition2)
 {
-    // condition1은 false이고 condition2는 true
+    // condition1 is false and condition2 is true
 }
 else
 {
-    // 앞의 모든 조건이 false
+    // All previous conditions are false
 }
 \end{lstlisting}
 
@@ -315,7 +316,7 @@ if (condition1)
 {
     if (condition2)
     {
-        // 두 조건이 모두 참일 때 실행
+        // Runs when both conditions are true
     }
 }
 \end{lstlisting}
@@ -387,7 +388,7 @@ switch (expression)
         break;
 
     default:
-        // 일치하는 case가 없을 때
+        // No matching case
         break;
 }
 \end{lstlisting}
@@ -499,7 +500,7 @@ while (number < 5)
 \begin{lstlisting}
 do
 {
-    // 반복할 코드
+    // Code to repeat
 }
 while (condition);
 \end{lstlisting}
