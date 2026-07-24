@@ -1,0 +1,896 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C++ Programming}
+\rhead{Day 3}
+\cfoot{\thepage}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% C++ code style
+% -------------------------------------------------
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstset{style=cppstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{checkpointbox}{
+    colback=green!5,
+    colframe=green!45!black,
+    title=\textbf{체크 질문},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries C++ Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 3: 배열과 포인터\par}
+
+    \vspace{2cm}
+
+    {\large 배열, 포인터 연산, 함수로의 배열 전달, const 포인터\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item 변수의 주소와 포인터의 기본 구조
+    \item 주소 연산자 \texttt{\&}와 역참조 연산자 \texttt{*}
+    \item 배열의 선언, 인덱싱, 수정
+    \item 배열 이름과 첫 번째 원소 주소의 관계
+    \item 포인터 연산과 자료형 크기의 관계
+    \item \texttt{arr[i]}와 \texttt{*(arr + i)}의 동치
+    \item 배열을 함수에 전달하는 방식
+    \item \texttt{const int*}, \texttt{int* const}, \texttt{const int* const}의 차이
+\end{itemize}
+\end{learningbox}
+
+포인터는 단순히 주소를 저장하는 변수에 그치지 않는다. 배열을 순회하고, 함수에서 원본 데이터를 직접 다루며, 이후 학습할 동적 메모리와 자료구조를 이해하는 기반이 된다.
+
+% =================================================
+\section{포인터의 기초}
+% =================================================
+
+\subsection{변수와 메모리 주소}
+
+변수는 값을 저장하는 메모리 공간에 붙인 이름이다. 각 변수는 메모리 안에서 고유한 주소를 가진다.
+
+\begin{lstlisting}
+int number = 10;
+
+cout << number << endl;
+cout << &number << endl;
+\end{lstlisting}
+
+\texttt{number}는 저장된 값 10을 의미하고, \texttt{\&number}는 해당 변수가 저장된 메모리 주소를 의미한다. 실제 주소는 실행 환경마다 달라진다.
+
+\subsection{포인터 선언}
+
+포인터는 메모리 주소를 저장하는 변수이다.
+
+\begin{lstlisting}
+int number = 10;
+int* p = &number;
+\end{lstlisting}
+
+\texttt{int* p}는 ``정수형 데이터를 가리키는 포인터 \texttt{p}''를 선언한다. \texttt{p}에는 \texttt{number}의 주소가 저장된다.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+표현 & 의미 & 결과의 종류 \\
+\midrule
+\texttt{number} & 변수에 저장된 값 & \texttt{int} \\
+\texttt{\&number} & 변수의 주소 & \texttt{int*} \\
+\texttt{p} & 포인터에 저장된 주소 & \texttt{int*} \\
+\texttt{*p} & 포인터가 가리키는 위치의 값 & \texttt{int} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{역참조}
+
+포인터 앞에 \texttt{*}를 붙이면 포인터가 가리키는 메모리 위치의 값을 읽거나 수정할 수 있다. 이를 역참조(dereference)라고 한다.
+
+\begin{lstlisting}
+int number = 10;
+int* p = &number;
+
+cout << *p << endl;
+
+*p = 50;
+cout << number << endl;
+\end{lstlisting}
+
+출력은 다음과 같다.
+
+\begin{verbatim}
+10
+50
+\end{verbatim}
+
+\texttt{*p = 50;}은 포인터 변수 \texttt{p} 자체를 바꾸는 코드가 아니다. \texttt{p}가 가리키는 원본 변수 \texttt{number}의 값을 변경한다.
+
+\begin{importantbox}
+선언에서의 \texttt{*}와 식에서의 \texttt{*}는 모양은 같지만 역할이 다르다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{int* p;}의 \texttt{*}: 포인터 변수 선언
+    \item \texttt{*p}의 \texttt{*}: 가리키는 값에 접근하는 역참조
+\end{itemize}
+\end{importantbox}
+
+\subsection{최종 예제: \texttt{01\_pointer\_basic.cpp}}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    int number = 10;
+    int* p = &number;
+
+    cout << "Value of number : " << number << endl;
+    cout << "Address         : " << &number << endl;
+    cout << "Pointer value   : " << p << endl;
+    cout << "Dereferenced    : " << *p << endl;
+
+    *p = 50;
+
+    cout << "Modified number : " << number << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{practice/p01\_pointer\_basic.cpp}
+\begin{enumerate}[leftmargin=1.5em]
+    \item 정수형 변수 하나를 선언하고 초기값을 저장한다.
+    \item 해당 변수의 주소를 저장하는 포인터를 선언한다.
+    \item 변수의 값, 주소, 포인터에 저장된 주소, 역참조 결과를 출력한다.
+    \item 포인터를 통해 원본 변수의 값을 수정한다.
+\end{enumerate}
+\end{practicebox}
+
+% =================================================
+\section{배열의 기초}
+% =================================================
+
+\subsection{배열의 필요성}
+
+같은 자료형의 값을 여러 개 저장할 때 변수를 하나씩 선언하면 관리하기 어렵다.
+
+\begin{lstlisting}
+int score1 = 90;
+int score2 = 85;
+int score3 = 70;
+\end{lstlisting}
+
+배열을 사용하면 같은 자료형의 여러 값을 하나의 이름으로 묶을 수 있다.
+
+\begin{lstlisting}
+int scores[5] = {90, 85, 70, 95, 80};
+\end{lstlisting}
+
+\subsection{인덱스}
+
+배열의 각 원소는 인덱스로 접근한다. C++ 배열의 인덱스는 0부터 시작한다.
+
+\begin{center}
+\begin{tabular}{cccccc}
+\toprule
+인덱스 & 0 & 1 & 2 & 3 & 4 \\
+\midrule
+값 & 90 & 85 & 70 & 95 & 80 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}
+cout << scores[0] << endl;
+cout << scores[3] << endl;
+\end{lstlisting}
+
+위 코드는 각각 90과 95를 출력한다.
+
+\subsection{배열 원소 수정}
+
+배열 원소는 일반 변수처럼 대입 연산자로 수정할 수 있다.
+
+\begin{lstlisting}
+scores[1] = 100;
+scores[3] = 60;
+\end{lstlisting}
+
+\subsection{반복문을 이용한 배열 순회}
+
+배열 원소를 하나씩 직접 출력하는 대신 반복문을 사용할 수 있다.
+
+\begin{lstlisting}
+for (int i = 0; i < 5; i++)
+{
+    cout << scores[i] << endl;
+}
+\end{lstlisting}
+
+조건을 \texttt{i <= 4}로 작성해도 같은 범위를 순회하지만, 배열 크기를 직접 드러내는 \texttt{i < 5}가 일반적으로 더 읽기 쉽다.
+
+\begin{importantbox}
+길이가 5인 배열의 유효한 인덱스는 0부터 4까지이다. \texttt{scores[5]}에 접근하면 배열 범위를 벗어나며, 그 결과는 정의되지 않는다.
+\end{importantbox}
+
+\subsection{최종 예제: \texttt{02\_array\_basic.cpp}}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    int scores[5] = {90, 85, 70, 95, 80};
+
+    cout << "=== Original Array ===" << endl;
+
+    for (int i = 0; i < 5; i++)
+    {
+        cout << scores[i] << endl;
+    }
+
+    cout << endl;
+
+    scores[1] = 100;
+    scores[3] = 60;
+
+    cout << "=== Modified Array ===" << endl;
+
+    for (int i = 0; i < 5; i++)
+    {
+        cout << scores[i] << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{practice/p02\_array\_basic.cpp}
+\begin{enumerate}[leftmargin=1.5em]
+    \item \texttt{\{1, 2, 3, 4, 5\}}를 저장하는 배열을 만든다.
+    \item 세 번째 원소를 30으로 수정한다.
+    \item 다섯 번째 원소를 50으로 수정한다.
+    \item 반복문으로 배열 전체를 출력한다.
+\end{enumerate}
+\end{practicebox}
+
+% =================================================
+\section{포인터 연산과 배열}
+% =================================================
+
+\subsection{자료형의 크기: \texttt{sizeof}}
+
+\texttt{sizeof} 연산자는 자료형 또는 변수의 메모리 크기를 바이트 단위로 반환한다.
+
+\begin{lstlisting}
+cout << sizeof(char) << endl;
+cout << sizeof(int) << endl;
+cout << sizeof(double) << endl;
+\end{lstlisting}
+
+일반적인 환경에서는 다음과 같이 출력된다.
+
+\begin{verbatim}
+1
+4
+8
+\end{verbatim}
+
+다만 C++ 표준은 모든 환경에서 \texttt{int}가 반드시 4바이트라고 보장하지는 않는다. 정확한 크기가 필요하면 실행 환경에서 \texttt{sizeof}로 확인해야 한다.
+
+\subsection{배열의 연속 저장}
+
+배열 원소는 메모리에 연속적으로 저장된다. \texttt{int}가 4바이트인 환경에서 배열의 첫 주소가 1000이라면 다음 원소들의 주소는 1004, 1008, 1012처럼 이어질 수 있다.
+
+\begin{verbatim}
+Address   1000   1004   1008   1012   1016
+Value       10     20     30     40     50
+Index        0      1      2      3      4
+\end{verbatim}
+
+\subsection{배열 이름과 첫 번째 원소의 주소}
+
+대부분의 식에서 배열 이름은 첫 번째 원소를 가리키는 포인터로 변환된다.
+
+\begin{lstlisting}
+int numbers[5] = {10, 20, 30, 40, 50};
+
+cout << numbers << endl;
+cout << &numbers[0] << endl;
+\end{lstlisting}
+
+두 출력은 같은 주소를 나타낸다. 따라서 다음 두 선언은 같은 위치를 가리킨다.
+
+\begin{lstlisting}
+int* p1 = numbers;
+int* p2 = &numbers[0];
+\end{lstlisting}
+
+다만 배열과 포인터가 완전히 같은 자료형이라는 뜻은 아니다. 배열 이름이 많은 식에서 첫 번째 원소의 주소로 변환된다는 의미이다.
+
+\subsection{포인터의 이동}
+
+\begin{lstlisting}
+int numbers[5] = {10, 20, 30, 40, 50};
+int* p = numbers;
+
+cout << *p << endl;
+p++;
+cout << *p << endl;
+\end{lstlisting}
+
+출력은 10과 20이다. \texttt{p++}는 주소를 1바이트 증가시키는 것이 아니라, \texttt{int} 원소 한 칸만큼 이동시킨다.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+포인터 자료형 & \texttt{p++}의 의미 & 일반적인 이동량 \\
+\midrule
+\texttt{char*} & 문자 한 칸 이동 & 1바이트 \\
+\texttt{int*} & 정수 한 칸 이동 & 4바이트 \\
+\texttt{double*} & 실수 한 칸 이동 & 8바이트 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+즉, 포인터 연산은 바이트 수가 아니라 원소 수를 기준으로 해석한다.
+
+\begin{importantbox}
+\texttt{p + n}은 주소에 숫자 \texttt{n}을 그대로 더하는 것이 아니다. 포인터가 가리키는 자료형의 크기를 고려하여 \texttt{n}개의 원소만큼 이동한다.
+\end{importantbox}
+
+\subsection{인덱싱과 포인터 표현}
+
+배열 인덱싱은 포인터 연산으로 표현할 수 있다.
+
+\begin{lstlisting}
+numbers[i]
+*(numbers + i)
+\end{lstlisting}
+
+두 표현은 같은 원소를 의미한다. 포인터 변수 \texttt{p}가 배열의 첫 원소를 가리킨다면 다음 역시 같다.
+
+\begin{lstlisting}
+p[i]
+*(p + i)
+\end{lstlisting}
+
+예를 들어 다음 코드는 배열 전체를 포인터 표현으로 출력한다.
+
+\begin{lstlisting}
+for (int i = 0; i < 5; i++)
+{
+    cout << *(p + i) << " ";
+}
+\end{lstlisting}
+
+\subsection{포인터 위치를 다시 초기화하기}
+
+포인터 자체를 이동시켰다면 현재 위치가 배열의 시작이 아닐 수 있다.
+
+\begin{lstlisting}
+p += 2;
+p -= 1;
+\end{lstlisting}
+
+이후 배열 전체를 처음부터 순회하려면 계산을 거꾸로 수행하기보다 다음처럼 명시적으로 다시 대입하는 편이 읽기 쉽다.
+
+\begin{lstlisting}
+p = numbers;
+\end{lstlisting}
+
+또한 이동과 역참조를 한 줄에 함께 쓰는 코드도 가능하다.
+
+\begin{lstlisting}
+cout << *(p += 2) << endl;
+\end{lstlisting}
+
+그러나 다음처럼 이동과 출력을 분리하면 실행 흐름을 더 쉽게 읽고 디버깅할 수 있다.
+
+\begin{lstlisting}
+p += 2;
+cout << *p << endl;
+\end{lstlisting}
+
+\subsection{최종 예제: \texttt{03\_pointer\_arithmetic.cpp}}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    cout << "=== Size of Data Types ===" << endl;
+    cout << "char   : " << sizeof(char) << " bytes" << endl;
+    cout << "int    : " << sizeof(int) << " bytes" << endl;
+    cout << "double : " << sizeof(double) << " bytes" << endl;
+
+    cout << endl;
+
+    char ch = 'A';
+    int num = 10;
+    double pi = 3.14;
+
+    cout << "=== Size of Variables ===" << endl;
+    cout << "ch  : " << sizeof(ch) << " bytes" << endl;
+    cout << "num : " << sizeof(num) << " bytes" << endl;
+    cout << "pi  : " << sizeof(pi) << " bytes" << endl;
+
+    cout << endl;
+
+    int numbers[5] = {10, 20, 30, 40, 50};
+
+    cout << "=== Array Address ===" << endl;
+    cout << "numbers     : " << numbers << endl;
+    cout << "&numbers[0] : " << &numbers[0] << endl;
+
+    cout << endl;
+
+    int* p = numbers;
+
+    cout << "=== Pointer Movement ===" << endl;
+    cout << *p << endl;
+
+    p++;
+    cout << *p << endl;
+
+    p += 2;
+    cout << *p << endl;
+
+    p--;
+    cout << *p << endl;
+
+    cout << endl;
+
+    p = numbers;
+
+    cout << "=== Array Traversal ===" << endl;
+
+    for (int i = 0; i < 5; i++)
+    {
+        cout << *(p + i) << " ";
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{practice/p03\_pointer\_arithmetic.cpp}
+\begin{enumerate}[leftmargin=1.5em]
+    \item \texttt{\{5, 10, 15, 20, 25, 30\}}을 저장하는 배열을 선언한다.
+    \item 포인터 이동만 이용하여 5, 15, 10을 차례로 출력한다.
+    \item 포인터를 배열 시작 위치로 다시 설정한다.
+    \item \texttt{*(p + i)}를 사용하여 배열 전체를 출력한다.
+\end{enumerate}
+\end{practicebox}
+
+% =================================================
+\section{배열을 함수에 전달하기}
+% =================================================
+
+\subsection{배열 출력 함수}
+
+배열을 여러 번 출력해야 한다면 반복문을 함수로 분리할 수 있다.
+
+\begin{lstlisting}
+void printArray(int arr[], int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        cout << arr[i] << " ";
+    }
+
+    cout << endl;
+}
+\end{lstlisting}
+
+호출할 때는 배열 이름과 배열 크기를 함께 전달한다.
+
+\begin{lstlisting}
+int numbers[5] = {10, 20, 30, 40, 50};
+printArray(numbers, 5);
+\end{lstlisting}
+
+\subsection{함수 매개변수의 배열 표기}
+
+함수 매개변수에서 다음 두 선언은 사실상 같은 의미이다.
+
+\begin{lstlisting}
+void printArray(int arr[], int size);
+void printArray(int* arr, int size);
+\end{lstlisting}
+
+배열 전체가 복사되는 것이 아니라 첫 번째 원소의 주소가 함수에 전달된다. 따라서 함수 안의 \texttt{arr}는 원본 배열의 시작 위치를 가리킨다.
+
+\subsection{배열 크기를 함께 전달하는 이유}
+
+함수 안으로 전달된 \texttt{arr}는 포인터로 처리되므로 원래 배열의 원소 개수를 자동으로 알 수 없다. 따라서 일반적인 형태에서는 크기를 별도의 매개변수로 함께 전달한다.
+
+\begin{lstlisting}
+void printArray(int arr[], int size)
+\end{lstlisting}
+
+함수는 \texttt{size}를 이용하여 유효한 범위까지만 반복한다.
+
+\subsection{함수에서 원본 배열 수정}
+
+함수는 원본 배열과 같은 메모리를 가리키므로 함수 내부에서 원소를 수정하면 호출한 쪽의 배열도 바뀐다.
+
+\begin{lstlisting}
+void changeFirst(int arr[])
+{
+    arr[0] = 999;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+int numbers[5] = {10, 20, 30, 40, 50};
+
+changeFirst(numbers);
+printArray(numbers, 5);
+\end{lstlisting}
+
+출력은 다음과 같다.
+
+\begin{verbatim}
+999 20 30 40 50
+\end{verbatim}
+
+\begin{importantbox}
+배열을 함수에 전달하면 배열 전체가 복사되지 않고 첫 번째 원소의 주소가 전달된다. 따라서 함수는 같은 메모리 공간을 읽고 수정할 수 있다.
+\end{importantbox}
+
+\subsection{최종 예제: \texttt{04\_function\_array.cpp}}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+void printArray(int arr[], int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        cout << arr[i] << " ";
+    }
+
+    cout << endl;
+}
+
+void changeFirst(int arr[])
+{
+    arr[0] = 999;
+}
+
+int main()
+{
+    int numbers[5] = {10, 20, 30, 40, 50};
+
+    cout << "=== Original Array ===" << endl;
+    printArray(numbers, 5);
+
+    changeFirst(numbers);
+
+    cout << endl;
+    cout << "=== After changeFirst() ===" << endl;
+    printArray(numbers, 5);
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{practice/p04\_function\_array.cpp}
+\begin{enumerate}[leftmargin=1.5em]
+    \item \texttt{changeLast()} 함수를 작성하여 배열의 마지막 원소를 0으로 변경한다.
+    \item \texttt{\{90, 80, 70, 60, 50, 40\}} 배열에 함수를 적용한다.
+    \item \texttt{addTen()} 함수를 작성하여 모든 원소에 10을 더한다.
+    \item 포인터 표현 \texttt{*(p + i)}로 변경 전후의 배열을 출력한다.
+\end{enumerate}
+\end{practicebox}
+
+% =================================================
+\section{const 포인터}
+% =================================================
+
+\subsection{왜 const를 사용하는가}
+
+포인터를 사용할 때 두 대상을 구분해야 한다.
+
+\begin{itemize}[leftmargin=1.5em]
+    \item 포인터가 가리키는 값
+    \item 포인터 자체에 저장된 주소
+\end{itemize}
+
+\texttt{const}의 위치에 따라 둘 중 하나 또는 둘 다 변경하지 못하게 제한할 수 있다.
+
+\subsection{가리키는 값을 변경할 수 없는 포인터}
+
+\begin{lstlisting}
+const int* p = &number;
+\end{lstlisting}
+
+이 선언에서는 포인터를 통해 값을 변경할 수 없다.
+
+\begin{lstlisting}
+*p = 20;
+\end{lstlisting}
+
+위 코드는 컴파일 오류가 발생한다. 반면 포인터가 다른 정수 변수를 가리키도록 변경하는 것은 가능하다.
+
+\begin{lstlisting}
+p = &other;
+\end{lstlisting}
+
+정리하면 값은 잠겨 있고 포인터는 이동할 수 있다.
+
+\subsection{포인터 자체를 변경할 수 없는 포인터}
+
+\begin{lstlisting}
+int* const p = &number;
+\end{lstlisting}
+
+이 선언에서는 포인터에 저장된 주소를 바꿀 수 없다. 선언과 동시에 반드시 초기화해야 한다.
+
+\begin{lstlisting}
+*p = 20;
+\end{lstlisting}
+
+가리키는 값은 변경할 수 있다. 그러나 다음 코드는 허용되지 않는다.
+
+\begin{lstlisting}
+p = &other;
+\end{lstlisting}
+
+정리하면 값은 변경할 수 있고 포인터는 잠겨 있다.
+
+\subsection{값과 포인터 모두 변경할 수 없는 경우}
+
+\begin{lstlisting}
+const int* const p = &number;
+\end{lstlisting}
+
+이 선언에서는 역참조를 통한 값 변경도, 포인터의 주소 변경도 허용되지 않는다.
+
+\subsection{세 선언 비교}
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+선언 & 값 변경 & 포인터 변경 \\
+\midrule
+\texttt{const int* p} & 불가능 & 가능 \\
+\texttt{int* const p} & 가능 & 불가능 \\
+\texttt{const int* const p} & 불가능 & 불가능 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+별표 \texttt{*}를 기준으로 읽으면 구분하기 쉽다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{const int* p}: 별표 왼쪽의 값이 상수
+    \item \texttt{int* const p}: 별표 오른쪽의 포인터가 상수
+    \item \texttt{const int* const p}: 양쪽 모두 상수
+\end{itemize}
+\end{importantbox}
+
+\subsection{최종 예제: \texttt{05\_const\_pointer.cpp}}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    int num = 10;
+    int other = 20;
+
+    const int* p1 = &num;
+    cout << "*p1 = " << *p1 << endl;
+
+    p1 = &other;
+    cout << "*p1 = " << *p1 << endl;
+
+    cout << endl;
+
+    int* const p2 = &num;
+    *p2 = 100;
+    cout << "num = " << num << endl;
+
+    cout << endl;
+
+    const int* const p3 = &num;
+    cout << "*p3 = " << *p3 << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{practice/p05\_const\_pointer.cpp}
+\begin{enumerate}[leftmargin=1.5em]
+    \item \texttt{const int*} 포인터가 다른 변수의 주소를 가리키게 한 뒤 값을 출력한다.
+    \item \texttt{int* const} 포인터로 원본 값을 수정한다.
+    \item 세 가지 const 포인터의 값 변경 가능 여부와 포인터 변경 가능 여부를 출력한다.
+\end{enumerate}
+\end{practicebox}
+
+% =================================================
+\section{프로젝트 파일 구성}
+% =================================================
+
+\begin{verbatim}
+cpp/
+└── day03/
+    ├── 01_pointer_basic.cpp
+    ├── 02_array_basic.cpp
+    ├── 03_pointer_arithmetic.cpp
+    ├── 04_function_array.cpp
+    ├── 05_const_pointer.cpp
+    ├── practice/
+    │   ├── p01_pointer_basic.cpp
+    │   ├── p02_array_basic.cpp
+    │   ├── p03_pointer_arithmetic.cpp
+    │   ├── p04_function_array.cpp
+    │   └── p05_const_pointer.cpp
+    ├── cpp_day03.tex
+    ├── cpp_day03.pdf
+    └── README.md
+\end{verbatim}
+
+개념별 예제 파일은 Day 3 루트에 번호를 붙여 분리하고, 실습 파일은 \texttt{practice} 폴더에 같은 번호 체계로 저장한다.
+
+% =================================================
+\section{핵심 정리}
+% =================================================
+
+\begin{enumerate}[leftmargin=1.5em]
+    \item 포인터는 메모리 주소를 저장하는 변수이다.
+    \item \texttt{\&variable}은 변수의 주소를 얻고, \texttt{*pointer}는 포인터가 가리키는 값에 접근한다.
+    \item 포인터를 역참조하여 값을 대입하면 원본 변수가 변경된다.
+    \item 배열은 같은 자료형의 여러 값을 연속된 메모리 공간에 저장한다.
+    \item 배열 이름은 대부분의 식에서 첫 번째 원소를 가리키는 포인터로 변환된다.
+    \item 포인터 연산은 바이트가 아니라 가리키는 자료형의 원소 단위로 이동한다.
+    \item \texttt{arr[i]}와 \texttt{*(arr + i)}는 같은 원소를 의미한다.
+    \item 배열을 함수에 전달하면 첫 번째 원소의 주소가 전달된다.
+    \item 함수에서 배열 원소를 수정하면 원본 배열도 변경된다.
+    \item 함수에 전달된 배열의 크기는 자동으로 보존되지 않으므로 일반적으로 크기를 함께 전달한다.
+    \item \texttt{const int*}는 값을, \texttt{int* const}는 포인터를 변경하지 못하게 한다.
+    \item \texttt{const int* const}는 값과 포인터 모두 변경하지 못하게 한다.
+\end{enumerate}
+
+\begin{checkpointbox}
+다음 질문에 답할 수 있다면 Day 3의 핵심을 이해한 것이다.
+\begin{enumerate}[leftmargin=1.5em]
+    \item \texttt{p}와 \texttt{*p}의 차이는 무엇인가?
+    \item \texttt{int* p}에서 \texttt{p++}는 주소를 몇 바이트 이동시키는가?
+    \item 왜 \texttt{numbers[3]}과 \texttt{*(numbers + 3)}이 같은가?
+    \item 배열을 함수에 전달했을 때 원본 배열이 수정되는 이유는 무엇인가?
+    \item \texttt{const int*}와 \texttt{int* const}는 무엇이 다른가?
+\end{enumerate}
+\end{checkpointbox}
+
+\end{document}
