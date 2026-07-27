@@ -1,0 +1,964 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C++ Programming}
+\rhead{Day 5}
+\cfoot{\thepage}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% C++ code style
+% -------------------------------------------------
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible
+}
+
+\lstset{style=cppstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{checkpointbox}{
+    colback=green!5,
+    colframe=green!45!black,
+    title=\textbf{체크 질문},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries C++ Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 5: 구조체와 프로젝트 분리\par}
+
+    \vspace{2cm}
+
+    {\large 구조체, 열거형, 이름 공간, 헤더 파일, 다중 소스 파일\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item 여러 자료형을 하나의 구조체로 묶기
+    \item 열거형을 사용하여 의미 있는 상태 표현하기
+    \item 이름 공간으로 이름 충돌 방지하기
+    \item 함수 선언과 정의를 분리하기
+    \item 헤더 파일과 소스 파일의 역할 구분하기
+    \item include guard로 중복 포함 방지하기
+    \item 여러 \texttt{.cpp} 파일로 구성된 프로그램 컴파일하기
+\end{itemize}
+\end{learningbox}
+
+% =================================================
+\section{구조체: \texttt{struct}}
+% =================================================
+
+구조체는 서로 관련된 여러 데이터를 하나의 새로운 자료형으로 묶는 기능이다.
+학생 한 명의 정보를 저장한다고 생각해 보자.
+
+\begin{lstlisting}
+string name;
+int age;
+double gpa;
+\end{lstlisting}
+
+각 변수를 따로 선언할 수도 있지만, 학생 수가 늘어나면 어떤 값들이 한 학생에게 속하는지 관리하기 어려워진다.
+구조체를 사용하면 관련 데이터를 하나의 단위로 표현할 수 있다.
+
+\subsection{구조체 정의}
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+struct Student
+{
+    string name;
+    int age;
+    double gpa;
+};
+\end{lstlisting}
+
+\texttt{Student}는 사용자가 직접 정의한 새로운 자료형이다.
+구조체 내부의 변수 \texttt{name}, \texttt{age}, \texttt{gpa}를 멤버(member)라고 한다.
+
+\begin{importantbox}
+구조체 정의 뒤에는 반드시 세미콜론을 작성해야 한다.
+\end{importantbox}
+
+\subsection{구조체 변수 생성과 멤버 접근}
+
+\begin{lstlisting}
+Student student;
+
+student.name = "Alice";
+student.age = 20;
+student.gpa = 4.1;
+\end{lstlisting}
+
+점 연산자 \texttt{.}를 사용하면 구조체의 멤버에 접근할 수 있다.
+
+\begin{lstlisting}
+cout << student.name << endl;
+cout << student.age << endl;
+cout << student.gpa << endl;
+\end{lstlisting}
+
+\subsection{중괄호 초기화}
+
+\begin{lstlisting}
+Student student = {"Alice", 20, 4.1};
+\end{lstlisting}
+
+값은 구조체에 선언된 멤버 순서대로 저장된다.
+
+\begin{lstlisting}
+struct Student
+{
+    string name;
+    int age;
+    double gpa;
+};
+\end{lstlisting}
+
+따라서 첫 번째 값은 \texttt{name}, 두 번째 값은 \texttt{age}, 세 번째 값은 \texttt{gpa}에 저장된다.
+
+\subsection{구조체를 함수에 전달하기}
+
+\begin{lstlisting}
+void printStudent(const Student& student)
+{
+    cout << "Name: " << student.name << endl;
+    cout << "Age : " << student.age << endl;
+    cout << "GPA : " << student.gpa << endl;
+}
+\end{lstlisting}
+
+\texttt{const Student\&}는 구조체 전체를 복사하지 않고 원본을 읽기 전용으로 전달한다.
+
+\subsection{전체 예제}
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+struct Student
+{
+    string name;
+    int age;
+    double gpa;
+};
+
+void printStudent(const Student& student)
+{
+    cout << "Name: " << student.name << endl;
+    cout << "Age : " << student.age << endl;
+    cout << "GPA : " << student.gpa << endl;
+}
+
+int main()
+{
+    Student student = {"Alice", 20, 4.1};
+
+    printStudent(student);
+
+    return 0;
+}
+\end{lstlisting}
+
+% =================================================
+\section{열거형: \texttt{enum}}
+% =================================================
+
+열거형은 서로 관련된 이름 있는 정수 상수들을 하나의 자료형으로 묶는다.
+프로그램의 상태를 단순한 숫자보다 읽기 쉬운 이름으로 표현할 때 사용한다.
+
+\subsection{기본 열거형}
+
+\begin{lstlisting}
+enum Day
+{
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday
+};
+\end{lstlisting}
+
+기본적으로 첫 번째 원소는 0부터 시작하고 이후 값은 1씩 증가한다.
+
+\begin{lstlisting}
+Day today = Wednesday;
+
+cout << today << endl;
+\end{lstlisting}
+
+출력되는 정수 값은 2이다.
+
+\subsection{값 직접 지정하기}
+
+\begin{lstlisting}
+enum Status
+{
+    Pending = 1,
+    Running = 2,
+    Completed = 3
+};
+\end{lstlisting}
+
+열거형 원소에 특정 정수 값을 직접 지정할 수 있다.
+
+\subsection{\texttt{enum class}}
+
+기본 \texttt{enum}의 원소 이름은 주변 영역에 그대로 노출된다.
+큰 프로그램에서는 다른 열거형과 이름이 충돌할 수 있다.
+
+\begin{lstlisting}
+enum class Color
+{
+    Red,
+    Green,
+    Blue
+};
+
+Color color = Color::Red;
+\end{lstlisting}
+
+\texttt{enum class}에서는 \texttt{Color::Red}처럼 열거형 이름을 함께 작성해야 한다.
+그 대신 이름 충돌을 줄이고 자료형 검사를 더 엄격하게 할 수 있다.
+
+\begin{importantbox}
+새로운 코드에서는 단순한 \texttt{enum}보다 \texttt{enum class}를 우선 고려하는 것이 좋다.
+\end{importantbox}
+
+\subsection{조건문과 함께 사용하기}
+
+\begin{lstlisting}
+enum class Status
+{
+    Pending,
+    Running,
+    Completed
+};
+
+int main()
+{
+    Status status = Status::Running;
+
+    if (status == Status::Running)
+    {
+        cout << "Program is running." << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+% =================================================
+\section{이름 공간: \texttt{namespace}}
+% =================================================
+
+서로 다른 코드에서 같은 이름을 사용하면 충돌이 발생할 수 있다.
+이름 공간은 관련된 이름을 하나의 범위 안에 묶어 충돌을 방지한다.
+
+\subsection{이름 충돌의 예}
+
+\begin{lstlisting}
+int add(int a, int b)
+{
+    return a + b;
+}
+\end{lstlisting}
+
+다른 라이브러리에도 같은 이름과 매개변수를 가진 \texttt{add} 함수가 있다면 컴파일러가 어느 함수를 사용해야 하는지 구분하기 어렵다.
+
+\subsection{이름 공간 정의}
+
+\begin{lstlisting}
+namespace Math
+{
+    int add(int a, int b)
+    {
+        return a + b;
+    }
+}
+\end{lstlisting}
+
+이름 공간 안의 함수는 범위 지정 연산자 \texttt{::}로 접근한다.
+
+\begin{lstlisting}
+cout << Math::add(10, 20) << endl;
+\end{lstlisting}
+
+\subsection{같은 이름의 함수 구분하기}
+
+\begin{lstlisting}
+namespace IntegerMath
+{
+    int add(int a, int b)
+    {
+        return a + b;
+    }
+}
+
+namespace DoubleMath
+{
+    double add(double a, double b)
+    {
+        return a + b;
+    }
+}
+
+int main()
+{
+    cout << IntegerMath::add(10, 20) << endl;
+    cout << DoubleMath::add(1.5, 2.5) << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{\texttt{using namespace}}
+
+\begin{lstlisting}
+using namespace std;
+\end{lstlisting}
+
+위 문장은 \texttt{std::cout} 대신 \texttt{cout}을 사용할 수 있게 한다.
+작은 예제에서는 편리하지만 헤더 파일이나 큰 프로젝트에서는 이름 충돌 가능성을 높일 수 있다.
+
+\begin{importantbox}
+헤더 파일에서는 일반적으로 \texttt{using namespace std;}를 작성하지 않는다.
+필요한 이름에 \texttt{std::}를 직접 붙이는 편이 안전하다.
+\end{importantbox}
+
+% =================================================
+\section{선언과 정의}
+% =================================================
+
+여러 파일로 프로그램을 나누려면 선언과 정의의 차이를 이해해야 한다.
+
+\subsection{선언}
+
+선언은 이름과 사용 방법을 컴파일러에 알려 준다.
+
+\begin{lstlisting}
+int add(int a, int b);
+\end{lstlisting}
+
+이 문장은 \texttt{add}라는 함수가 존재하며 두 개의 \texttt{int}를 받아 \texttt{int}를 반환한다고 알린다.
+함수 본문은 없기 때문에 실제 동작은 아직 작성되지 않았다.
+
+\subsection{정의}
+
+정의는 함수의 실제 동작을 작성한다.
+
+\begin{lstlisting}
+int add(int a, int b)
+{
+    return a + b;
+}
+\end{lstlisting}
+
+\subsection{선언이 필요한 이유}
+
+C++ 컴파일러는 코드를 위에서 아래로 읽는다.
+
+\begin{lstlisting}
+int main()
+{
+    cout << add(10, 20) << endl;
+
+    return 0;
+}
+
+int add(int a, int b)
+{
+    return a + b;
+}
+\end{lstlisting}
+
+\texttt{main()}을 읽는 시점에는 \texttt{add}가 아직 알려지지 않았으므로 오류가 발생한다.
+앞부분에 함수 선언을 추가하면 해결된다.
+
+\begin{lstlisting}
+int add(int a, int b);
+
+int main()
+{
+    cout << add(10, 20) << endl;
+
+    return 0;
+}
+
+int add(int a, int b)
+{
+    return a + b;
+}
+\end{lstlisting}
+
+% =================================================
+\section{헤더 파일}
+% =================================================
+
+헤더 파일은 여러 소스 파일에서 공유할 선언을 저장한다.
+일반적으로 확장자는 \texttt{.h} 또는 \texttt{.hpp}를 사용한다.
+
+\subsection{기본 파일 구성}
+
+\begin{verbatim}
+04_header/
+    04_main.cpp
+    04_math.cpp
+    04_math.h
+\end{verbatim}
+
+\subsection{헤더 파일}
+
+\texttt{04\_math.h}
+
+\begin{lstlisting}
+#ifndef MATH_H
+#define MATH_H
+
+int add(int a, int b);
+
+#endif
+\end{lstlisting}
+
+\subsection{구현 파일}
+
+\texttt{04\_math.cpp}
+
+\begin{lstlisting}
+#include "04_math.h"
+
+int add(int a, int b)
+{
+    return a + b;
+}
+\end{lstlisting}
+
+구현 파일은 자신의 헤더를 포함하는 것이 좋다.
+그러면 선언과 정의의 형태가 서로 다른 경우 컴파일러가 이를 발견할 수 있다.
+
+\subsection{메인 파일}
+
+\texttt{04\_main.cpp}
+
+\begin{lstlisting}
+#include <iostream>
+#include "04_math.h"
+
+using namespace std;
+
+int main()
+{
+    cout << add(10, 20) << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{따옴표와 꺾쇠괄호}
+
+\begin{lstlisting}
+#include <iostream>
+#include "04_math.h"
+\end{lstlisting}
+
+\texttt{<iostream>}처럼 꺾쇠괄호를 사용하면 표준 라이브러리나 시스템 경로에서 헤더를 찾는다.
+\texttt{"04\_math.h"}처럼 따옴표를 사용하면 현재 프로젝트의 파일을 우선해서 찾는다.
+
+% =================================================
+\section{Include Guard}
+% =================================================
+
+헤더 파일이 여러 경로를 통해 반복해서 포함되면 같은 선언이나 구조체가 중복 처리될 수 있다.
+include guard는 헤더의 내용이 한 번만 포함되도록 한다.
+
+\subsection{기본 형식}
+
+\begin{lstlisting}
+#ifndef STUDENT_H
+#define STUDENT_H
+
+struct Student
+{
+    int id;
+};
+
+#endif
+\end{lstlisting}
+
+처리 과정은 다음과 같다.
+
+\begin{enumerate}
+    \item \texttt{STUDENT\_H}가 정의되어 있는지 확인한다.
+    \item 정의되어 있지 않으면 헤더 내용을 처리한다.
+    \item \texttt{STUDENT\_H}를 정의한다.
+    \item 이후 같은 헤더를 다시 만나면 내용을 건너뛴다.
+\end{enumerate}
+
+\subsection{\texttt{\#pragma once}}
+
+\begin{lstlisting}
+#pragma once
+
+int add(int a, int b);
+\end{lstlisting}
+
+\texttt{\#pragma once}도 파일을 한 번만 포함하도록 한다.
+작성은 간단하지만 전통적인 표준 방식은 include guard이다.
+
+\begin{importantbox}
+include guard의 이름은 프로젝트 전체에서 겹치지 않도록 파일 이름을 기반으로 작성하는 것이 좋다.
+예: \texttt{P05\_CALCULATOR\_H}
+\end{importantbox}
+
+% =================================================
+\section{여러 소스 파일로 프로젝트 구성하기}
+% =================================================
+
+프로그램이 커지면 모든 코드를 하나의 \texttt{.cpp} 파일에 작성하기 어렵다.
+기능별로 파일을 분리하면 코드의 역할이 명확해지고 수정과 재사용이 쉬워진다.
+
+\subsection{프로젝트 구조}
+
+\begin{verbatim}
+05_multiple_files/
+    05_main.cpp
+    05_math.cpp
+    05_math.h
+    05_student.cpp
+    05_student.h
+\end{verbatim}
+
+\subsection{수학 모듈}
+
+\texttt{05\_math.h}
+
+\begin{lstlisting}
+#ifndef MATH_H
+#define MATH_H
+
+int add(int a, int b);
+
+#endif
+\end{lstlisting}
+
+\texttt{05\_math.cpp}
+
+\begin{lstlisting}
+#include "05_math.h"
+
+int add(int a, int b)
+{
+    return a + b;
+}
+\end{lstlisting}
+
+\subsection{학생 모듈}
+
+\texttt{05\_student.h}
+
+\begin{lstlisting}
+#ifndef STUDENT_H
+#define STUDENT_H
+
+#include <string>
+
+struct Student
+{
+    std::string name;
+    int age;
+    double gpa;
+};
+
+void printStudent(const Student& student);
+
+#endif
+\end{lstlisting}
+
+\texttt{05\_student.cpp}
+
+\begin{lstlisting}
+#include <iostream>
+#include "05_student.h"
+
+void printStudent(const Student& student)
+{
+    std::cout << "Name: " << student.name << std::endl;
+    std::cout << "Age : " << student.age << std::endl;
+    std::cout << "GPA : " << student.gpa << std::endl;
+}
+\end{lstlisting}
+
+\subsection{메인 파일}
+
+\texttt{05\_main.cpp}
+
+\begin{lstlisting}
+#include <iostream>
+#include "05_math.h"
+#include "05_student.h"
+
+using namespace std;
+
+int main()
+{
+    Student student = {"Alice", 20, 4.1};
+
+    cout << add(10, 20) << endl;
+    printStudent(student);
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{컴파일}
+
+프로젝트 폴더 안에서 다음 명령을 실행한다.
+
+\begin{verbatim}
+g++ *.cpp -o 05_multiple_files
+\end{verbatim}
+
+Windows에서는 다음 명령으로 실행할 수 있다.
+
+\begin{verbatim}
+.\05_multiple_files.exe
+\end{verbatim}
+
+\texttt{*.cpp}는 현재 폴더에 있는 모든 \texttt{.cpp} 파일을 의미한다.
+
+\subsection{컴파일과 링크}
+
+각 \texttt{.cpp} 파일은 별도로 컴파일된 뒤 하나의 실행 파일로 연결된다.
+
+\begin{enumerate}
+    \item 전처리기가 \texttt{\#include} 내용을 처리한다.
+    \item 컴파일러가 각 \texttt{.cpp} 파일을 목적 파일로 변환한다.
+    \item 링커가 목적 파일들을 하나의 실행 파일로 결합한다.
+\end{enumerate}
+
+\subsection{링커 오류}
+
+헤더에 선언만 있고 어떤 \texttt{.cpp} 파일에도 정의가 없으면 컴파일 단계는 통과할 수 있지만 링크 단계에서 오류가 발생한다.
+
+\begin{lstlisting}
+int add(int a, int b);
+\end{lstlisting}
+
+위 선언을 사용했지만 정의를 작성하지 않았다면 다음과 유사한 오류가 발생한다.
+
+\begin{verbatim}
+undefined reference to `add(int, int)'
+\end{verbatim}
+
+또한 필요한 \texttt{.cpp} 파일을 컴파일 명령에서 빠뜨려도 같은 문제가 발생할 수 있다.
+
+\begin{importantbox}
+헤더 파일은 일반적으로 직접 컴파일하지 않는다.
+헤더를 포함하는 여러 \texttt{.cpp} 파일을 함께 컴파일한다.
+\end{importantbox}
+
+% =================================================
+\section{실습 프로젝트}
+% =================================================
+
+이번 실습은 계산 기능과 정보 출력 기능을 각각 다른 모듈로 분리한다.
+
+\subsection{폴더 구조}
+
+\begin{verbatim}
+practice/
+    p05_multiple_files/
+        p05_main.cpp
+        p05_calculator.cpp
+        p05_calculator.h
+        p05_info.cpp
+        p05_info.h
+\end{verbatim}
+
+\subsection{계산 모듈}
+
+\texttt{p05\_calculator.h}
+
+\begin{lstlisting}
+#ifndef P05_CALCULATOR_H
+#define P05_CALCULATOR_H
+
+int add(int a, int b);
+int multiply(int a, int b);
+
+#endif
+\end{lstlisting}
+
+\texttt{p05\_calculator.cpp}
+
+\begin{lstlisting}
+#include "p05_calculator.h"
+
+int add(int a, int b)
+{
+    return a + b;
+}
+
+int multiply(int a, int b)
+{
+    return a * b;
+}
+\end{lstlisting}
+
+\subsection{정보 출력 모듈}
+
+\texttt{p05\_info.h}
+
+\begin{lstlisting}
+#ifndef P05_INFO_H
+#define P05_INFO_H
+
+void printInfo();
+
+#endif
+\end{lstlisting}
+
+\texttt{p05\_info.cpp}
+
+\begin{lstlisting}
+#include <iostream>
+#include "p05_info.h"
+
+using namespace std;
+
+void printInfo()
+{
+    cout << "C++ Day 05 Practice" << endl;
+    cout << "Multiple File Project" << endl;
+}
+\end{lstlisting}
+
+\subsection{메인 파일}
+
+\texttt{p05\_main.cpp}
+
+\begin{lstlisting}
+#include <iostream>
+#include "p05_calculator.h"
+#include "p05_info.h"
+
+using namespace std;
+
+int main()
+{
+    int a = 10;
+    int b = 20;
+    int c = 4;
+    int d = 8;
+
+    cout << a << " + " << b << " = " << add(a, b) << endl;
+    cout << c << " * " << d << " = " << multiply(c, d) << endl;
+    cout << endl;
+
+    printInfo();
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실행 결과}
+
+\begin{verbatim}
+10 + 20 = 30
+4 * 8 = 32
+
+C++ Day 05 Practice
+Multiple File Project
+\end{verbatim}
+
+\subsection{컴파일 명령}
+
+\begin{verbatim}
+g++ *.cpp -o p05_multiple_files
+\end{verbatim}
+
+% =================================================
+\section{폴더 이동과 와일드카드}
+% =================================================
+
+터미널에서 현재 폴더의 부모 폴더로 이동하려면 다음 명령을 사용한다.
+
+\begin{verbatim}
+cd ..
+\end{verbatim}
+
+두 단계 위의 폴더로 이동하려면 다음과 같이 작성한다.
+
+\begin{verbatim}
+cd ../..
+\end{verbatim}
+
+여기서 점 두 개 \texttt{..}는 부모 폴더를 의미한다.
+슬래시로 이어 쓰면 여러 단계 위로 이동할 수 있다.
+
+현재 폴더의 모든 C++ 소스 파일을 함께 컴파일할 때는 와일드카드 \texttt{*}를 사용한다.
+
+\begin{verbatim}
+g++ *.cpp -o program
+\end{verbatim}
+
+\texttt{*.cpp}는 이름과 관계없이 확장자가 \texttt{.cpp}인 모든 파일을 의미한다.
+
+% =================================================
+\section{실습 목록}
+% =================================================
+
+\begin{practicebox}
+Day 5 실습 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{practice/p01\_struct.cpp}
+    \item \texttt{practice/p02\_enum.cpp}
+    \item \texttt{practice/p03\_namespace.cpp}
+    \item \texttt{practice/p04\_header/p04\_main.cpp}
+    \item \texttt{practice/p04\_header/p04\_math.cpp}
+    \item \texttt{practice/p04\_header/p04\_math.h}
+    \item \texttt{practice/p05\_multiple\_files/p05\_main.cpp}
+    \item \texttt{practice/p05\_multiple\_files/p05\_calculator.cpp}
+    \item \texttt{practice/p05\_multiple\_files/p05\_calculator.h}
+    \item \texttt{practice/p05\_multiple\_files/p05\_info.cpp}
+    \item \texttt{practice/p05\_multiple\_files/p05\_info.h}
+\end{itemize}
+\end{practicebox}
+
+
+% =================================================
+\section{핵심 정리}
+% =================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{struct}는 서로 관련된 여러 데이터를 하나의 자료형으로 묶는다.
+    \item \texttt{enum class}는 프로그램의 상태를 의미 있는 이름으로 표현한다.
+    \item \texttt{namespace}는 같은 이름을 안전하게 구분한다.
+    \item 선언은 이름과 사용 방법을 알리고, 정의는 실제 동작을 제공한다.
+    \item 헤더 파일에는 공유할 선언을 작성한다.
+    \item 소스 파일에는 함수의 실제 정의를 작성한다.
+    \item include guard는 헤더의 중복 포함을 방지한다.
+    \item 여러 \texttt{.cpp} 파일은 함께 컴파일한 뒤 링커가 하나의 실행 파일로 결합한다.
+    \item 기능별 파일 분리는 이후 클래스와 객체지향 프로그래밍을 배우기 위한 중요한 기반이다.
+\end{itemize}
+
+\begin{importantbox}
+Day 5의 핵심은 단순히 파일 개수를 늘리는 것이 아니다.
+하나의 프로그램을 역할에 따라 나누고, 각 파일이 무엇을 공개하고 무엇을 구현하는지 구분하는 습관을 익히는 것이다.
+\end{importantbox}
+
+\end{document}
