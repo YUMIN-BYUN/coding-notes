@@ -1,0 +1,1270 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Python Programming}
+\rhead{Day 4}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% Python code style
+% -------------------------------------------------
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstset{style=pythonstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries Python Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 4: 모듈, 예외 처리와 파일 입출력\par}
+
+    \vspace{2cm}
+
+    {\large Module, Exception Handling, File I/O\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{import}와 \texttt{from ... import ...}의 차이 설명하기
+    \item \texttt{math} 모듈의 상수와 함수 사용하기
+    \item \texttt{random} 모듈로 난수와 무작위 선택 구현하기
+    \item Python 파일을 사용자 정의 모듈로 분리하여 불러오기
+    \item \texttt{try}, \texttt{except}, \texttt{else}, \texttt{finally}로 예외 처리하기
+    \item 필요한 경우 \texttt{raise}로 직접 예외 발생시키기
+    \item 파일을 쓰기, 읽기, 이어쓰기 모드로 열기
+    \item \texttt{read()}, \texttt{readline()}, \texttt{readlines()}의 차이 구분하기
+    \item \texttt{with open()}으로 파일을 안전하게 처리하기
+    \item 모듈, 예외 처리, 파일 입출력을 결합한 학생 점수 관리 프로그램 구현하기
+\end{itemize}
+\end{learningbox}
+
+% =================================================
+\section{모듈과 \texttt{import}}
+% =================================================
+
+프로그램이 커지면 모든 기능을 하나의 파일에 작성하기 어렵다. 모듈(module)은 관련된 변수, 함수, 클래스 등을 하나의 파일이나 라이브러리 단위로 묶은 것이다. 이미 만들어진 기능을 불러와 재사용하면 같은 코드를 반복해서 작성할 필요가 없다.
+
+Python 표준 라이브러리는 Python 설치 시 함께 제공되는 모듈 모음이다. Day 4에서는 먼저 \texttt{math}와 \texttt{random}을 사용한다.
+
+\subsection{모듈 전체 불러오기}
+
+\texttt{import math}는 \texttt{math} 모듈 전체를 불러온다. 모듈 안의 기능을 사용할 때는 모듈 이름과 점을 함께 작성한다.
+
+\begin{lstlisting}
+import math
+
+print(math.pi)
+print(math.sqrt(25))
+print(math.factorial(5))
+\end{lstlisting}
+
+출력 예시는 다음과 같다.
+
+\begin{verbatim}
+3.141592653589793
+5.0
+120
+\end{verbatim}
+
+\texttt{math.pi}는 원주율을 저장한 상수이다. \texttt{math.sqrt(25)}는 25의 제곱근을 계산하며 결과를 실수 \texttt{5.0}으로 반환한다. \texttt{math.factorial(5)}는 $5!$을 계산한다.
+
+\[
+5! = 5\times4\times3\times2\times1 = 120
+\]
+
+\begin{importantbox}
+\texttt{import math}를 사용하면 함수가 어느 모듈에서 왔는지 코드에 명확히 드러난다. \texttt{sqrt()}가 아니라 \texttt{math.sqrt()}라고 작성한다.
+\end{importantbox}
+
+\subsection{특정 이름만 불러오기}
+
+모듈 전체가 아니라 필요한 이름만 직접 불러올 수도 있다.
+
+\begin{lstlisting}
+from math import sqrt, pi, factorial
+
+print(pi)
+print(sqrt(25))
+print(factorial(7))
+\end{lstlisting}
+
+이 방식에서는 모듈 이름을 앞에 붙이지 않는다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+방식 & 호출 형태 \\
+\midrule
+\texttt{import math} & \texttt{math.sqrt(25)} \\
+\texttt{from math import sqrt} & \texttt{sqrt(25)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{와일드카드 import}
+
+다음 문법은 모듈에서 공개된 여러 이름을 한꺼번에 불러온다.
+
+\begin{lstlisting}
+from math import *
+\end{lstlisting}
+
+작성은 간단하지만 이름의 출처를 파악하기 어렵고, 현재 파일의 이름과 충돌할 수 있다. 따라서 일반적으로는 모듈 전체를 불러오거나 필요한 이름만 명시하는 방식이 더 안전하다.
+
+\subsection{최종 코드: \texttt{01\_import.py}}
+
+\begin{lstlisting}
+import math
+
+print("=== import math ===")
+print(math.pi)
+print(math.sqrt(25))
+print(math.factorial(5))
+
+print()
+
+from math import sqrt, pi, factorial
+
+print("=== from math import ... ===")
+print(pi)
+print(sqrt(25))
+print(factorial(7))
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{01\_import.py}를 실행하고 \texttt{sqrt()}, \texttt{factorial()}의 반환값과 자료형을 확인한다. 이후 \texttt{math} 모듈 전체 import 방식과 특정 이름 import 방식의 호출 형태를 비교한다.
+\end{practicebox}
+
+% =================================================
+\section{\texttt{random} 모듈}
+% =================================================
+
+\texttt{random} 모듈은 난수 생성과 무작위 선택에 사용된다. 게임, 시뮬레이션, 표본 추출, 테스트 데이터 생성 등에서 자주 활용된다.
+
+컴퓨터의 일반적인 난수 생성기는 완전히 예측 불가능한 물리적 난수가 아니라 초기값과 알고리즘으로 생성되는 의사 난수(pseudorandom number)를 사용한다. 일반적인 학습과 시뮬레이션에서는 충분하지만, 암호나 보안 토큰에는 보안 목적의 별도 모듈을 사용해야 한다.
+
+\subsection{정수 난수: \texttt{randint()}}
+
+\begin{lstlisting}
+import random
+
+number = random.randint(1, 10)
+print(number)
+\end{lstlisting}
+
+\texttt{random.randint(a, b)}는 $a$ 이상 $b$ 이하의 정수를 반환한다. 양 끝값이 모두 포함된다는 점이 중요하다.
+
+\[
+P(X=k)=\frac{1}{b-a+1}, \qquad k\in\{a,a+1,\ldots,b\}
+\]
+
+실행할 때마다 결과가 달라질 수 있다.
+
+\subsection{하나 선택하기: \texttt{choice()}}
+
+\begin{lstlisting}
+import random
+
+fruits = ["apple", "banana", "orange", "grape"]
+print(random.choice(fruits))
+
+word = "PYTHON"
+print(random.choice(word))
+\end{lstlisting}
+
+\texttt{choice()}는 리스트나 문자열처럼 순서가 있는 객체에서 원소 하나를 무작위로 선택한다.
+
+\subsection{순서 섞기: \texttt{shuffle()}}
+
+\begin{lstlisting}
+import random
+
+cards = ["A", "K", "Q", "J", "10"]
+print("Before:", cards)
+
+random.shuffle(cards)
+
+print("After :", cards)
+\end{lstlisting}
+
+\texttt{shuffle()}은 원본 리스트의 순서를 직접 바꾼다. 새로운 리스트를 반환하지 않으며 반환값은 \texttt{None}이다.
+
+\begin{lstlisting}
+cards = ["A", "K", "Q", "J", "10"]
+result = random.shuffle(cards)
+
+print(cards)
+print(result)
+\end{lstlisting}
+
+따라서 섞인 리스트가 필요하면 원래 리스트 변수인 \texttt{cards}를 사용해야 한다.
+
+\subsection{여러 개 선택하기: \texttt{sample()}}
+
+\begin{lstlisting}
+import random
+
+numbers = [1, 2, 3, 4, 5]
+result = random.sample(numbers, 3)
+
+print(result)
+print(numbers)
+\end{lstlisting}
+
+\texttt{sample(sequence, k)}는 원본에서 서로 다른 원소 $k$개를 선택하여 새로운 리스트로 반환한다. 원본은 바뀌지 않으며, 같은 원소를 중복 선택하지 않는다.
+
+예를 들어 로또 번호 6개를 생성할 수 있다.
+
+\begin{lstlisting}
+lotto = random.sample(range(1, 46), 6)
+print(lotto)
+\end{lstlisting}
+
+\subsection{조합과 \texttt{sample()}}
+
+$n$개 중 $r$개를 순서 없이 선택하는 서로 다른 조합의 수는 다음과 같다.
+
+\[
+{n \choose r}=\frac{n!}{r!(n-r)!}
+\]
+
+\texttt{sample()}을 반복 호출하고 결과를 정렬한 튜플로 바꾸어 집합에 저장하면 여러 조합을 모을 수 있다.
+
+\begin{lstlisting}
+import math
+import random
+
+items = ["A", "B", "C", "D"]
+results = set()
+target = math.comb(len(items), 2)
+
+while len(results) < target:
+    selected = random.sample(items, 2)
+    results.add(tuple(sorted(selected)))
+
+print(results)
+\end{lstlisting}
+
+이 방식은 가능한 조합을 언젠가 모두 발견할 수 있지만, 마지막 남은 조합이 언제 나올지 보장할 수 없다. 모든 조합을 체계적으로 생성할 때는 \texttt{itertools.combinations()}가 더 적합하다.
+
+\subsection{함수 비교}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+함수 & 기능 & 원본 변경 \\
+\midrule
+\texttt{randint(a, b)} & 정수 하나 생성 & 해당 없음 \\
+\texttt{choice(seq)} & 원소 하나 선택 & 아니오 \\
+\texttt{shuffle(list)} & 리스트 순서 섞기 & 예 \\
+\texttt{sample(seq, k)} & 중복 없이 $k$개 선택 & 아니오 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{최종 코드: \texttt{02\_random.py}}
+
+\begin{lstlisting}
+import random
+
+print("=== randint() ===")
+number = random.randint(1, 10)
+print(number)
+
+print()
+
+print("=== choice() ===")
+fruits = ["apple", "banana", "orange", "grape"]
+print(random.choice(fruits))
+
+word = "PYTHON"
+print(random.choice(word))
+
+print()
+
+print("=== shuffle() ===")
+cards = ["A", "K", "Q", "J", "10"]
+print("Before:", cards)
+
+random.shuffle(cards)
+
+print("After :", cards)
+
+print()
+
+print("=== sample() ===")
+numbers = [1, 2, 3, 4, 5]
+print(random.sample(numbers, 3))
+
+students = ["Kim", "Lee", "Park", "Choi", "Jung", "Han"]
+print(random.sample(students, 2))
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{02\_random.py}에서 1부터 100까지의 정수 하나를 생성하고, 음식 목록에서 하나를 선택하며, 카드 목록을 섞고, 학생 목록에서 두 명을 중복 없이 선택한다.
+\end{practicebox}
+
+% =================================================
+\section{사용자 정의 모듈}
+% =================================================
+
+Python 파일 하나는 다른 Python 파일에서 모듈로 불러올 수 있다. 계산 기능과 프로그램 실행 흐름을 파일별로 나누면 각 파일의 책임이 분명해지고 재사용도 쉬워진다.
+
+이번 예제는 다음 두 파일로 구성된다.
+
+\begin{verbatim}
+03_custom_module.py
+my_math.py
+\end{verbatim}
+
+두 파일은 같은 \texttt{day04} 폴더에 둔다.
+
+\subsection{함수 모듈 작성하기}
+
+\texttt{my\_math.py}
+
+\begin{lstlisting}
+def add(a, b):
+    return a + b
+
+
+def subtract(a, b):
+    return a - b
+
+
+def multiply(a, b):
+    return a * b
+\end{lstlisting}
+
+이 파일은 함수를 정의하지만 직접 실행 흐름을 담당하지 않는다.
+
+\subsection{모듈 불러오기}
+
+\texttt{03\_custom\_module.py}
+
+\begin{lstlisting}
+import my_math
+
+print("=== Custom Module ===")
+
+print(my_math.add(10, 20))
+print(my_math.subtract(20, 7))
+print(my_math.multiply(6, 8))
+\end{lstlisting}
+
+Python은 현재 파일과 같은 폴더에서 \texttt{my\_math.py}를 찾고, 모듈 객체를 만든 뒤 \texttt{my\_math}라는 이름에 연결한다. 이후 점 표기법으로 모듈 안의 함수를 호출한다.
+
+\begin{importantbox}
+모듈 파일 이름이 \texttt{my\_math.py}이면 import할 때 확장자를 제외하고 \texttt{import my\_math}라고 작성한다.
+\end{importantbox}
+
+\subsection{모듈 캐시: \texttt{\_\_pycache\_\_}}
+
+사용자 정의 모듈을 import하면 Python이 같은 폴더에 \texttt{\_\_pycache\_\_} 폴더를 만들 수 있다. 이 폴더에는 다음과 같은 바이트코드 파일이 저장된다.
+
+\begin{verbatim}
+__pycache__/
+    my_math.cpython-313.pyc
+\end{verbatim}
+
+Python 소스는 실행 전에 바이트코드로 컴파일된다. 캐시가 있으면 다음 import에서 이미 만들어 둔 바이트코드를 재사용할 수 있다. 삭제해도 프로그램에는 문제가 없으며, 필요하면 Python이 다시 생성한다.
+
+Git 저장소에는 일반적으로 캐시 파일을 포함하지 않는다.
+
+\begin{verbatim}
+__pycache__/
+*.pyc
+\end{verbatim}
+
+위 항목을 프로젝트 루트의 \texttt{.gitignore}에 추가할 수 있다.
+
+\subsection{평균 함수 추가}
+
+종합 실습에서 사용할 평균 함수를 \texttt{my\_math.py}에 추가한다.
+
+\begin{lstlisting}
+def average(numbers):
+    return sum(numbers) / len(numbers)
+\end{lstlisting}
+
+최종 \texttt{my\_math.py}는 다음과 같다.
+
+\begin{lstlisting}
+def add(a, b):
+    return a + b
+
+
+def subtract(a, b):
+    return a - b
+
+
+def multiply(a, b):
+    return a * b
+
+
+def average(numbers):
+    return sum(numbers) / len(numbers)
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{my\_math.py}에 나눗셈 함수와 평균 함수를 추가한다. \texttt{03\_custom\_module.py}에서 두 함수를 호출하여 결과를 확인한다.
+\end{practicebox}
+
+% =================================================
+\section{예외 처리}
+% =================================================
+
+프로그램 실행 중 발생하는 오류 상황을 예외(exception)라고 한다. 예외를 처리하지 않으면 프로그램은 오류 메시지를 출력하고 즉시 종료된다.
+
+예를 들어 \texttt{int()}는 정수로 변환할 수 없는 문자열을 받으면 \texttt{ValueError}를 발생시킨다.
+
+\begin{lstlisting}
+number = int(input("Enter a number: "))
+print(number)
+\end{lstlisting}
+
+사용자가 \texttt{hello}를 입력하면 변환이 불가능하므로 프로그램이 중단된다.
+
+\subsection{기본 \texttt{try--except}}
+
+\begin{lstlisting}
+try:
+    number = int(input("Enter a number: "))
+    print(number)
+
+except:
+    print("Invalid input!")
+\end{lstlisting}
+
+Python은 먼저 \texttt{try} 블록을 실행한다. 예외가 발생하면 남은 \texttt{try} 코드를 건너뛰고 \texttt{except} 블록을 실행한다.
+
+\begin{importantbox}
+\texttt{except:}는 모든 종류의 예외를 잡는다. 간단한 실험에는 편리하지만, 예상하지 못한 문제까지 숨길 수 있으므로 구체적인 예외 종류를 지정하는 편이 좋다.
+\end{importantbox}
+
+\subsection{특정 예외 처리}
+
+\begin{lstlisting}
+try:
+    number = int(input("Enter a number: "))
+    print(number)
+
+except ValueError:
+    print("Please enter an integer.")
+\end{lstlisting}
+
+나눗셈 프로그램에는 두 종류의 예외가 발생할 수 있다.
+
+\begin{lstlisting}
+try:
+    x = int(input("x: "))
+    y = int(input("y: "))
+
+    print(x / y)
+
+except ValueError:
+    print("Please enter integers.")
+
+except ZeroDivisionError:
+    print("Cannot divide by zero.")
+\end{lstlisting}
+
+\texttt{ValueError}는 입력값을 정수로 변환할 수 없을 때 발생하고, \texttt{ZeroDivisionError}는 0으로 나눌 때 발생한다.
+
+\subsection{예외 객체 확인하기}
+
+\begin{lstlisting}
+try:
+    print(10 / 0)
+
+except Exception as e:
+    print(type(e))
+    print(e)
+\end{lstlisting}
+
+\texttt{Exception as e}는 발생한 예외 객체를 \texttt{e}라는 이름에 저장한다. 개발 중에는 예외의 종류와 메시지를 확인하는 데 유용하다.
+
+자주 만나는 예외는 다음과 같다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+예외 & 대표 상황 \\
+\midrule
+\texttt{ValueError} & 값의 형식이 올바르지 않음 \\
+\texttt{ZeroDivisionError} & 0으로 나눔 \\
+\texttt{TypeError} & 허용되지 않는 자료형 조합 \\
+\texttt{IndexError} & 리스트 범위를 벗어난 인덱스 \\
+\texttt{KeyError} & 딕셔너리에 없는 키 조회 \\
+\texttt{FileNotFoundError} & 존재하지 않는 파일 열기 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+모든 예외 이름을 미리 외울 필요는 없다. 프로그램을 실행하고 오류 메시지에서 예외 종류를 확인한 뒤 적절한 \texttt{except}를 추가하는 방식으로 학습할 수 있다.
+
+\subsection{\texttt{else}}
+
+\texttt{else} 블록은 \texttt{try} 안에서 예외가 발생하지 않았을 때만 실행된다.
+
+\begin{lstlisting}
+try:
+    number = int(input("Enter a number: "))
+    result = 100 / number
+
+except ValueError:
+    print("Please enter an integer.")
+
+except ZeroDivisionError:
+    print("Zero is not allowed.")
+
+else:
+    print("Result:", result)
+\end{lstlisting}
+
+예외가 발생할 가능성이 있는 코드와, 성공했을 때 수행할 코드를 분리할 수 있다.
+
+\subsection{\texttt{finally}}
+
+\texttt{finally} 블록은 예외 발생 여부와 관계없이 항상 실행된다.
+
+\begin{lstlisting}
+try:
+    number = int(input("Enter a number: "))
+    print(100 / number)
+
+except ValueError:
+    print("Please enter an integer.")
+
+except ZeroDivisionError:
+    print("Zero is not allowed.")
+
+finally:
+    print("Program finished.")
+\end{lstlisting}
+
+파일 닫기, 네트워크 연결 종료, 임시 자원 정리처럼 반드시 수행해야 하는 작업을 배치할 수 있다.
+
+\subsection{직접 예외 발생시키기: \texttt{raise}}
+
+어떤 값이 Python 문법상 올바르더라도 프로그램 규칙에 맞지 않을 수 있다. 과목 수는 정수여야 할 뿐 아니라 양수여야 한다.
+
+\begin{lstlisting}
+subject_count = int(input("Number of subjects: "))
+
+if subject_count <= 0:
+    raise ValueError
+\end{lstlisting}
+
+\texttt{0}과 음수는 \texttt{int()} 변환에는 성공하지만 과목 수로는 부적절하다. \texttt{raise ValueError}를 이용하면 개발자가 직접 예외를 발생시킬 수 있다.
+
+\subsection{최종 코드: \texttt{04\_try\_except.py}}
+
+\begin{lstlisting}
+try:
+    number = int(input("Enter a number: "))
+    result = 100 / number
+
+except ValueError:
+    print("Please enter an integer.")
+
+except ZeroDivisionError:
+    print("Zero is not allowed.")
+
+except Exception as e:
+    print("Unexpected error:", e)
+
+else:
+    print("Result:", result)
+
+finally:
+    print("Program finished.")
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{04\_try\_except.py}에 \texttt{25}, \texttt{0}, \texttt{hello}를 각각 입력한다. 어떤 블록이 실행되는지 확인하고, 모든 경우에 \texttt{finally}가 실행되는지 관찰한다.
+\end{practicebox}
+
+% =================================================
+\section{파일 쓰기}
+% =================================================
+
+프로그램의 변수는 일반적으로 프로그램이 종료되면 사라진다. 실행이 끝난 뒤에도 데이터를 보존하려면 파일에 기록해야 한다. 게임 저장, 설정 파일, 사용자 정보, 실험 데이터와 로그가 대표적인 예이다.
+
+\subsection{파일 열기}
+
+\begin{lstlisting}
+file = open("hello.txt", "w")
+
+file.write("Hello Python!")
+
+file.close()
+\end{lstlisting}
+
+\texttt{open()}은 파일 객체를 반환한다. 첫 번째 인자는 파일 이름, 두 번째 인자는 파일을 여는 모드이다.
+
+\begin{center}
+\begin{tabular}{cl}
+\toprule
+모드 & 의미 \\
+\midrule
+\texttt{"r"} & 읽기 \\
+\texttt{"w"} & 쓰기 및 덮어쓰기 \\
+\texttt{"a"} & 기존 내용 뒤에 이어쓰기 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{\texttt{write()}와 줄바꿈}
+
+\texttt{write()}는 문자열을 파일에 기록한다. 자동으로 줄바꿈하지 않기 때문에 줄을 나누려면 \texttt{\textbackslash n}을 직접 작성해야 한다.
+
+\begin{lstlisting}
+file = open("student.txt", "w")
+
+file.write("Kim\n")
+file.write("Lee\n")
+file.write("Park\n")
+
+file.close()
+\end{lstlisting}
+
+파일 내용은 다음과 같다.
+
+\begin{verbatim}
+Kim
+Lee
+Park
+\end{verbatim}
+
+\subsection{쓰기 모드의 덮어쓰기}
+
+\texttt{"w"} 모드로 기존 파일을 열면 이전 내용이 지워진다.
+
+\begin{lstlisting}
+file = open("hello.txt", "w")
+file.write("First")
+file.close()
+
+file = open("hello.txt", "w")
+file.write("Second")
+file.close()
+\end{lstlisting}
+
+최종 파일에는 \texttt{Second}만 남는다.
+
+\begin{importantbox}
+\texttt{"w"}는 파일이 없으면 새로 만들고, 파일이 이미 있으면 기존 내용을 지운 뒤 다시 쓴다. 기존 데이터를 보존해야 할 때는 주의해야 한다.
+\end{importantbox}
+
+\subsection{이어쓰기 모드}
+
+기존 내용 뒤에 추가하려면 \texttt{"a"} 모드를 사용한다.
+
+\begin{lstlisting}
+file = open("log.txt", "a")
+file.write("Program started.\n")
+file.close()
+\end{lstlisting}
+
+프로그램을 여러 번 실행하면 각 기록이 파일 끝에 계속 추가된다.
+
+\subsection{최종 코드: \texttt{05\_file\_write.py}}
+
+\begin{lstlisting}
+file = open("hello.txt", "w")
+
+file.write("Hello Python!")
+
+file.close()
+
+file = open("student.txt", "w")
+
+file.write("Kim\n")
+file.write("Lee\n")
+file.write("Park\n")
+
+file.close()
+
+file = open("message.txt", "w")
+
+file.write("Python\n")
+file.write("is\n")
+file.write("awesome!")
+
+file.close()
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{05\_file\_write.py}를 실행한 뒤 \texttt{hello.txt}, \texttt{student.txt}, \texttt{message.txt}의 내용을 직접 확인한다. 같은 파일을 \texttt{"w"}로 다시 열어 기존 내용이 사라지는 것도 확인한다.
+\end{practicebox}
+
+% =================================================
+\section{파일 읽기}
+% =================================================
+
+파일을 읽을 때는 \texttt{"r"} 모드를 사용한다. 읽기 모드는 파일이 존재하지 않으면 \texttt{FileNotFoundError}를 발생시킨다.
+
+\subsection{파일 전체 읽기: \texttt{read()}}
+
+\begin{lstlisting}
+file = open("message.txt", "r")
+
+content = file.read()
+
+print(content)
+
+file.close()
+\end{lstlisting}
+
+\texttt{read()}는 파일 전체 내용을 하나의 문자열로 반환한다.
+
+\begin{verbatim}
+Python\nis\nawesome!
+\end{verbatim}
+
+작은 파일을 한 번에 처리할 때 편리하지만, 매우 큰 파일에서는 전체 내용을 메모리에 올리므로 부담이 될 수 있다.
+
+\subsection{한 줄 읽기: \texttt{readline()}}
+
+\begin{lstlisting}
+file = open("message.txt", "r")
+
+print(file.readline().strip())
+print(file.readline().strip())
+print(file.readline().strip())
+
+file.close()
+\end{lstlisting}
+
+\texttt{readline()}은 현재 위치에서 한 줄을 읽는다. 줄 끝의 \texttt{\textbackslash n}도 포함될 수 있으므로 출력할 때 \texttt{strip()}으로 제거할 수 있다.
+
+파일 객체는 읽은 위치를 기억한다. 첫 번째 호출은 첫 줄, 두 번째 호출은 두 번째 줄을 반환한다.
+
+\subsection{모든 줄을 리스트로 읽기: \texttt{readlines()}}
+
+\begin{lstlisting}
+file = open("message.txt", "r")
+
+lines = file.readlines()
+print(lines)
+
+file.close()
+\end{lstlisting}
+
+출력은 다음과 같다.
+
+\begin{verbatim}
+['Python\n', 'is\n', 'awesome!']
+\end{verbatim}
+
+각 줄이 리스트의 원소가 되므로 반복문으로 처리할 수 있다.
+
+\begin{lstlisting}
+file = open("student.txt", "r")
+
+lines = file.readlines()
+
+for line in lines:
+    print(line.strip())
+
+file.close()
+\end{lstlisting}
+
+\subsection{읽기 함수 비교}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+함수 & 반환 형태 & 특징 \\
+\midrule
+\texttt{read()} & 문자열 하나 & 파일 전체를 한 번에 읽음 \\
+\texttt{readline()} & 문자열 하나 & 현재 위치에서 한 줄 읽음 \\
+\texttt{readlines()} & 문자열 리스트 & 모든 줄을 리스트로 읽음 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{최종 코드: \texttt{06\_file\_read.py}}
+
+\begin{lstlisting}
+file = open("message.txt", "r")
+
+content = file.read()
+
+print("=== read() ===")
+print(content)
+
+file.close()
+
+print()
+
+file = open("message.txt", "r")
+
+print("=== readline() ===")
+print(file.readline().strip())
+print(file.readline().strip())
+print(file.readline().strip())
+
+file.close()
+
+print()
+
+file = open("message.txt", "r")
+
+lines = file.readlines()
+
+print("=== readlines() ===")
+print(lines)
+
+file.close()
+
+print()
+
+file = open("student.txt", "r")
+
+lines = file.readlines()
+
+print("=== Student List ===")
+for line in lines:
+    print(line.strip())
+
+file.close()
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{06\_file\_read.py}에서 동일한 파일을 \texttt{read()}, \texttt{readline()}, \texttt{readlines()}로 각각 읽는다. 반환값의 자료형과 구조를 비교한다.
+\end{practicebox}
+
+% =================================================
+\section{안전한 파일 처리: \texttt{with open()}}
+% =================================================
+
+직접 \texttt{open()}과 \texttt{close()}를 사용하면 파일을 닫는 코드를 잊거나, 닫기 전에 예외가 발생할 수 있다.
+
+\begin{lstlisting}
+file = open("message.txt", "r")
+
+print(10 / 0)
+
+file.close()
+\end{lstlisting}
+
+나눗셈에서 예외가 발생하면 \texttt{file.close()}에 도달하지 못한다. 이를 해결하기 위해 Python에서는 컨텍스트 관리자 문법인 \texttt{with}를 사용한다.
+
+\subsection{기본 문법}
+
+\begin{lstlisting}
+with open("message.txt", "r") as file:
+    content = file.read()
+
+print(content)
+\end{lstlisting}
+
+\texttt{with} 블록을 벗어나면 파일이 자동으로 닫힌다. 예외가 발생하더라도 정리 과정이 수행된다. 개념적으로는 다음 구조와 비슷하다.
+
+\begin{lstlisting}
+file = open("message.txt", "r")
+
+try:
+    content = file.read()
+
+finally:
+    file.close()
+\end{lstlisting}
+
+\subsection{쓰기 모드와 함께 사용하기}
+
+\begin{lstlisting}
+with open("practice.txt", "w") as file:
+    file.write("Python\n")
+    file.write("File IO\n")
+    file.write("with open")
+\end{lstlisting}
+
+블록이 끝나면 \texttt{close()}를 직접 호출하지 않아도 파일이 닫힌다.
+
+\subsection{파일 객체를 직접 반복하기}
+
+파일 객체는 반복 가능한 객체이므로 한 줄씩 직접 순회할 수 있다.
+
+\begin{lstlisting}
+with open("student.txt", "r") as file:
+    for line in file:
+        print(line.strip())
+\end{lstlisting}
+
+이 방식은 파일 전체를 리스트에 저장하지 않는다. 한 줄을 읽고 처리한 뒤 다음 줄로 이동하므로 큰 파일에서도 메모리를 효율적으로 사용할 수 있다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+방식 & 메모리 사용 \\
+\midrule
+\texttt{file.readlines()} & 모든 줄을 리스트로 저장 \\
+\texttt{for line in file} & 한 줄씩 순차 처리 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+일반적인 파일 처리에서는 \texttt{with open()}을 기본 방식으로 사용하는 것이 좋다. 자동으로 파일을 닫아 주므로 코드가 짧고 안전하다.
+\end{importantbox}
+
+\subsection{최종 코드: \texttt{07\_with\_open.py}}
+
+\begin{lstlisting}
+print("=== Read Entire File ===")
+
+with open("message.txt", "r") as file:
+    content = file.read()
+
+print(content)
+
+print()
+
+print("=== Write File ===")
+
+with open("practice.txt", "w") as file:
+    file.write("Python\n")
+    file.write("File IO\n")
+    file.write("with open")
+
+print("practice.txt was created.")
+
+print()
+
+print("=== Read Line by Line ===")
+
+with open("student.txt", "r") as file:
+    for line in file:
+        print(line.strip())
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{07\_with\_open.py}에서 파일을 쓰고 다시 읽는다. 모든 \texttt{file.close()}를 제거한 상태에서도 파일이 정상적으로 저장되는지 확인한다.
+\end{practicebox}
+
+% =================================================
+\section{종합 실습: 학생 점수 관리 프로그램}
+% =================================================
+
+Day 4의 종합 실습은 모듈, 난수, 예외 처리와 파일 입출력을 하나의 프로그램으로 결합한다.
+
+프로그램의 흐름은 다음과 같다.
+
+\begin{enumerate}[leftmargin=1.8em]
+    \item 학생 이름을 입력받는다.
+    \item 과목 수를 정수로 입력받는다.
+    \item 잘못된 과목 수를 예외로 처리한다.
+    \item 과목 수만큼 무작위 점수를 생성한다.
+    \item 사용자 정의 모듈의 함수로 평균을 계산한다.
+    \item 결과를 \texttt{scores.txt}에 저장한다.
+    \item 저장한 파일을 다시 읽어 화면에 출력한다.
+\end{enumerate}
+
+\subsection{입력과 유효성 검사}
+
+\begin{lstlisting}
+name = input("Student name: ")
+
+try:
+    subject_count = int(input("Number of subjects: "))
+
+    if subject_count <= 0:
+        raise ValueError
+
+except ValueError:
+    print("Please enter a positive integer.")
+\end{lstlisting}
+
+\texttt{int()} 변환에 실패한 경우와 0 이하를 입력한 경우를 모두 \texttt{ValueError}로 처리한다.
+
+\subsection{랜덤 점수와 평균}
+
+\begin{lstlisting}
+scores = []
+
+for _ in range(subject_count):
+    scores.append(random.randint(60, 100))
+
+average = my_math.average(scores)
+\end{lstlisting}
+
+반복 변수의 값이 필요하지 않으므로 관례적으로 \texttt{\_}를 사용한다. 점수는 60점 이상 100점 이하에서 생성된다.
+
+평균은 사용자 정의 모듈의 \texttt{average()} 함수가 계산한다.
+
+\[
+\overline{x}=\frac{1}{N}\sum_{i=1}^{N}x_i
+\]
+
+\subsection{파일 저장과 형식 지정}
+
+\begin{lstlisting}
+with open("scores.txt", "w") as file:
+    file.write(f"Student: {name}\n")
+    file.write(f"Scores: {scores}\n")
+    file.write(f"Average: {average:.2f}\n")
+\end{lstlisting}
+
+f-string은 문자열 안에 변수 값을 삽입한다. \texttt{\{average:.2f\}}는 평균을 소수점 아래 둘째 자리까지 표시한다.
+
+\subsection{저장한 결과 읽기}
+
+\begin{lstlisting}
+print("\n===== Saved Data =====")
+
+with open("scores.txt", "r") as file:
+    for line in file:
+        print(line.strip())
+\end{lstlisting}
+
+파일 객체를 반복하여 한 줄씩 출력한다.
+
+\subsection{최종 코드: \texttt{practice\_day04.py}}
+
+\begin{lstlisting}
+import random
+import my_math
+
+name = input("Student name: ")
+
+try:
+    subject_count = int(input("Number of subjects: "))
+
+    if subject_count <= 0:
+        raise ValueError
+
+except ValueError:
+    print("Please enter a positive integer.")
+
+else:
+    scores = []
+
+    for _ in range(subject_count):
+        scores.append(random.randint(60, 100))
+
+    average = my_math.average(scores)
+
+    print("Scores:", scores)
+    print(f"Average: {average:.2f}")
+
+    with open("scores.txt", "w") as file:
+        file.write(f"Student: {name}\n")
+        file.write(f"Scores: {scores}\n")
+        file.write(f"Average: {average:.2f}\n")
+
+    print("\n===== Saved Data =====")
+
+    with open("scores.txt", "r") as file:
+        for line in file:
+            print(line.strip())
+\end{lstlisting}
+
+\subsection{실행 예시}
+
+\begin{verbatim}
+Student name: Kim
+Number of subjects: 3
+Scores: [82, 95, 76]
+Average: 84.33
+
+===== Saved Data =====
+Student: Kim
+Scores: [82, 95, 76]
+Average: 84.33
+\end{verbatim}
+
+잘못된 입력의 예시는 다음과 같다.
+
+\begin{verbatim}
+Student name: Kim
+Number of subjects: 0
+Please enter a positive integer.
+\end{verbatim}
+
+또는
+
+\begin{verbatim}
+Student name: Kim
+Number of subjects: hello
+Please enter a positive integer.
+\end{verbatim}
+
+\subsection{프로그램 구조 분석}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+기능 & 사용한 개념 \\
+\midrule
+점수 무작위 생성 & \texttt{random.randint()} \\
+평균 계산 & 사용자 정의 모듈 \\
+잘못된 입력 처리 & \texttt{try--except}, \texttt{raise} \\
+정상 흐름 분리 & \texttt{else} \\
+결과 저장 & \texttt{with open(..., "w")} \\
+결과 불러오기 & \texttt{with open(..., "r")} \\
+한 줄씩 처리 & \texttt{for line in file} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+이 프로그램은 계산 기능을 \texttt{my\_math.py}에 분리하고, 실행 흐름을 \texttt{practice\_day04.py}에서 관리한다. 기능 분리, 오류 처리, 데이터 보존을 한 번에 연습하는 예제이다.
+\end{importantbox}
+
+% =================================================
+\section{실습 파일 목록}
+% =================================================
+
+\begin{practicebox}
+Day 4의 학습 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_import.py}
+    \item \texttt{02\_random.py}
+    \item \texttt{03\_custom\_module.py}
+    \item \texttt{04\_try\_except.py}
+    \item \texttt{05\_file\_write.py}
+    \item \texttt{06\_file\_read.py}
+    \item \texttt{07\_with\_open.py}
+    \item \texttt{my\_math.py}
+    \item \texttt{practice\_day04.py}
+    \item \texttt{hello.txt}
+    \item \texttt{message.txt}
+    \item \texttt{scores.txt}
+    \item \texttt{student.txt}
+\end{itemize}
+\end{practicebox}
+% =================================================
+\section{핵심 요약}
+% =================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item 모듈은 관련 기능을 파일이나 라이브러리 단위로 묶는다.
+    \item \texttt{import module}은 \texttt{module.name} 형태로 사용한다.
+    \item \texttt{from module import name}은 지정한 이름을 직접 사용한다.
+    \item \texttt{randint()}는 범위의 양 끝을 포함한다.
+    \item \texttt{choice()}는 하나를 선택하고, \texttt{sample()}은 중복 없이 여러 개를 선택한다.
+    \item \texttt{shuffle()}은 원본 리스트를 직접 수정하며 \texttt{None}을 반환한다.
+    \item 다른 Python 파일을 import하여 사용자 정의 모듈로 사용할 수 있다.
+    \item \texttt{\_\_pycache\_\_}는 import 성능을 위한 바이트코드 캐시이다.
+    \item \texttt{try}에서 예외가 발생하면 해당 \texttt{except}로 이동한다.
+    \item \texttt{else}는 예외가 없을 때, \texttt{finally}는 항상 실행된다.
+    \item \texttt{raise}는 프로그램 규칙에 따라 직접 예외를 발생시킨다.
+    \item \texttt{"w"}는 파일을 덮어쓰고, \texttt{"r"}은 파일을 읽으며, \texttt{"a"}는 기존 내용 뒤에 추가한다.
+    \item \texttt{read()}는 전체 문자열, \texttt{readline()}은 한 줄, \texttt{readlines()}는 줄 리스트를 반환한다.
+    \item \texttt{with open()}은 블록이 끝날 때 파일을 자동으로 닫는다.
+    \item 큰 파일은 \texttt{for line in file} 방식으로 한 줄씩 처리하는 것이 효율적이다.
+\end{itemize}
+
+\end{document}
