@@ -1,0 +1,690 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Python Programming}
+\rhead{Day 6}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% Python code style
+% -------------------------------------------------
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstset{style=pythonstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries Python Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 6: 상속과 클래스 변수\par}
+
+    \vspace{2cm}
+
+    {\large Inheritance, Method Overriding, super(), Class Variable\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item 상속을 사용하는 이유와 부모 클래스, 자식 클래스의 관계 설명하기
+    \item 자식 클래스에서 부모 클래스의 속성과 메서드 사용하기
+    \item 자식 클래스에서 부모 메서드를 재정의하는 오버라이딩 이해하기
+    \item \texttt{super()}를 이용하여 부모 클래스의 생성자 호출하기
+    \item 부모 속성과 자식 고유 속성을 하나의 객체에 함께 저장하기
+    \item 클래스 변수와 인스턴스 변수의 차이 설명하기
+    \item 클래스 변수를 클래스 이름으로 읽고 변경하기
+    \item 상속과 클래스 변수를 결합한 간단한 프로그램 구현하기
+\end{itemize}
+\end{learningbox}
+
+% =================================================
+\section{상속의 기본 개념}
+% =================================================
+
+상속(inheritance)은 기존 클래스의 속성과 메서드를 새로운 클래스가 이어받아 사용하는 기능이다. 공통 기능을 부모 클래스에 한 번만 작성하고, 자식 클래스에서는 필요한 기능만 추가할 수 있다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+용어 & 의미 \\
+\midrule
+부모 클래스 & 공통 속성과 메서드를 제공하는 클래스 \\
+자식 클래스 & 부모 클래스를 상속받아 확장하는 클래스 \\
+상속 & 기존 클래스의 기능을 이어받는 관계 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+예를 들어 모든 학생은 사람이다. 따라서 사람에게 공통으로 필요한 이름은 \texttt{Person} 클래스에 두고, 학생에게만 필요한 전공은 \texttt{Student} 클래스에 추가할 수 있다.
+
+\subsection{상속 문법}
+
+자식 클래스 이름 뒤의 괄호 안에 부모 클래스 이름을 적는다.
+
+\begin{lstlisting}
+class Parent:
+    pass
+
+
+class Child(Parent):
+    pass
+\end{lstlisting}
+
+\texttt{Child}는 \texttt{Parent}를 상속받았으므로 부모 클래스에 정의된 기능을 사용할 수 있다.
+
+\subsection{부모 메서드 사용하기}
+
+\begin{lstlisting}
+class Person:
+    def greet(self):
+        print("Hello")
+
+
+class Student(Person):
+    pass
+
+
+student = Student()
+student.greet()
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+Hello
+\end{verbatim}
+
+\texttt{Student} 클래스 안에는 \texttt{greet()}가 직접 정의되어 있지 않다. 그러나 \texttt{Person}을 상속받았으므로 \texttt{Student} 객체에서도 부모 메서드를 호출할 수 있다.
+
+\subsection{최종 코드: \texttt{01\_inheritance.py}}
+
+\begin{lstlisting}
+class Person:
+    def greet(self):
+        print("Hello")
+
+
+class Student(Person):
+    pass
+
+
+student = Student()
+student.greet()
+\end{lstlisting}
+
+\begin{practicebox}
+\texttt{Animal} 클래스에 \texttt{eat()} 메서드를 만들고, 이를 상속받는 \texttt{Dog} 클래스를 작성한다. \texttt{Dog} 객체를 생성하여 부모 클래스의 \texttt{eat()}를 호출한다.
+\end{practicebox}
+
+\begin{importantbox}
+상속은 부모 객체를 자식 객체 안에 복사하는 기능이 아니다. 자식 클래스가 부모 클래스의 정의를 이용할 수 있도록 클래스 사이에 관계를 만드는 기능이다.
+\end{importantbox}
+
+% =================================================
+\section{메서드 오버라이딩}
+% =================================================
+
+자식 클래스는 부모 클래스에서 물려받은 메서드를 그대로 사용할 수도 있고, 같은 이름으로 다시 정의하여 동작을 바꿀 수도 있다. 이를 메서드 오버라이딩(method overriding)이라고 한다.
+
+\begin{lstlisting}
+class Person:
+    def introduce(self):
+        print("I am a person.")
+
+
+class Student(Person):
+    def introduce(self):
+        print("I am a student.")
+\end{lstlisting}
+
+\texttt{Student} 객체에서 \texttt{introduce()}를 호출하면 자식 클래스에 정의된 메서드가 우선 사용된다.
+
+\begin{lstlisting}
+student = Student()
+student.introduce()
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+I am a student.
+\end{verbatim}
+
+\subsection{메서드 탐색 순서}
+
+객체에서 메서드를 호출하면 Python은 먼저 객체의 클래스에서 해당 메서드를 찾는다. 없으면 부모 클래스로 올라가며 찾는다.
+
+\begin{verbatim}
+Student object
+    -> Student class
+    -> Person class
+    -> object class
+\end{verbatim}
+
+자식 클래스에 같은 이름의 메서드가 있으면 부모 메서드보다 먼저 발견되므로 자식 메서드가 실행된다.
+
+\subsection{최종 코드: \texttt{02\_method\_overriding.py}}
+
+\begin{lstlisting}
+class Person:
+    def introduce(self):
+        print("I am a person.")
+
+
+class Student(Person):
+    def introduce(self):
+        print("I am a student.")
+
+
+person = Person()
+student = Student()
+
+person.introduce()
+student.introduce()
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+I am a person.
+I am a student.
+\end{verbatim}
+
+\begin{practicebox}
+\texttt{Animal} 클래스에 \texttt{sound()} 메서드를 만들고 \texttt{Dog} 클래스에서 같은 메서드를 재정의한다. 부모 객체와 자식 객체에서 각각 메서드를 호출하여 결과를 비교한다.
+\end{practicebox}
+
+\begin{importantbox}
+오버라이딩은 부모 클래스의 코드를 직접 수정하지 않고 자식 클래스에 맞는 동작을 정의하는 방법이다.
+\end{importantbox}
+
+% =================================================
+\section{자식 생성자와 \texttt{super()}}
+% =================================================
+
+자식 클래스가 자신만의 생성자를 정의하면 그 생성자가 객체 생성 직후 실행된다. 이때 부모 클래스의 생성자는 자동으로 실행되지 않으므로, 부모가 담당하는 초기화가 필요하다면 직접 호출해야 한다.
+
+\subsection{부모 생성자 호출 없이 작성한 경우}
+
+\begin{lstlisting}
+class Person:
+    def __init__(self, name):
+        self.name = name
+
+
+class Student(Person):
+    def __init__(self, name, major):
+        self.major = major
+\end{lstlisting}
+
+이 코드에서 \texttt{Student} 객체에는 \texttt{major}만 저장되고, 부모 생성자의 \texttt{self.name = name}은 실행되지 않는다.
+
+\subsection{\texttt{super()}의 역할}
+
+\texttt{super()}는 현재 자식 클래스의 부모 클래스를 기준으로 메서드에 접근한다.
+
+\begin{lstlisting}
+super().__init__(name)
+\end{lstlisting}
+
+이 문장은 부모 클래스의 \texttt{\_\_init\_\_()}를 호출하여 이름을 초기화한다.
+
+\begin{lstlisting}
+class Person:
+    def __init__(self, name):
+        self.name = name
+
+
+class Student(Person):
+    def __init__(self, name, major):
+        super().__init__(name)
+        self.major = major
+\end{lstlisting}
+
+객체 생성 과정은 다음과 같다.
+
+\begin{enumerate}[leftmargin=1.8em]
+    \item \texttt{Student("Alice", "Physics")}를 호출한다.
+    \item \texttt{Student.\_\_init\_\_()}가 실행된다.
+    \item \texttt{super().\_\_init\_\_(name)}이 부모 생성자를 호출한다.
+    \item 부모 생성자가 \texttt{self.name}을 만든다.
+    \item 자식 생성자가 \texttt{self.major}를 만든다.
+\end{enumerate}
+
+결과적으로 하나의 \texttt{Student} 객체 안에 부모가 초기화한 \texttt{name}과 자식이 초기화한 \texttt{major}가 함께 저장된다.
+
+\begin{verbatim}
+student
+  name  -> "Alice"
+  major -> "Physics"
+\end{verbatim}
+
+\subsection{최종 코드: \texttt{03\_super.py}}
+
+\begin{lstlisting}
+class Person:
+    def __init__(self, name):
+        self.name = name
+
+
+class Student(Person):
+    def __init__(self, name, major):
+        super().__init__(name)
+        self.major = major
+
+    def show_info(self):
+        print(f"Name : {self.name}")
+        print(f"Major : {self.major}")
+
+
+student = Student("Alice", "Physics")
+student.show_info()
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+Name : Alice
+Major : Physics
+\end{verbatim}
+
+\begin{practicebox}
+\texttt{Vehicle} 클래스가 \texttt{brand}를 저장하도록 만들고, 이를 상속받는 \texttt{Car} 클래스가 \texttt{year}를 추가로 저장하도록 작성한다. 자식 생성자에서 \texttt{super()}를 사용하고 두 속성을 모두 출력한다.
+\end{practicebox}
+
+\begin{importantbox}
+\texttt{super().\_\_init\_\_()}는 새로운 부모 객체를 만드는 것이 아니다. 지금 생성 중인 동일한 자식 객체를 부모 클래스의 생성자 로직으로 초기화한다.
+\end{importantbox}
+
+% =================================================
+\section{클래스 변수}
+% =================================================
+
+인스턴스 변수는 객체마다 따로 저장되는 값이다. 반면 클래스 변수(class variable)는 클래스에 속하며 같은 클래스로 만든 모든 객체가 공유하는 값이다.
+
+\subsection{클래스 변수 정의}
+
+클래스 변수는 메서드 밖, 클래스 블록 안에 작성한다.
+
+\begin{lstlisting}
+class Book:
+    category = "Programming"
+
+    def __init__(self, title):
+        self.title = title
+\end{lstlisting}
+
+여기서 \texttt{category}는 클래스 변수이고 \texttt{self.title}은 인스턴스 변수이다.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+구분 & 정의 위치 & 저장 방식 \\
+\midrule
+클래스 변수 & 클래스 안, 메서드 밖 & 클래스가 하나를 공유 \\
+인스턴스 변수 & 일반적으로 \texttt{\_\_init\_\_()} 안 & 객체마다 별도로 저장 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{클래스 이름으로 접근하기}
+
+클래스 변수는 클래스 이름으로 접근하는 것이 가장 명확하다.
+
+\begin{lstlisting}
+print(Book.category)
+\end{lstlisting}
+
+객체를 통해서도 읽을 수 있지만, 공유 데이터라는 사실을 분명히 나타내기 위해 클래스 이름을 사용하는 편이 좋다.
+
+\begin{lstlisting}
+print(book1.category)
+\end{lstlisting}
+
+\subsection{여러 객체가 같은 클래스 변수 사용하기}
+
+\begin{lstlisting}
+book1 = Book("Python Basics")
+book2 = Book("C++ Guide")
+\end{lstlisting}
+
+각 객체의 \texttt{title}은 다르지만 \texttt{category}는 같은 클래스 값을 사용한다.
+
+\begin{verbatim}
+Book class
+  category -> "Programming"
+
+book1
+  title -> "Python Basics"
+
+book2
+  title -> "C++ Guide"
+\end{verbatim}
+
+\subsection{최종 코드: \texttt{04\_class\_variable.py}}
+
+\begin{lstlisting}
+class Book:
+    category = "Programming"
+
+    def __init__(self, title):
+        self.title = title
+
+    def show_info(self):
+        print(f"Title : {self.title}")
+        print(f"Category : {Book.category}")
+
+
+book1 = Book("Python Basics")
+book2 = Book("C++ Guide")
+
+book1.show_info()
+print()
+book2.show_info()
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+Title : Python Basics
+Category : Programming
+
+Title : C++ Guide
+Category : Programming
+\end{verbatim}
+
+\begin{practicebox}
+\texttt{Student} 클래스에 클래스 변수 \texttt{school = "KU"}를 만들고, 인스턴스 변수로 이름을 저장한다. 학생 객체 두 개에서 이름과 학교를 출력한다.
+\end{practicebox}
+
+% =================================================
+\section{클래스 변수 변경과 인스턴스 변수의 차이}
+% =================================================
+
+클래스 이름을 통해 클래스 변수를 변경하면 이후 모든 객체가 변경된 값을 공유한다.
+
+\begin{lstlisting}
+class Student:
+    school = "MIT"
+
+    def __init__(self, name):
+        self.name = name
+
+
+student1 = Student("Alice")
+student2 = Student("Bob")
+
+print(Student.school)
+
+Student.school = "KU"
+
+print(student1.school)
+print(student2.school)
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+MIT
+KU
+KU
+\end{verbatim}
+
+\texttt{Student.school = "KU"}는 클래스에 저장된 공유 값을 변경한다. 따라서 기존에 생성된 객체들도 객체 자체에 같은 이름의 별도 속성이 없다면 변경된 값을 읽는다.
+
+\subsection{객체를 통한 대입 주의하기}
+
+다음 대입은 클래스 변수를 직접 바꾸는 것과 다르다.
+
+\begin{lstlisting}
+student1.school = "Harvard"
+\end{lstlisting}
+
+이 코드는 일반적으로 \texttt{student1} 객체 안에 \texttt{school}이라는 새로운 인스턴스 변수를 만든다. 이후 \texttt{student1.school}은 인스턴스 값을 우선 읽고, 다른 객체는 여전히 클래스 변수를 읽는다.
+
+\begin{verbatim}
+Student class
+  school -> "KU"
+
+student1
+  name   -> "Alice"
+  school -> "Harvard"
+
+student2
+  name   -> "Bob"
+\end{verbatim}
+
+\begin{importantbox}
+공유 값을 변경할 때는 \texttt{ClassName.variable} 형식을 사용한다. 객체 이름으로 대입하면 같은 이름의 인스턴스 변수가 새로 생길 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{Day 6 종합 실습: 학교 구성원 관리}
+% =================================================
+
+이번 종합 실습에서는 상속, \texttt{super()}, 메서드 오버라이딩, 클래스 변수를 함께 사용한다.
+
+\subsection{프로그램 요구사항}
+
+\begin{enumerate}[leftmargin=1.8em]
+    \item \texttt{Person} 클래스에 클래스 변수 \texttt{school = "KU"}를 만든다.
+    \item \texttt{Person} 생성자는 \texttt{name}을 저장한다.
+    \item \texttt{Person.show\_info()}는 이름과 학교를 출력한다.
+    \item \texttt{Student}는 \texttt{Person}을 상속받는다.
+    \item \texttt{Student} 생성자는 \texttt{super()}로 이름을 초기화하고 전공을 추가한다.
+    \item \texttt{Student.show\_info()}를 오버라이딩하여 이름, 학교, 전공을 출력한다.
+    \item 학생 객체 두 개를 생성하여 정보가 올바르게 출력되는지 확인한다.
+\end{enumerate}
+
+\subsection{최종 코드: \texttt{practice\_day06.py}}
+
+\begin{lstlisting}
+class Person:
+    school = "KU"
+
+    def __init__(self, name):
+        self.name = name
+
+    def show_info(self):
+        print(f"Name : {self.name}")
+        print(f"School : {Person.school}")
+
+
+class Student(Person):
+    def __init__(self, name, major):
+        super().__init__(name)
+        self.major = major
+
+    def show_info(self):
+        print(f"Name : {self.name}")
+        print(f"School : {Person.school}")
+        print(f"Major : {self.major}")
+
+
+student1 = Student("Alice", "Physics")
+student2 = Student("Bob", "Engineering")
+
+student1.show_info()
+print()
+student2.show_info()
+\end{lstlisting}
+
+\subsection{실행 결과}
+
+\begin{verbatim}
+Name : Alice
+School : KU
+Major : Physics
+
+Name : Bob
+School : KU
+Major : Engineering
+\end{verbatim}
+
+\subsection{프로그램 구조 분석}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+기능 & 사용한 개념 \\
+\midrule
+공통 이름 저장 & 부모 클래스 생성자 \\
+학생 전공 저장 & 자식 클래스 인스턴스 변수 \\
+부모 초기화 재사용 & \texttt{super()} \\
+학생 정보 출력 방식 변경 & 메서드 오버라이딩 \\
+학교 이름 공유 & 클래스 변수 \\
+서로 다른 학생 정보 저장 & 인스턴스 변수 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+상속은 공통 기능을 재사용하고, 오버라이딩은 자식 클래스에 맞게 동작을 바꾸며, 클래스 변수는 모든 객체가 공유해야 하는 값을 저장한다.
+\end{importantbox}
+
+% =================================================
+\section{실습 파일 목록}
+% =================================================
+
+\begin{practicebox}
+Day 6의 학습 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_inheritance.py}
+    \item \texttt{02\_method\_overriding.py}
+    \item \texttt{03\_super.py}
+    \item \texttt{04\_class\_variable.py}
+    \item \texttt{practice\_day06.py}
+    \item \texttt{python\_day06.tex}
+    \item \texttt{python\_day06.pdf}
+\end{itemize}
+\end{practicebox}
+
+% =================================================
+\section{핵심 요약}
+% =================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item 상속은 기존 클래스의 속성과 메서드를 새로운 클래스가 이어받는 기능이다.
+    \item 부모 클래스는 공통 기능을 제공하고 자식 클래스는 이를 재사용하거나 확장한다.
+    \item \texttt{class Child(Parent):} 형식으로 상속 관계를 만든다.
+    \item 자식 객체는 자식 클래스에 없는 메서드를 부모 클래스에서 찾아 사용할 수 있다.
+    \item 자식 클래스가 부모와 같은 이름의 메서드를 정의하면 자식 메서드가 우선 실행된다.
+    \item 같은 이름으로 부모 메서드의 동작을 바꾸는 것을 메서드 오버라이딩이라고 한다.
+    \item 자식 클래스가 생성자를 직접 정의하면 부모 생성자는 자동으로 호출되지 않는다.
+    \item \texttt{super().\_\_init\_\_()}로 부모 생성자의 초기화 코드를 재사용할 수 있다.
+    \item 부모 생성자와 자식 생성자는 동일한 자식 객체의 속성을 함께 초기화한다.
+    \item 클래스 변수는 클래스에 속하며 여러 객체가 하나의 값을 공유한다.
+    \item 인스턴스 변수는 객체마다 독립적으로 저장된다.
+    \item 공유 값을 읽거나 변경할 때는 \texttt{ClassName.variable} 형식을 사용하는 것이 명확하다.
+    \item 객체를 통해 클래스 변수와 같은 이름에 대입하면 새로운 인스턴스 변수가 생길 수 있다.
+\end{itemize}
+
+\end{document}
