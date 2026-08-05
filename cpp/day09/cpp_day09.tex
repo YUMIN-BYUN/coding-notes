@@ -1,0 +1,896 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+\hypersetup{colorlinks=true,linkcolor=titleblue,urlcolor=titleblue}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C++ Programming}
+\rhead{Day 9}
+\cfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{titleblue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible
+}
+\lstset{style=cppstyle}
+
+\newtcolorbox{learningbox}{colback=blue!4,colframe=titleblue,title=\textbf{학습 목표},fonttitle=\bfseries}
+\newtcolorbox{importantbox}{colback=yellow!8,colframe=orange!70!black,title=\textbf{핵심 포인트},fonttitle=\bfseries}
+\newtcolorbox{practicebox}{colback=red!3,colframe=red!55!black,title=\textbf{실습},fonttitle=\bfseries}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries C++ Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 9: 템플릿\par}
+    \vspace{2cm}
+    {\large 함수 템플릿, 다중 타입, 오버로딩, 클래스 템플릿, 기본 템플릿 인자\par}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{학습 목표}
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item 코드 중복이 발생하는 이유와 템플릿의 필요성 설명하기
+    \item \texttt{template <typename T>} 문법으로 함수 템플릿 작성하기
+    \item 호출 인수로부터 템플릿 자료형이 추론되는 과정 설명하기
+    \item 여러 개의 템플릿 타입 매개변수를 동시에 사용하기
+    \item 일반 함수와 템플릿 함수가 함께 있을 때 호출 우선순위 이해하기
+    \item \texttt{template <typename T>} 문법으로 클래스 템플릿 작성하기
+    \item 객체를 만들 때 클래스 템플릿의 실제 자료형 지정하기
+    \item 기본 템플릿 인자를 선언하고 생략 문법 사용하기
+    \item 템플릿 자료형 결정과 암시적 형 변환을 구분하기
+    \item 템플릿이 이후 STL 컨테이너의 기반이 되는 이유 설명하기
+\end{itemize}
+\end{learningbox}
+
+\section{템플릿의 필요성}
+자료형만 다르고 동작은 같은 함수나 클래스를 여러 번 작성하면 코드 중복이 발생한다. 다음 두 함수는 매개변수와 반환형만 다르고 수행하는 연산은 같다.
+
+\begin{lstlisting}
+int add(int a, int b)
+{
+    return a + b;
+}
+
+double add(double a, double b)
+{
+    return a + b;
+}
+\end{lstlisting}
+
+자료형이 \texttt{float}, \texttt{long}, \texttt{string}으로 늘어나면 같은 형태의 코드를 계속 반복해야 한다. 템플릿(template)은 자료형을 미리 고정하지 않고, 실제 호출이나 객체 생성 시점에 필요한 자료형을 컴파일러가 결정하도록 만드는 기능이다.
+
+\begin{verbatim}
+Repeated code
+int add(int, int)
+double add(double, double)
+float add(float, float)
+
+        |
+        v
+
+One template
+T add(T, T)
+\end{verbatim}
+
+템플릿은 실행 중에 자료형이 바뀌는 기능이 아니다. 컴파일러가 코드를 번역할 때 실제로 사용된 자료형에 맞는 함수 또는 클래스를 생성한다.
+
+\begin{importantbox}
+템플릿은 자료형에 의존하지 않는 공통 알고리즘을 한 번만 작성하게 한다. 실제로 사용되는 자료형별 코드는 컴파일 시점에 생성된다.
+\end{importantbox}
+
+\section{함수 템플릿}
+함수 템플릿(function template)은 자료형만 다른 여러 함수를 하나의 일반화된 형태로 작성하는 기능이다.
+
+\subsection{기본 문법}
+함수 선언 앞에 다음 문장을 작성한다.
+
+\begin{lstlisting}
+template <typename T>
+\end{lstlisting}
+
+\texttt{T}는 아직 결정되지 않은 자료형을 나타내는 템플릿 타입 매개변수(template type parameter)이다. 이름은 반드시 \texttt{T}일 필요는 없지만, 관례적으로 첫 번째 타입에 \texttt{T}를 자주 사용한다.
+
+\begin{lstlisting}
+template <typename T>
+T add(T a, T b)
+{
+    return a + b;
+}
+\end{lstlisting}
+
+위 코드에서 \texttt{T}는 반환형, 첫 번째 매개변수형, 두 번째 매개변수형에 모두 사용된다.
+
+\subsection{typename과 class}
+템플릿 타입 매개변수 선언에는 다음 두 문법을 사용할 수 있다.
+
+\begin{lstlisting}
+template <typename T>
+\end{lstlisting}
+
+\begin{lstlisting}
+template <class T>
+\end{lstlisting}
+
+기본적인 타입 매개변수 선언에서는 두 표현의 의미가 같다. 현대 C++ 코드에서는 해당 매개변수가 자료형임을 더 직접적으로 나타내는 \texttt{typename}을 자주 사용한다.
+
+\subsection{자료형 추론}
+함수 템플릿을 호출하면 컴파일러가 전달된 인수의 자료형을 보고 \texttt{T}를 추론한다.
+
+\begin{lstlisting}
+add(10, 20);
+\end{lstlisting}
+
+두 인수가 모두 \texttt{int}이므로 컴파일러는 개념적으로 다음 함수를 만든다.
+
+\begin{lstlisting}
+int add(int a, int b)
+{
+    return a + b;
+}
+\end{lstlisting}
+
+다음 호출에서는 \texttt{T}가 \texttt{double}이 된다.
+
+\begin{lstlisting}
+add(2.5, 3.1);
+\end{lstlisting}
+
+\begin{lstlisting}
+double add(double a, double b)
+{
+    return a + b;
+}
+\end{lstlisting}
+
+이처럼 하나의 템플릿 정의로 여러 자료형에 대응하는 함수를 생성할 수 있다.
+
+\subsection{같은 T가 의미하는 것}
+다음 템플릿에서 두 매개변수는 모두 같은 \texttt{T}를 사용한다.
+
+\begin{lstlisting}
+template <typename T>
+T multiply(T a, T b)
+\end{lstlisting}
+
+따라서 다음 호출은 자연스럽게 추론된다.
+
+\begin{lstlisting}
+multiply(3, 4);
+multiply(2.5, 4.2);
+\end{lstlisting}
+
+그러나 다음 호출에서는 첫 번째 인수가 \texttt{int}, 두 번째 인수가 \texttt{double}이므로 하나의 \texttt{T}를 결정할 수 없다.
+
+\begin{lstlisting}
+multiply(3, 2.5);
+\end{lstlisting}
+
+이 문제는 서로 다른 타입 매개변수를 두 개 선언하면 해결할 수 있다.
+
+\subsection{전체 예제}
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+template <typename T>
+T add(T a, T b)
+{
+    return a + b;
+}
+
+int main()
+{
+    cout << add(10, 20) << endl;
+    cout << add(2.5, 3.1) << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+30
+5.6
+\end{verbatim}
+
+\section{여러 개의 템플릿 타입 매개변수}
+서로 다른 자료형을 동시에 받아야 한다면 템플릿 타입 매개변수를 여러 개 선언한다.
+
+\begin{lstlisting}
+template <typename T, typename U>
+\end{lstlisting}
+
+\texttt{T}와 \texttt{U}는 서로 독립적인 자료형이다. 첫 번째 인수에서 \texttt{T}를 추론하고 두 번째 인수에서 \texttt{U}를 추론할 수 있다.
+
+\subsection{독립적인 자료형 추론}
+다음 호출을 살펴보자.
+
+\begin{lstlisting}
+show(100, 3.14);
+\end{lstlisting}
+
+컴파일러는 다음과 같이 추론한다.
+
+\begin{verbatim}
+T = int
+U = double
+\end{verbatim}
+
+다음 호출에서는 다른 조합이 만들어진다.
+
+\begin{lstlisting}
+show("Age", 20);
+\end{lstlisting}
+
+문자열 리터럴은 함수 매개변수로 전달될 때 일반적으로 문자열을 가리키는 포인터 형태로 처리되므로 개념적으로 다음과 같은 조합이 된다.
+
+\begin{verbatim}
+T = const char*
+U = int
+\end{verbatim}
+
+\subsection{전체 예제}
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+template <typename T, typename U>
+void show(T first, U second)
+{
+    cout << first << " " << second << endl;
+}
+
+int main()
+{
+    show(100, 3.14);
+    show("Age", 20);
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+100 3.14
+Age 20
+\end{verbatim}
+
+\subsection{타입 매개변수의 개수}
+필요하다면 세 개 이상의 타입 매개변수도 선언할 수 있다.
+
+\begin{lstlisting}
+template <typename T, typename U, typename V>
+void printThree(T first, U second, V third)
+{
+    cout << first << " " << second << " " << third << endl;
+}
+\end{lstlisting}
+
+다만 타입 매개변수가 많아질수록 함수의 사용 조건과 반환형 설계가 복잡해질 수 있으므로 실제 필요에 맞게 사용한다.
+
+\begin{importantbox}
+같은 이름의 타입 매개변수는 같은 자료형을 의미한다. 서로 다른 자료형을 독립적으로 받으려면 \texttt{T}, \texttt{U}처럼 별도의 타입 매개변수를 선언해야 한다.
+\end{importantbox}
+
+\section{일반 함수와 템플릿 함수}
+일반 함수와 함수 템플릿은 같은 이름으로 함께 존재할 수 있다. 이때 컴파일러는 함수 오버로딩 규칙에 따라 가장 적합한 후보를 선택한다.
+
+\subsection{정확한 일치와 형 변환}
+다음 두 함수가 있다고 하자.
+
+\begin{lstlisting}
+void print(int x)
+{
+    cout << "Normal Function" << endl;
+}
+
+template <typename T>
+void print(T x)
+{
+    cout << "Template Function" << endl;
+}
+\end{lstlisting}
+
+\texttt{print(10)}은 일반 함수 \texttt{print(int)}와 정확히 일치한다. 템플릿으로도 \texttt{print(int)}를 만들 수 있지만, 동일하게 정확한 후보라면 일반 함수가 선택된다.
+
+\begin{lstlisting}
+print(10);
+\end{lstlisting}
+
+\begin{verbatim}
+Normal Function
+\end{verbatim}
+
+반면 \texttt{print(3.14)}에서 일반 함수는 \texttt{double}을 \texttt{int}로 바꾸는 형 변환이 필요하다. 템플릿은 \texttt{T = double}로 정확히 일치하는 함수를 만들 수 있으므로 템플릿 함수가 선택된다.
+
+\begin{lstlisting}
+print(3.14);
+\end{lstlisting}
+
+\begin{verbatim}
+Template Function
+\end{verbatim}
+
+\subsection{선택 원리}
+함수 선택은 단순히 ``일반 함수가 항상 우선''이라고 이해하면 안 된다. 먼저 각 후보가 인수와 얼마나 잘 일치하는지 비교한다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+상황 & 선택 결과 \\
+\midrule
+일반 함수만 정확히 일치 & 일반 함수 \\
+템플릿 함수만 정확히 일치 & 템플릿 함수 \\
+둘 다 정확히 일치 & 일반 함수 \\
+일반 함수는 형 변환 필요, 템플릿은 정확히 일치 & 템플릿 함수 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{전체 예제}
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+void print(int x)
+{
+    cout << "Normal Function" << endl;
+}
+
+template <typename T>
+void print(T x)
+{
+    cout << "Template Function" << endl;
+}
+
+int main()
+{
+    print(10);
+    print(3.14);
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+Normal Function
+Template Function
+\end{verbatim}
+
+\subsection{double 일반 함수와의 비교}
+다음 코드에서는 첫 번째 호출과 두 번째 호출의 선택 결과가 다르다.
+
+\begin{lstlisting}
+void print(double x)
+{
+    cout << "Double Function" << endl;
+}
+
+template <typename T>
+void print(T x)
+{
+    cout << "Template Function" << endl;
+}
+\end{lstlisting}
+
+\texttt{print(3.14)}은 일반 함수가 정확히 일치하므로 \texttt{Double Function}이 출력된다. \texttt{print(100)}은 일반 함수에서 \texttt{int}를 \texttt{double}로 바꿔야 하지만, 템플릿은 \texttt{T = int}로 정확히 일치하므로 \texttt{Template Function}이 출력된다.
+
+\begin{importantbox}
+정확한 일치 여부가 먼저 비교된다. 일반 함수와 템플릿 함수가 모두 같은 수준으로 정확히 일치할 때 일반 함수가 선택된다.
+\end{importantbox}
+
+\section{클래스 템플릿}
+클래스 템플릿(class template)은 멤버 변수나 멤버 함수가 사용할 자료형을 객체 생성 시점까지 미루는 기능이다.
+
+\subsection{클래스 중복 문제}
+값 하나를 저장하는 클래스를 자료형별로 만들면 다음과 같이 코드가 반복된다.
+
+\begin{lstlisting}
+class IntBox
+{
+public:
+    int value;
+};
+
+class DoubleBox
+{
+public:
+    double value;
+};
+\end{lstlisting}
+
+클래스 템플릿을 사용하면 하나의 클래스 정의로 여러 자료형을 처리할 수 있다.
+
+\begin{lstlisting}
+template <typename T>
+class Box
+{
+public:
+    T value;
+};
+\end{lstlisting}
+
+\subsection{객체 생성 시 자료형 지정}
+함수 템플릿은 인수로부터 타입을 추론할 수 있지만, 기본적인 클래스 템플릿 사용에서는 객체를 만들 때 각괄호 안에 실제 자료형을 명시한다.
+
+\begin{lstlisting}
+Box<int> box1;
+Box<double> box2;
+Box<char> box3;
+\end{lstlisting}
+
+\texttt{Box<int>}와 \texttt{Box<double>}은 같은 템플릿에서 만들어지지만 서로 다른 구체 클래스 타입이다.
+
+\begin{verbatim}
+Box<T>
+  |
+  +-- Box<int>
+  +-- Box<double>
+  +-- Box<char>
+\end{verbatim}
+
+\subsection{생성자와 멤버 함수}
+클래스 내부에서는 템플릿 타입 매개변수 \texttt{T}를 멤버 변수, 생성자 매개변수, 반환형 등 필요한 위치에 사용할 수 있다.
+
+\begin{lstlisting}
+template <typename T>
+class Box
+{
+public:
+    T value;
+
+    Box(T value)
+    {
+        this->value = value;
+    }
+
+    void show()
+    {
+        cout << value << endl;
+    }
+};
+\end{lstlisting}
+
+\texttt{Box<int>}를 만들면 \texttt{T value}와 \texttt{Box(T value)}의 \texttt{T}가 모두 \texttt{int}로 바뀐다. \texttt{Box<double>}에서는 모두 \texttt{double}로 바뀐다.
+
+\subsection{전체 예제}
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+template <typename T>
+class Box
+{
+public:
+    T value;
+
+    Box(T value)
+    {
+        this->value = value;
+    }
+
+    void show()
+    {
+        cout << value << endl;
+    }
+};
+
+int main()
+{
+    Box<int> box1(100);
+    Box<double> box2(3.14);
+    Box<char> box3('A');
+
+    box1.show();
+    box2.show();
+    box3.show();
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+100
+3.14
+A
+\end{verbatim}
+
+\subsection{STL과의 연결}
+표준 템플릿 라이브러리(STL)의 컨테이너는 클래스 템플릿으로 구현되어 있다. 다음 문법의 각괄호 안 자료형은 클래스 템플릿의 타입 인자이다.
+
+\begin{lstlisting}
+vector<int> numbers;
+vector<double> values;
+stack<char> characters;
+map<string, int> scores;
+\end{lstlisting}
+
+따라서 클래스 템플릿을 이해하면 이후 \texttt{vector}, \texttt{list}, \texttt{map}, \texttt{stack}, \texttt{queue} 등의 문법을 자연스럽게 해석할 수 있다.
+
+\begin{importantbox}
+클래스 템플릿은 하나의 클래스가 여러 자료형을 저장하거나 처리하도록 만든다. \texttt{Box<int>}와 \texttt{Box<double>}은 같은 템플릿에서 생성되지만 서로 다른 타입이다.
+\end{importantbox}
+
+\section{기본 템플릿 인자}
+기본 템플릿 인자(default template argument)는 사용자가 자료형을 명시하지 않았을 때 사용할 기본 자료형을 지정하는 기능이다.
+
+\subsection{기본 문법}
+다음 템플릿은 \texttt{T}의 기본 자료형을 \texttt{int}로 지정한다.
+
+\begin{lstlisting}
+template <typename T = int>
+class Number
+{
+};
+\end{lstlisting}
+
+객체를 만들 때 빈 각괄호를 사용하면 기본 자료형이 적용된다.
+
+\begin{lstlisting}
+Number<> n1;
+\end{lstlisting}
+
+위 코드는 다음 코드와 같은 의미이다.
+
+\begin{lstlisting}
+Number<int> n1;
+\end{lstlisting}
+
+직접 자료형을 명시하면 기본값은 사용되지 않는다.
+
+\begin{lstlisting}
+Number<double> n2;
+\end{lstlisting}
+
+\subsection{전체 예제}
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+template <typename T = int>
+class Number
+{
+public:
+    T value;
+
+    Number(T value)
+    {
+        this->value = value;
+    }
+
+    void show()
+    {
+        cout << value << endl;
+    }
+};
+
+int main()
+{
+    Number<> n1(100);
+    Number<double> n2(3.14);
+
+    n1.show();
+    n2.show();
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+100
+3.14
+\end{verbatim}
+
+\subsection{템플릿 인자 결정과 형 변환}
+다음 클래스에서 기본 자료형은 \texttt{double}이다.
+
+\begin{lstlisting}
+template <typename T = double>
+class Value
+{
+public:
+    T value;
+
+    Value(T value)
+    {
+        this->value = value;
+    }
+};
+\end{lstlisting}
+
+다음 객체 생성에서 전달한 \texttt{10}은 \texttt{int} 리터럴이다.
+
+\begin{lstlisting}
+Value<> v1(10);
+\end{lstlisting}
+
+그러나 처리 순서는 다음과 같다.
+
+\begin{verbatim}
+1. Value<> uses the default template argument.
+2. T becomes double.
+3. The constructor becomes Value(double value).
+4. The int value 10 is converted to double.
+5. The member stores 10.0.
+\end{verbatim}
+
+즉, \texttt{10}의 자료형을 보고 \texttt{T}를 다시 \texttt{int}로 정하는 것이 아니다. \texttt{Value<>}에서 기본 템플릿 인자가 먼저 적용되어 \texttt{Value<double>}이 되고, 그 다음 생성자 호출 과정에서 \texttt{int}가 \texttt{double}로 암시적 형 변환된다.
+
+반대 방향도 문법적으로 가능하다.
+
+\begin{lstlisting}
+Value<int> v2(3.14);
+\end{lstlisting}
+
+이 경우 \texttt{T}는 명시적으로 \texttt{int}이며, \texttt{3.14}가 \texttt{int}로 변환되어 소수 부분이 제거된 \texttt{3}이 저장된다.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+코드 & 결정된 T & 생성자 전달 과정 \\
+\midrule
+\texttt{Value<> v1(10)} & \texttt{double} & \texttt{int}에서 \texttt{double}로 변환 \\
+\texttt{Value<char> v2('Z')} & \texttt{char} & 정확히 일치 \\
+\texttt{Value<int> v3(3.14)} & \texttt{int} & \texttt{double}에서 \texttt{int}로 변환 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+템플릿 자료형을 결정하는 단계와 생성자 인수의 형 변환 단계는 서로 다르다. \texttt{Value<>}에서는 기본 템플릿 인자가 먼저 적용되고, 그 뒤 전달값이 생성자의 매개변수형에 맞게 변환된다.
+\end{importantbox}
+
+\section{종합 정리}
+\begin{importantbox}
+\begin{itemize}[leftmargin=1.5em]
+    \item 템플릿은 자료형만 다른 중복 코드를 하나의 일반화된 코드로 작성하게 한다.
+    \item 템플릿은 런타임 기능이 아니라 컴파일 시점에 필요한 코드를 생성하는 기능이다.
+    \item 함수 템플릿은 \texttt{template <typename T>} 뒤에 함수를 정의한다.
+    \item 함수 호출 인수로부터 템플릿 타입을 자동 추론할 수 있다.
+    \item 같은 \texttt{T}를 사용한 여러 매개변수는 같은 자료형으로 추론되어야 한다.
+    \item 서로 다른 자료형을 받으려면 \texttt{T}, \texttt{U}처럼 여러 타입 매개변수를 선언한다.
+    \item 일반 함수와 템플릿 함수의 선택에서는 정확한 일치 여부가 중요하다.
+    \item 일반 함수와 템플릿 함수가 모두 정확히 일치하면 일반 함수가 선택된다.
+    \item 클래스 템플릿은 객체 생성 시 실제 자료형을 각괄호 안에 지정한다.
+    \item 기본 템플릿 인자는 자료형을 생략했을 때 사용할 기본 자료형을 정한다.
+    \item 템플릿 타입 결정과 생성자 인수의 암시적 형 변환은 별개의 단계이다.
+    \item STL의 컨테이너는 클래스 템플릿이므로 Day 9의 내용이 STL 학습의 기반이 된다.
+\end{itemize}
+\end{importantbox}
+
+\section{개념별 실습 완성 코드}
+\subsection{함수 템플릿}
+\begin{practicebox}
+두 값을 곱하여 반환하는 함수 템플릿 \texttt{multiply()}를 작성한다. \texttt{int}와 \texttt{double} 자료형으로 각각 호출한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+template <typename T>
+T multiply(T a, T b)
+{
+    return a * b;
+}
+
+int main()
+{
+    cout << multiply(3, 4) << endl;
+    cout << multiply(2.5, 4.2) << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{여러 개의 템플릿 타입}
+\begin{practicebox}
+서로 다른 두 자료형의 값을 한 줄에 출력하는 함수 템플릿 \texttt{printPair()}를 작성한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+template <typename T, typename U>
+void printPair(T first, U second)
+{
+    cout << first << " " << second << endl;
+}
+
+int main()
+{
+    printPair("Kim", 90);
+    printPair(3.5, 'A');
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{일반 함수와 템플릿 함수}
+\begin{practicebox}
+\texttt{double} 일반 함수와 템플릿 함수를 같은 이름으로 작성하고, \texttt{double}과 \texttt{int} 인수에서 어떤 함수가 선택되는지 확인한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+void print(double x)
+{
+    cout << "Double Function" << endl;
+}
+
+template <typename T>
+void print(T x)
+{
+    cout << "Template Function" << endl;
+}
+
+int main()
+{
+    print(3.14);
+    print(100);
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{클래스 템플릿}
+\begin{practicebox}
+하나의 값을 저장하고 출력하는 클래스 템플릿 \texttt{Data}를 작성한다. \texttt{string}과 \texttt{double} 자료형으로 객체를 생성한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+template <typename T>
+class Data
+{
+public:
+    T value;
+
+    Data(T value)
+    {
+        this->value = value;
+    }
+
+    void show()
+    {
+        cout << value << endl;
+    }
+};
+
+int main()
+{
+    Data<string> data1("Physics");
+    Data<double> data2(4.24);
+
+    data1.show();
+    data2.show();
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{기본 템플릿 인자}
+\begin{practicebox}
+기본 타입이 \texttt{double}인 클래스 템플릿 \texttt{Value}를 작성한다. 기본 타입과 직접 지정한 \texttt{char} 타입으로 객체를 생성한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+template <typename T = double>
+class Value
+{
+public:
+    T value;
+
+    Value(T value)
+    {
+        this->value = value;
+    }
+
+    void show()
+    {
+        cout << value << endl;
+    }
+};
+
+int main()
+{
+    Value<> v1(10);
+    Value<char> v2('Z');
+
+    v1.show();
+    v2.show();
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{실습 파일 구성}
+\begin{practicebox}
+Day 9 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_function\_template.cpp}
+    \item \texttt{02\_multiple\_types.cpp}
+    \item \texttt{03\_template\_overloading.cpp}
+    \item \texttt{04\_class\_template.cpp}
+    \item \texttt{05\_template\_default.cpp}
+    \item \texttt{practice/p01\_function\_template.cpp}
+    \item \texttt{practice/p02\_multiple\_types.cpp}
+    \item \texttt{practice/p03\_template\_overloading.cpp}
+    \item \texttt{practice/p04\_class\_template.cpp}
+    \item \texttt{practice/p05\_template\_default.cpp}
+\end{itemize}
+\end{practicebox}
+
+\end{document}
