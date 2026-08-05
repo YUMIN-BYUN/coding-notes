@@ -1,0 +1,772 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Python Programming}
+\rhead{Day 8}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% Python code style
+% -------------------------------------------------
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstset{style=pythonstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries Python Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 8: Pandas 기초\par}
+
+    \vspace{2cm}
+
+    {\large Series, DataFrame, Indexing, Modification, CSV, Statistics\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item Pandas의 목적과 기본 자료구조 설명하기
+    \item \texttt{Series}를 생성하고 인덱스로 값 선택하기
+    \item 딕셔너리로 \texttt{DataFrame} 생성하기
+    \item 열 선택과 \texttt{iloc}을 이용한 위치 기반 데이터 선택하기
+    \item 새로운 열을 추가하고 \texttt{drop()}으로 열 삭제하기
+    \item \texttt{to\_csv()}와 \texttt{read\_csv()}로 CSV 저장 및 불러오기
+    \item \texttt{mean()}, \texttt{sum()}, \texttt{max()}, \texttt{min()}, \texttt{describe()} 사용하기
+\end{itemize}
+\end{learningbox}
+
+% =================================================
+\section{Pandas와 Series}
+% =================================================
+
+Pandas는 Python에서 표 형태의 데이터를 저장하고 분석하기 위한 라이브러리이다. NumPy가 수치 배열 계산에 강하다면, Pandas는 CSV와 같은 실제 데이터 파일을 읽고 원하는 행과 열을 선택하며 통계를 계산하는 작업에 적합하다.
+
+Pandas를 설치하지 않았다면 터미널에서 다음 명령을 한 번 실행한다.
+
+\begin{verbatim}
+pip install pandas
+\end{verbatim}
+
+Pandas는 일반적으로 \texttt{pd}라는 별칭으로 불러온다.
+
+\begin{lstlisting}
+import pandas as pd
+\end{lstlisting}
+
+\subsection{Series}
+
+\texttt{Series}는 값과 인덱스를 함께 가지는 1차원 자료구조이다. 인덱스를 따로 지정하지 않으면 \texttt{0, 1, 2, ...}가 자동으로 생성되지만, 문자열이나 다른 값을 직접 인덱스로 지정할 수도 있다.
+
+\begin{lstlisting}
+scores = pd.Series(
+    [90, 85, 100],
+    index=["Math", "English", "Physics"]
+)
+\end{lstlisting}
+
+특정 인덱스의 값은 대괄호 안에 인덱스를 넣어 선택한다.
+
+\begin{lstlisting}
+print(scores["English"])
+\end{lstlisting}
+
+\subsection{최종 코드: \texttt{01\_series.py}}
+
+\begin{lstlisting}
+import pandas as pd
+
+scores = pd.Series(
+    [90, 85, 100],
+    index=["Math", "English", "Physics"]
+)
+
+print(scores)
+print()
+
+print(scores["English"])
+print()
+
+print(scores[["Math", "Physics"]])
+print()
+
+print(scores.values)
+print(scores.index)
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+Math        90
+English     85
+Physics    100
+dtype: int64
+
+85
+
+Math        90
+Physics    100
+dtype: int64
+
+[ 90  85 100]
+Index(['Math', 'English', 'Physics'], dtype='object')
+\end{verbatim}
+
+\begin{importantbox}
+\texttt{Series}의 인덱스는 \texttt{0, 1, 2, ...}로 고정되지 않는다. 직접 지정한 인덱스를 이용하면 딕셔너리처럼 의미 있는 이름으로 값에 접근할 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{DataFrame}
+% =================================================
+
+\texttt{DataFrame}은 행과 열을 가지는 2차원 자료구조이다. 엑셀 표와 비슷하며, 여러 개의 \texttt{Series}가 열 방향으로 모인 형태로 이해할 수 있다.
+
+DataFrame은 보통 딕셔너리를 이용하여 만든다. 딕셔너리의 key는 열 이름이 되고, value에 들어 있는 리스트가 해당 열의 데이터가 된다.
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+Name & Math & English \\
+\midrule
+Kim & 90 & 88 \\
+Lee & 85 & 91 \\
+Park & 100 & 95 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+각 열의 길이는 같아야 한다. 길이가 다르면 DataFrame을 만들 수 없다.
+
+\subsection{최종 코드: \texttt{02\_dataframe.py}}
+
+\begin{lstlisting}
+import pandas as pd
+
+data = {
+    "Name": ["Kim", "Lee", "Park"],
+    "Math": [90, 85, 100],
+    "English": [88, 91, 95]
+}
+
+df = pd.DataFrame(data)
+
+print(df)
+print()
+print(type(df))
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+   Name  Math  English
+0   Kim    90       88
+1   Lee    85       91
+2  Park   100       95
+
+<class 'pandas.core.frame.DataFrame'>
+\end{verbatim}
+
+\begin{importantbox}
+DataFrame은 열마다 서로 다른 자료형을 가질 수 있다. 예를 들어 이름은 문자열, 점수는 정수, 합격 여부는 불리언으로 저장할 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{데이터 선택}
+% =================================================
+
+DataFrame을 만든 뒤에는 필요한 열, 행 또는 하나의 값을 선택할 수 있다.
+
+\subsection{열 선택}
+
+하나의 열은 열 이름을 대괄호 안에 넣어 선택한다.
+
+\begin{lstlisting}
+df["Math"]
+\end{lstlisting}
+
+하나의 열을 선택하면 결과는 \texttt{Series}이다. 여러 열을 선택할 때는 열 이름 목록을 전달한다.
+
+\begin{lstlisting}
+df[["Math", "English"]]
+\end{lstlisting}
+
+여러 열을 선택하면 결과는 \texttt{DataFrame}이다.
+
+\subsection{\texttt{iloc}을 이용한 위치 선택}
+
+\texttt{iloc}은 정수 위치를 기준으로 데이터를 선택한다. 위치는 Python 인덱스와 마찬가지로 0부터 시작한다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+표현 & 의미 \\
+\midrule
+\texttt{df.iloc[0]} & 첫 번째 행 \\
+\texttt{df.iloc[1]} & 두 번째 행 \\
+\texttt{df.iloc[1, 2]} & 두 번째 행, 세 번째 열의 값 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{df.iloc[1, 2]}를 ``1행 2열''이라고 표현하면 일반적인 행렬 표기와 혼동될 수 있다. 따라서 위치를 설명할 때는 ``행 인덱스 1, 열 인덱스 2'' 또는 ``두 번째 행, 세 번째 열''이라고 표현하는 것이 정확하다.
+
+\subsection{최종 코드: \texttt{03\_indexing.py}}
+
+\begin{lstlisting}
+import pandas as pd
+
+data = {
+    "Name": ["Kim", "Lee", "Park"],
+    "Math": [90, 85, 100],
+    "English": [88, 91, 95]
+}
+
+df = pd.DataFrame(data)
+
+print("=== Math Column ===")
+print(df["Math"])
+print()
+
+print("=== Math and English ===")
+print(df[["Math", "English"]])
+print()
+
+print("=== First Row ===")
+print(df.iloc[0])
+print()
+
+print("=== Second Row, Third Column ===")
+print(df.iloc[1, 2])
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+=== Math Column ===
+0     90
+1     85
+2    100
+Name: Math, dtype: int64
+
+=== Math and English ===
+   Math  English
+0    90       88
+1    85       91
+2   100       95
+
+=== First Row ===
+Name       Kim
+Math        90
+English     88
+Name: 0, dtype: object
+
+=== Second Row, Third Column ===
+91
+\end{verbatim}
+
+\begin{importantbox}
+열 이름으로 선택할 때는 \texttt{df["Column"]}을 사용하고, 실제 저장 위치를 기준으로 행과 열을 선택할 때는 \texttt{iloc}을 사용한다.
+\end{importantbox}
+
+% =================================================
+\section{데이터 추가와 삭제}
+% =================================================
+
+새로운 열을 추가할 때는 딕셔너리에 항목을 추가하듯이 열 이름에 값을 대입한다.
+
+\begin{lstlisting}
+df["Physics"] = [95, 80, 90]
+\end{lstlisting}
+
+같은 이름의 열이 이미 존재하면 기존 값이 새로운 값으로 바뀐다.
+
+열을 삭제할 때는 \texttt{drop()}을 사용한다.
+
+\begin{lstlisting}
+df = df.drop(columns=["Math"])
+\end{lstlisting}
+
+\texttt{drop()}은 수정된 새로운 DataFrame을 반환하므로, 결과를 다시 \texttt{df}에 저장한다.
+
+\subsection{최종 코드: \texttt{04\_modify.py}}
+
+\begin{lstlisting}
+import pandas as pd
+
+data = {
+    "Name": ["Kim", "Lee", "Park"],
+    "Math": [90, 85, 100]
+}
+
+df = pd.DataFrame(data)
+
+print("=== Original ===")
+print(df)
+print()
+
+df["Physics"] = [95, 80, 90]
+
+print("=== After Adding Physics ===")
+print(df)
+print()
+
+df = df.drop(columns=["Math"])
+
+print("=== After Deleting Math ===")
+print(df)
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+=== Original ===
+   Name  Math
+0   Kim    90
+1   Lee    85
+2  Park   100
+
+=== After Adding Physics ===
+   Name  Math  Physics
+0   Kim    90       95
+1   Lee    85       80
+2  Park   100       90
+
+=== After Deleting Math ===
+   Name  Physics
+0   Kim       95
+1   Lee       80
+2  Park       90
+\end{verbatim}
+
+행도 \texttt{drop(index=...)}으로 삭제할 수 있다.
+
+\begin{lstlisting}
+df = df.drop(index=1)
+\end{lstlisting}
+
+\begin{importantbox}
+새로운 열의 데이터 개수는 DataFrame의 행 개수와 같아야 한다. 개수가 다르면 길이가 맞지 않는다는 오류가 발생한다.
+\end{importantbox}
+
+% =================================================
+\section{CSV 저장과 불러오기}
+% =================================================
+
+CSV는 Comma-Separated Values의 약자로, 쉼표를 이용해 표 데이터를 저장하는 텍스트 파일 형식이다. Pandas를 사용하면 DataFrame을 CSV로 저장하고 다시 읽는 작업을 한 줄씩으로 처리할 수 있다.
+
+\subsection{CSV 저장}
+
+\begin{lstlisting}
+df.to_csv("students.csv", index=False)
+\end{lstlisting}
+
+\texttt{index=False}를 사용하면 DataFrame의 자동 인덱스가 파일에 별도 열로 저장되지 않는다.
+
+\subsection{CSV 불러오기}
+
+\begin{lstlisting}
+loaded = pd.read_csv("students.csv")
+\end{lstlisting}
+
+\texttt{read\_csv()}의 반환값은 DataFrame이다.
+
+\subsection{최종 코드: \texttt{05\_csv.py}}
+
+\begin{lstlisting}
+import pandas as pd
+
+data = {
+    "Name": ["Kim", "Lee", "Park"],
+    "Math": [90, 85, 100],
+    "English": [88, 91, 95]
+}
+
+df = pd.DataFrame(data)
+
+df.to_csv("students.csv", index=False)
+
+loaded = pd.read_csv("students.csv")
+
+print("=== Loaded CSV ===")
+print(loaded)
+print()
+print(type(loaded))
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+=== Loaded CSV ===
+   Name  Math  English
+0   Kim    90       88
+1   Lee    85       91
+2  Park   100       95
+
+<class 'pandas.core.frame.DataFrame'>
+\end{verbatim}
+
+\begin{importantbox}
+CSV는 자료형이나 서식을 완전히 보존하는 엑셀 파일과 다르다. 하지만 구조가 단순하고 여러 프로그램에서 쉽게 읽을 수 있어 데이터 분석에서 자주 사용된다.
+\end{importantbox}
+
+% =================================================
+\section{기초 통계}
+% =================================================
+
+Pandas의 Series와 DataFrame은 기본적인 통계 함수를 제공한다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+함수 & 기능 \\
+\midrule
+\texttt{mean()} & 평균 \\
+\texttt{sum()} & 합계 \\
+\texttt{max()} & 최댓값 \\
+\texttt{min()} & 최솟값 \\
+\texttt{describe()} & 주요 기술통계 요약 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{describe()}는 데이터 개수, 평균, 표준편차, 최솟값, 사분위수, 최댓값을 한 번에 계산한다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+항목 & 의미 \\
+\midrule
+\texttt{count} & 데이터 개수 \\
+\texttt{mean} & 평균 \\
+\texttt{std} & 표본 표준편차 \\
+\texttt{min} & 최솟값 \\
+\texttt{25\%} & 제1사분위수 \\
+\texttt{50\%} & 중앙값 \\
+\texttt{75\%} & 제3사분위수 \\
+\texttt{max} & 최댓값 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{최종 코드: \texttt{06\_statistics.py}}
+
+\begin{lstlisting}
+import pandas as pd
+
+data = {
+    "Math": [90, 85, 100, 70, 95]
+}
+
+df = pd.DataFrame(data)
+
+print("Mean:", df["Math"].mean())
+print("Sum:", df["Math"].sum())
+print("Max:", df["Math"].max())
+print("Min:", df["Math"].min())
+
+print("\n=== Describe ===")
+print(df.describe())
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+Mean: 88.0
+Sum: 440
+Max: 100
+Min: 70
+
+=== Describe ===
+             Math
+count    5.000000
+mean    88.000000
+std     11.510864
+min     70.000000
+25%     85.000000
+50%     90.000000
+75%     95.000000
+max    100.000000
+\end{verbatim}
+
+\begin{importantbox}
+통계 함수는 숫자 열을 선택한 뒤 적용하는 것이 기본이다. CSV에서 읽어온 DataFrame에도 같은 방식으로 사용할 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{Day 8 종합 실습: 학생 성적 관리}
+% =================================================
+
+이번 종합 실습에서는 DataFrame 생성, 데이터 선택, 열 추가 및 삭제, CSV 저장과 불러오기, 기초 통계 기능을 하나의 프로그램에서 연결한다.
+
+\subsection{프로그램 요구사항}
+
+\begin{enumerate}[leftmargin=1.8em]
+    \item 네 학생의 이름, 수학 점수, 영어 점수로 DataFrame을 생성한다.
+    \item 물리 점수 열을 추가한다.
+    \item 전체 DataFrame과 수학 점수 열을 출력한다.
+    \item \texttt{iloc}을 이용해 두 번째 학생의 정보를 출력한다.
+    \item 영어 점수 열을 삭제한 뒤 DataFrame을 출력한다.
+    \item DataFrame을 \texttt{student.csv}에 저장하고 다시 불러온다.
+    \item 불러온 데이터의 수학 평균, 최댓값, 최솟값을 출력한다.
+    \item \texttt{describe()}로 주요 통계 정보를 출력한다.
+\end{enumerate}
+
+\subsection{최종 코드: \texttt{practice/practice\_day08.py}}
+
+\begin{lstlisting}
+import pandas as pd
+
+data = {
+    "Name": ["Kim", "Lee", "Park", "Choi"],
+    "Math": [90, 85, 100, 95],
+    "English": [88, 91, 95, 87]
+}
+
+df = pd.DataFrame(data)
+
+df["Physics"] = [92, 84, 98, 90]
+
+print("==== Student Data ====")
+print(df)
+
+print()
+print(df["Math"])
+
+print()
+print(df.iloc[1])
+
+print()
+df = df.drop(columns=["English"])
+print(df)
+
+df.to_csv("student.csv", index=False)
+loaded = pd.read_csv("student.csv")
+
+print()
+print("Average :", loaded["Math"].mean())
+print("Maximum :", loaded["Math"].max())
+print("Minimum :", loaded["Math"].min())
+
+print()
+print(loaded.describe())
+\end{lstlisting}
+
+\subsection{실행 결과}
+
+\begin{verbatim}
+==== Student Data ====
+   Name  Math  English  Physics
+0   Kim    90       88       92
+1   Lee    85       91       84
+2  Park   100       95       98
+3  Choi    95       87       90
+
+0     90
+1     85
+2    100
+3     95
+Name: Math, dtype: int64
+
+Name       Lee
+Math        85
+English     91
+Physics     84
+Name: 1, dtype: object
+
+   Name  Math  Physics
+0   Kim    90       92
+1   Lee    85       84
+2  Park   100       98
+3  Choi    95       90
+
+Average : 92.5
+Maximum : 100
+Minimum : 85
+
+             Math    Physics
+count    4.000000   4.000000
+mean    92.500000  91.000000
+std      6.454972   5.887841
+min     85.000000  84.000000
+25%     88.750000  88.500000
+50%     92.500000  91.000000
+75%     96.250000  93.500000
+max    100.000000  98.000000
+\end{verbatim}
+
+\subsection{프로그램 구조 분석}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+기능 & 사용한 개념 \\
+\midrule
+학생 데이터 생성 & \texttt{pd.DataFrame()} \\
+물리 점수 추가 & 새 열 대입 \\
+수학 점수 선택 & 열 인덱싱 \\
+두 번째 학생 선택 & \texttt{iloc} \\
+영어 점수 삭제 & \texttt{drop()} \\
+파일 저장과 불러오기 & \texttt{to\_csv()}, \texttt{read\_csv()} \\
+점수 통계 계산 & \texttt{mean()}, \texttt{max()}, \texttt{min()} \\
+전체 통계 확인 & \texttt{describe()} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+CSV를 다시 읽은 뒤에는 \texttt{loaded}를 사용하여 통계를 계산했다. 이렇게 하면 저장된 파일이 정상적으로 불러와졌는지까지 함께 확인할 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{실습 파일 목록}
+% =================================================
+
+\begin{practicebox}
+Day 8의 학습 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_series.py}
+    \item \texttt{02\_dataframe.py}
+    \item \texttt{03\_indexing.py}
+    \item \texttt{04\_modify.py}
+    \item \texttt{05\_csv.py}
+    \item \texttt{06\_statistics.py}
+    \item \texttt{practice/practice\_day08.py}
+    \item \texttt{python\_day08.tex}
+    \item \texttt{python\_day08.pdf}
+\end{itemize}
+\end{practicebox}
+
+% =================================================
+\section{핵심 요약}
+% =================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Pandas는 표 형태의 데이터를 저장하고 분석하기 위한 Python 라이브러리이다.
+    \item \texttt{Series}는 값과 인덱스를 가지는 1차원 자료구조이다.
+    \item Series의 인덱스는 자동 숫자 인덱스뿐 아니라 문자열 등으로 직접 지정할 수 있다.
+    \item \texttt{DataFrame}은 행과 열을 가지는 2차원 표 형태의 자료구조이다.
+    \item 딕셔너리의 key는 DataFrame의 열 이름이 되고 value는 열 데이터가 된다.
+    \item \texttt{df["Column"]}은 하나의 열을 Series로 반환한다.
+    \item \texttt{df[["A", "B"]]}는 여러 열을 DataFrame으로 반환한다.
+    \item \texttt{iloc}은 0부터 시작하는 정수 위치를 기준으로 데이터를 선택한다.
+    \item \texttt{df.iloc[1, 2]}는 두 번째 행, 세 번째 열의 값을 의미한다.
+    \item 새 열은 \texttt{df["New"] = values}로 추가하거나 수정한다.
+    \item \texttt{drop(columns=[...])}은 지정한 열을 삭제한 새로운 DataFrame을 반환한다.
+    \item \texttt{to\_csv()}는 DataFrame을 CSV로 저장한다.
+    \item \texttt{read\_csv()}는 CSV를 DataFrame으로 불러온다.
+    \item \texttt{index=False}를 사용하면 자동 인덱스가 CSV에 저장되지 않는다.
+    \item \texttt{mean()}, \texttt{sum()}, \texttt{max()}, \texttt{min()}으로 기본 통계를 계산한다.
+    \item \texttt{describe()}는 숫자 열의 주요 기술통계를 한 번에 보여준다.
+    \item Pandas의 고급 기능은 실제 데이터 분석이나 프로젝트에서 필요한 시점에 추가로 학습한다.
+\end{itemize}
+
+\end{document}
