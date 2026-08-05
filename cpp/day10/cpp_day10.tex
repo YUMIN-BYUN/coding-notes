@@ -1,0 +1,1410 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+\hypersetup{colorlinks=true,linkcolor=titleblue,urlcolor=titleblue}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C++ Programming}
+\rhead{Day 10}
+\cfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{titleblue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible
+}
+\lstset{style=cppstyle}
+
+\newtcolorbox{learningbox}{colback=blue!4,colframe=titleblue,title=\textbf{학습 목표},fonttitle=\bfseries}
+\newtcolorbox{importantbox}{colback=yellow!8,colframe=orange!70!black,title=\textbf{핵심 포인트},fonttitle=\bfseries}
+\newtcolorbox{practicebox}{colback=red!3,colframe=red!55!black,title=\textbf{실습},fonttitle=\bfseries}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries C++ Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 10: STL 기초\par}
+    \vspace{2cm}
+    {\large vector, iterator, pair, algorithm, lambda\par}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{학습 목표}
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item STL의 의미와 컨테이너, 반복자, 알고리즘의 관계 설명하기
+    \item \texttt{vector}를 선언하고 원소를 추가, 접근, 삭제하기
+    \item \texttt{size()}, \texttt{empty()}, \texttt{front()}, \texttt{back()} 사용하기
+    \item 인덱스 반복문과 범위 기반 반복문으로 \texttt{vector} 순회하기
+    \item 반복자의 역할과 \texttt{begin()}, \texttt{end()}의 의미 설명하기
+    \item 반복자를 역참조하여 원소를 읽고 수정하기
+    \item \texttt{iterator}와 \texttt{const\_iterator}의 차이 구분하기
+    \item \texttt{pair}로 서로 관련된 두 값을 하나의 객체에 저장하기
+    \item \texttt{first}, \texttt{second}, \texttt{make\_pair()} 사용하기
+    \item \texttt{sort()}, \texttt{find()}, \texttt{count()}, \texttt{reverse()} 사용하기
+    \item 알고리즘 함수에 반복자 범위를 전달하는 방식 이해하기
+    \item 람다 표현식의 기본 문법과 매개변수, 반환값 이해하기
+    \item 람다를 \texttt{sort()}와 함께 사용하여 정렬 기준 정의하기
+    \item 캡처 목록을 사용하여 외부 변수를 읽거나 수정하기
+\end{itemize}
+\end{learningbox}
+
+\section{STL의 개요}
+STL(Standard Template Library)은 자주 사용하는 자료구조와 알고리즘을 템플릿으로 제공하는 C++ 표준 라이브러리의 핵심 부분이다. Day 9에서 학습한 클래스 템플릿과 함수 템플릿이 실제 라이브러리에서 어떻게 활용되는지 보여 주는 대표적인 예가 STL이다.
+
+STL은 크게 컨테이너(container), 반복자(iterator), 알고리즘(algorithm)으로 이해할 수 있다.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+구성 요소 & 역할 & 예시 \\
+\midrule
+컨테이너 & 여러 데이터를 저장하는 자료구조 & \texttt{vector}, \texttt{list}, \texttt{map} \\
+반복자 & 컨테이너의 원소 위치를 가리키는 객체 & \texttt{begin()}, \texttt{end()} \\
+알고리즘 & 반복자 범위의 데이터를 처리하는 함수 & \texttt{sort()}, \texttt{find()} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+예를 들어 \texttt{vector<int>}는 정수를 저장하는 컨테이너이고, \texttt{numbers.begin()}과 \texttt{numbers.end()}는 원소 범위를 나타내는 반복자를 제공한다. \texttt{sort()}는 이 반복자 범위를 받아 실제 정렬을 수행한다.
+
+\begin{lstlisting}
+vector<int> numbers = {30, 10, 20};
+sort(numbers.begin(), numbers.end());
+\end{lstlisting}
+
+위 문장은 다음 구조로 해석할 수 있다.
+
+\begin{verbatim}
+Container: vector<int> numbers
+Range:     [numbers.begin(), numbers.end())
+Algorithm: sort
+\end{verbatim}
+
+범위의 마지막에 있는 \texttt{end()}는 마지막 원소 그 자체가 아니라 마지막 원소 다음 위치를 나타낸다. 따라서 STL의 기본 범위는 시작 위치를 포함하고 끝 위치는 포함하지 않는 반개구간 형태이다.
+
+\begin{verbatim}
+[begin, end)
+ begin is included
+ end is excluded
+\end{verbatim}
+
+\begin{importantbox}
+STL에서는 컨테이너가 데이터를 저장하고, 반복자가 데이터의 범위를 표현하며, 알고리즘이 그 범위를 처리한다. 이 세 요소가 서로 분리되어 있기 때문에 같은 알고리즘을 여러 컨테이너에 재사용할 수 있다.
+\end{importantbox}
+
+\section{vector}
+\texttt{vector}는 같은 자료형의 여러 값을 연속적으로 저장하는 동적 배열 컨테이너이다. 일반 배열과 달리 실행 중에 원소를 추가하거나 삭제하면서 크기를 변경할 수 있다.
+
+\subsection{헤더와 기본 선언}
+\texttt{vector}를 사용하려면 \texttt{<vector>} 헤더를 포함한다.
+
+\begin{lstlisting}
+#include <vector>
+\end{lstlisting}
+
+\texttt{vector}는 클래스 템플릿이므로 각괄호 안에 저장할 원소의 자료형을 지정한다.
+
+\begin{lstlisting}
+vector<int> numbers;
+vector<double> values;
+vector<string> names;
+\end{lstlisting}
+
+각각 정수, 실수, 문자열을 저장하는 서로 다른 \texttt{vector} 타입이다.
+
+\subsection{초기화}
+빈 \texttt{vector}를 만든 뒤 원소를 추가할 수도 있고, 선언과 동시에 초기값을 지정할 수도 있다.
+
+\begin{lstlisting}
+vector<int> numbers;
+vector<int> scores = {90, 85, 100};
+\end{lstlisting}
+
+같은 값으로 여러 원소를 초기화하는 문법도 있다.
+
+\begin{lstlisting}
+vector<int> values(5, 10);
+\end{lstlisting}
+
+위 코드는 값이 모두 \texttt{10}인 정수 원소 다섯 개를 만든다.
+
+\begin{verbatim}
+10 10 10 10 10
+\end{verbatim}
+
+다음 코드는 원소 다섯 개를 기본값으로 초기화한다.
+
+\begin{lstlisting}
+vector<int> values(5);
+\end{lstlisting}
+
+정수의 기본값은 \texttt{0}이므로 다섯 원소가 모두 \texttt{0}이 된다.
+
+\subsection{원소 추가와 삭제}
+\texttt{push\_back()}은 \texttt{vector}의 끝에 새 원소를 추가한다.
+
+\begin{lstlisting}
+vector<string> fruits;
+
+fruits.push_back("Apple");
+fruits.push_back("Banana");
+fruits.push_back("Orange");
+\end{lstlisting}
+
+\texttt{pop\_back()}은 마지막 원소를 제거한다.
+
+\begin{lstlisting}
+fruits.pop_back();
+\end{lstlisting}
+
+\texttt{pop\_back()}은 제거한 값을 반환하지 않는다. 또한 빈 \texttt{vector}에서 호출하면 올바른 동작이 보장되지 않으므로 필요한 경우 \texttt{empty()}로 먼저 확인한다.
+
+\begin{lstlisting}
+if (!fruits.empty())
+{
+    fruits.pop_back();
+}
+\end{lstlisting}
+
+\subsection{크기와 비어 있는지 확인}
+\texttt{size()}는 현재 저장된 원소의 개수를 반환한다.
+
+\begin{lstlisting}
+cout << fruits.size() << endl;
+\end{lstlisting}
+
+\texttt{empty()}는 원소가 하나도 없으면 \texttt{true}, 하나 이상 있으면 \texttt{false}를 반환한다.
+
+\begin{lstlisting}
+if (fruits.empty())
+{
+    cout << "Empty" << endl;
+}
+\end{lstlisting}
+
+\subsection{인덱스로 원소 접근}
+배열처럼 대괄호를 사용하여 원소에 접근할 수 있다.
+
+\begin{lstlisting}
+cout << fruits[0] << endl;
+fruits[1] = "Mango";
+\end{lstlisting}
+
+\texttt{operator[]}는 인덱스의 유효 범위를 검사하지 않는다. 잘못된 인덱스를 사용하면 정의되지 않은 동작이 발생할 수 있다.
+
+\texttt{at()}은 범위를 검사하는 접근 함수이다.
+
+\begin{lstlisting}
+cout << fruits.at(0) << endl;
+\end{lstlisting}
+
+잘못된 인덱스를 전달하면 예외가 발생하므로 오류를 더 명확하게 발견할 수 있다.
+
+\subsection{첫 번째와 마지막 원소}
+\texttt{front()}는 첫 번째 원소, \texttt{back()}은 마지막 원소에 접근한다.
+
+\begin{lstlisting}
+cout << fruits.front() << endl;
+cout << fruits.back() << endl;
+\end{lstlisting}
+
+두 함수 모두 빈 \texttt{vector}에 사용하면 안 된다.
+
+\subsection{인덱스 반복문}
+\texttt{size()}를 사용하여 모든 원소를 순회할 수 있다.
+
+\begin{lstlisting}
+for (size_t i = 0; i < fruits.size(); i++)
+{
+    cout << fruits[i] << endl;
+}
+\end{lstlisting}
+
+\texttt{size()}의 반환형은 부호 없는 정수 계열이므로 인덱스 변수에 \texttt{size\_t}를 사용하면 자료형이 자연스럽게 맞는다.
+
+\subsection{범위 기반 반복문}
+원소의 인덱스가 필요하지 않다면 범위 기반 반복문을 사용할 수 있다.
+
+\begin{lstlisting}
+for (string fruit : fruits)
+{
+    cout << fruit << endl;
+}
+\end{lstlisting}
+
+위 코드는 각 원소를 \texttt{fruit}에 복사한다. 원소를 직접 수정하려면 참조를 사용한다.
+
+\begin{lstlisting}
+for (string& fruit : fruits)
+{
+    fruit += " Juice";
+}
+\end{lstlisting}
+
+읽기만 하면서 불필요한 복사를 피하려면 상수 참조를 사용할 수 있다.
+
+\begin{lstlisting}
+for (const string& fruit : fruits)
+{
+    cout << fruit << endl;
+}
+\end{lstlisting}
+
+\subsection{전체 예제}
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    vector<string> fruits;
+
+    fruits.push_back("Apple");
+    fruits.push_back("Banana");
+    fruits.push_back("Orange");
+    fruits.push_back("Grape");
+
+    cout << "Size: " << fruits.size() << endl;
+    cout << "First: " << fruits.front() << endl;
+    cout << "Last: " << fruits.back() << endl;
+
+    for (size_t i = 0; i < fruits.size(); i++)
+    {
+        cout << fruits[i] << endl;
+    }
+
+    fruits.pop_back();
+
+    cout << "After pop_back" << endl;
+
+    for (const string& fruit : fruits)
+    {
+        cout << fruit << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+Size: 4
+First: Apple
+Last: Grape
+Apple
+Banana
+Orange
+Grape
+After pop_back
+Apple
+Banana
+Orange
+\end{verbatim}
+
+\begin{importantbox}
+\texttt{vector}는 크기가 변할 수 있는 동적 배열이다. 끝에 원소를 추가할 때는 \texttt{push\_back()}, 마지막 원소를 제거할 때는 \texttt{pop\_back()}, 현재 원소 수를 확인할 때는 \texttt{size()}를 사용한다.
+\end{importantbox}
+
+\section{iterator}
+반복자(iterator)는 컨테이너의 특정 원소 위치를 가리키는 객체이다. 포인터와 비슷하게 이동할 수 있고, 역참조 연산자 \texttt{*}를 사용하여 해당 위치의 원소에 접근할 수 있다.
+
+\subsection{begin과 end}
+\texttt{begin()}은 첫 번째 원소의 위치를 나타내는 반복자를 반환한다. \texttt{end()}는 마지막 원소 다음 위치를 나타내는 반복자를 반환한다.
+
+\begin{verbatim}
+vector:   [5] [10] [15] [20]
+           ^                 ^
+         begin              end
+\end{verbatim}
+
+\texttt{end()}가 가리키는 위치에는 실제 원소가 없으므로 역참조하면 안 된다.
+
+\subsection{반복자 선언}
+\texttt{vector<int>}의 반복자 타입은 다음과 같이 작성한다.
+
+\begin{lstlisting}
+vector<int>::iterator it;
+\end{lstlisting}
+
+반복자의 전체 타입이 길어질 수 있으므로 \texttt{auto}를 자주 사용한다.
+
+\begin{lstlisting}
+auto it = numbers.begin();
+\end{lstlisting}
+
+컴파일러가 \texttt{numbers.begin()}의 반환형으로부터 반복자 타입을 추론한다.
+
+\subsection{반복자를 이용한 순회}
+첫 번째 원소에서 시작하여 \texttt{end()}에 도달할 때까지 반복자를 증가시킨다.
+
+\begin{lstlisting}
+for (auto it = numbers.begin(); it != numbers.end(); it++)
+{
+    cout << *it << " ";
+}
+\end{lstlisting}
+
+각 부분의 의미는 다음과 같다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+표현 & 의미 \\
+\midrule
+\texttt{numbers.begin()} & 첫 번째 원소 위치 \\
+\texttt{numbers.end()} & 마지막 원소 다음 위치 \\
+\texttt{it != numbers.end()} & 아직 범위 안에 있는지 확인 \\
+\texttt{it++} & 다음 원소 위치로 이동 \\
+\texttt{*it} & 현재 위치의 원소에 접근 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{반복자로 원소 수정}
+일반 반복자를 역참조한 결과는 실제 원소이므로 값을 수정할 수 있다.
+
+\begin{lstlisting}
+for (auto it = numbers.begin(); it != numbers.end(); it++)
+{
+    *it += 3;
+}
+\end{lstlisting}
+
+각 원소에 \texttt{3}이 더해진다.
+
+\subsection{const\_iterator}
+원소를 읽기만 하고 수정하지 못하게 하려면 상수 반복자를 사용한다.
+
+\begin{lstlisting}
+vector<int>::const_iterator it;
+\end{lstlisting}
+
+\texttt{cbegin()}과 \texttt{cend()}는 상수 반복자를 반환한다.
+
+\begin{lstlisting}
+for (auto it = numbers.cbegin(); it != numbers.cend(); it++)
+{
+    cout << *it << " ";
+}
+\end{lstlisting}
+
+다음과 같이 값을 수정하려고 하면 컴파일 오류가 발생한다.
+
+\begin{lstlisting}
+for (auto it = numbers.cbegin(); it != numbers.cend(); it++)
+{
+    *it = 100;
+}
+\end{lstlisting}
+
+\texttt{*it}가 읽기 전용으로 취급되기 때문이다.
+
+\subsection{반복자와 포인터의 유사성}
+반복자는 포인터와 완전히 같은 타입은 아니지만 사용 방식이 비슷하다.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+동작 & 포인터 & 반복자 \\
+\midrule
+현재 값 접근 & \texttt{*ptr} & \texttt{*it} \\
+다음 위치 이동 & \texttt{ptr++} & \texttt{it++} \\
+위치 비교 & \texttt{ptr != endPtr} & \texttt{it != container.end()} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+반복자는 컨테이너의 구현 방식에 맞는 공통 접근 방법을 제공한다. 알고리즘 함수가 컨테이너 자체가 아니라 반복자 범위를 받는 이유도 여기에 있다.
+
+\subsection{반복자 무효화}
+\texttt{vector}에 원소를 추가하거나 삭제하면 내부 저장 공간이 재배치될 수 있다. 이 경우 기존 반복자가 더 이상 유효하지 않을 수 있다.
+
+\begin{lstlisting}
+auto it = numbers.begin();
+numbers.push_back(100);
+\end{lstlisting}
+
+\texttt{push\_back()} 과정에서 재할당이 발생했다면 \texttt{it}를 계속 사용하면 안 된다. 컨테이너를 변경한 뒤에는 필요한 반복자를 다시 얻는 습관이 안전하다.
+
+\subsection{전체 예제}
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+    vector<int> numbers = {5, 10, 15, 20, 25};
+
+    for (auto it = numbers.begin(); it != numbers.end(); it++)
+    {
+        cout << *it << " ";
+    }
+
+    cout << endl;
+
+    for (auto it = numbers.begin(); it != numbers.end(); it++)
+    {
+        *it += 3;
+    }
+
+    for (auto it = numbers.cbegin(); it != numbers.cend(); it++)
+    {
+        cout << *it << " ";
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+5 10 15 20 25
+8 13 18 23 28
+\end{verbatim}
+
+\begin{importantbox}
+반복자는 컨테이너의 원소 위치를 나타낸다. \texttt{begin()}부터 시작하여 \texttt{end()}에 도달하기 전까지 이동하고, \texttt{*it}로 현재 원소에 접근한다. 읽기 전용 순회에는 \texttt{cbegin()}과 \texttt{cend()}를 사용할 수 있다.
+\end{importantbox}
+
+\section{pair}
+\texttt{pair}는 서로 관련된 두 값을 하나의 객체에 함께 저장하는 클래스 템플릿이다. 두 값은 서로 같은 자료형일 수도 있고 서로 다른 자료형일 수도 있다.
+
+\subsection{헤더와 기본 선언}
+\texttt{pair}는 \texttt{<utility>} 헤더에 정의되어 있다.
+
+\begin{lstlisting}
+#include <utility>
+\end{lstlisting}
+
+두 타입을 각괄호 안에 순서대로 지정한다.
+
+\begin{lstlisting}
+pair<string, int> student;
+\end{lstlisting}
+
+위 객체는 첫 번째 값으로 \texttt{string}, 두 번째 값으로 \texttt{int}를 저장한다.
+
+\subsection{초기화}
+중괄호를 사용하여 선언과 동시에 두 값을 초기화할 수 있다.
+
+\begin{lstlisting}
+pair<string, int> student = {"Alice", 95};
+\end{lstlisting}
+
+생성자 형태로도 초기화할 수 있다.
+
+\begin{lstlisting}
+pair<string, int> student("Alice", 95);
+\end{lstlisting}
+
+\subsection{first와 second}
+첫 번째 값은 \texttt{first}, 두 번째 값은 \texttt{second} 멤버로 접근한다.
+
+\begin{lstlisting}
+cout << student.first << endl;
+cout << student.second << endl;
+\end{lstlisting}
+
+두 멤버는 읽는 것뿐만 아니라 수정할 수도 있다.
+
+\begin{lstlisting}
+student.first = "Bob";
+student.second = 88;
+\end{lstlisting}
+
+\subsection{make\_pair}
+\texttt{make\_pair()}를 사용하면 전달된 값으로부터 두 자료형을 추론하여 \texttt{pair} 객체를 생성할 수 있다.
+
+\begin{lstlisting}
+auto student = make_pair(string("Alice"), 95);
+\end{lstlisting}
+
+문자열 리터럴을 그대로 사용하면 첫 번째 타입이 문자열 포인터 계열로 추론될 수 있다. 명확한 \texttt{pair<string, int>}를 원한다면 \texttt{string("Alice")}처럼 \texttt{string} 객체를 전달하거나 타입을 직접 선언한다.
+
+\begin{lstlisting}
+pair<string, int> student = make_pair("Alice", 95);
+\end{lstlisting}
+
+대입 과정에서 첫 번째 값이 \texttt{string}으로 변환된다.
+
+\subsection{pair 비교}
+같은 타입의 \texttt{pair}끼리는 비교할 수 있다. 먼저 \texttt{first}를 비교하고, \texttt{first}가 같으면 \texttt{second}를 비교한다.
+
+\begin{lstlisting}
+pair<int, int> a = {1, 20};
+pair<int, int> b = {2, 10};
+
+cout << (a < b) << endl;
+\end{lstlisting}
+
+첫 번째 값에서 \texttt{1 < 2}이므로 결과는 \texttt{true}이다. 이 비교 규칙은 \texttt{vector<pair<...>>}를 기본 정렬할 때도 적용된다.
+
+\subsection{vector와 pair 함께 사용하기}
+여러 학생의 이름과 점수를 저장하려면 \texttt{pair<string, int>}를 원소 타입으로 하는 \texttt{vector}를 만들 수 있다.
+
+\begin{lstlisting}
+vector<pair<string, int>> students;
+
+students.push_back({"Alice", 95});
+students.push_back({"Bob", 88});
+students.push_back({"Charlie", 92});
+\end{lstlisting}
+
+각 원소는 하나의 \texttt{pair} 객체이다.
+
+\begin{lstlisting}
+for (const auto& student : students)
+{
+    cout << student.first << " " << student.second << endl;
+}
+\end{lstlisting}
+
+\texttt{auto}를 사용하면 긴 타입 이름을 반복해서 작성하지 않아도 된다. \texttt{const auto\&}는 복사 없이 읽기 전용으로 각 원소에 접근한다.
+
+\subsection{전체 예제}
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <string>
+#include <utility>
+
+using namespace std;
+
+int main()
+{
+    pair<string, int> student = {"Alice", 95};
+
+    cout << student.first << endl;
+    cout << student.second << endl;
+
+    student.second = 98;
+
+    vector<pair<string, int>> students;
+
+    students.push_back(student);
+    students.push_back(make_pair(string("Bob"), 88));
+    students.push_back({"Charlie", 92});
+
+    for (const auto& item : students)
+    {
+        cout << item.first << ": " << item.second << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+Alice
+95
+Alice: 98
+Bob: 88
+Charlie: 92
+\end{verbatim}
+
+\begin{importantbox}
+\texttt{pair<T, U>}는 두 값을 하나로 묶는다. 첫 번째 값은 \texttt{first}, 두 번째 값은 \texttt{second}로 접근한다. \texttt{vector<pair<T, U>>} 형태를 사용하면 서로 관련된 두 값의 목록을 쉽게 관리할 수 있다.
+\end{importantbox}
+
+\section{algorithm}
+\texttt{<algorithm>} 헤더는 정렬, 탐색, 개수 계산, 순서 뒤집기 등 자주 사용하는 알고리즘 함수를 제공한다. 대부분의 알고리즘은 처리할 컨테이너 자체가 아니라 반복자로 표현한 범위를 전달받는다.
+
+\subsection{헤더 포함}
+\begin{lstlisting}
+#include <algorithm>
+\end{lstlisting}
+
+\subsection{sort}
+\texttt{sort()}는 지정한 반복자 범위의 원소를 기본적으로 오름차순 정렬한다.
+
+\begin{lstlisting}
+vector<int> numbers = {40, 10, 30, 20};
+
+sort(numbers.begin(), numbers.end());
+\end{lstlisting}
+
+정렬 결과는 다음과 같다.
+
+\begin{verbatim}
+10 20 30 40
+\end{verbatim}
+
+내림차순 정렬에는 \texttt{greater<int>()}를 사용할 수 있다. 이 기능을 사용할 때는 일반적으로 \texttt{<functional>} 헤더를 포함한다.
+
+\begin{lstlisting}
+sort(numbers.begin(), numbers.end(), greater<int>());
+\end{lstlisting}
+
+정렬 결과는 다음과 같다.
+
+\begin{verbatim}
+40 30 20 10
+\end{verbatim}
+
+\subsection{find}
+\texttt{find()}는 범위에서 지정한 값과 같은 첫 번째 원소를 찾는다.
+
+\begin{lstlisting}
+auto it = find(numbers.begin(), numbers.end(), 30);
+\end{lstlisting}
+
+값을 찾으면 해당 원소를 가리키는 반복자를 반환하고, 찾지 못하면 두 번째 인수로 전달한 끝 반복자를 반환한다.
+
+\begin{lstlisting}
+if (it != numbers.end())
+{
+    cout << "Found: " << *it << endl;
+}
+else
+{
+    cout << "Not found" << endl;
+}
+\end{lstlisting}
+
+반환값을 바로 역참조하기 전에 반드시 \texttt{end()}와 비교해야 한다. 찾지 못한 경우 반환된 \texttt{end()}를 역참조하면 안 된다.
+
+\subsection{count}
+\texttt{count()}는 범위에서 특정 값이 등장하는 횟수를 반환한다.
+
+\begin{lstlisting}
+vector<int> values = {1, 2, 2, 3, 2, 4};
+
+int result = count(values.begin(), values.end(), 2);
+\end{lstlisting}
+
+\texttt{result}에는 \texttt{3}이 저장된다.
+
+\subsection{reverse}
+\texttt{reverse()}는 지정한 범위의 원소 순서를 반대로 뒤집는다.
+
+\begin{lstlisting}
+reverse(values.begin(), values.end());
+\end{lstlisting}
+
+\texttt{sort()}와 달리 크기 순서로 정렬하는 것이 아니라 현재 순서를 그대로 반전한다.
+
+\subsection{일부 범위만 처리하기}
+STL 알고리즘은 \texttt{begin()}과 \texttt{end()} 전체 범위뿐 아니라 일부 범위에도 적용할 수 있다.
+
+\begin{lstlisting}
+vector<int> numbers = {50, 40, 30, 20, 10};
+
+sort(numbers.begin(), numbers.begin() + 3);
+\end{lstlisting}
+
+처리 범위는 \texttt{[numbers.begin(), numbers.begin() + 3)}이므로 앞의 세 원소만 정렬된다.
+
+\begin{verbatim}
+30 40 50 20 10
+\end{verbatim}
+
+\texttt{vector}의 반복자는 임의 접근 반복자이므로 \texttt{begin() + n} 형태의 이동이 가능하다.
+
+\subsection{pair의 기본 정렬}
+\texttt{vector<pair<int, string>>}를 기본 \texttt{sort()}로 정렬하면 \texttt{pair}의 비교 규칙이 사용된다. 먼저 \texttt{first}를 기준으로 정렬하고, \texttt{first}가 같으면 \texttt{second}를 기준으로 정렬한다.
+
+\begin{lstlisting}
+vector<pair<int, string>> items = {
+    {2, "Banana"},
+    {1, "Orange"},
+    {1, "Apple"}
+};
+
+sort(items.begin(), items.end());
+\end{lstlisting}
+
+정렬 결과는 다음 순서가 된다.
+
+\begin{verbatim}
+1 Apple
+1 Orange
+2 Banana
+\end{verbatim}
+
+\subsection{전체 예제}
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int main()
+{
+    vector<int> numbers = {40, 10, 30, 20, 30};
+
+    sort(numbers.begin(), numbers.end());
+
+    for (int number : numbers)
+    {
+        cout << number << " ";
+    }
+
+    cout << endl;
+
+    auto it = find(numbers.begin(), numbers.end(), 30);
+
+    if (it != numbers.end())
+    {
+        cout << "Found: " << *it << endl;
+    }
+    else
+    {
+        cout << "Not found" << endl;
+    }
+
+    cout << "Count: "
+         << count(numbers.begin(), numbers.end(), 30)
+         << endl;
+
+    reverse(numbers.begin(), numbers.end());
+
+    for (int number : numbers)
+    {
+        cout << number << " ";
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+10 20 30 30 40
+Found: 30
+Count: 2
+40 30 30 20 10
+\end{verbatim}
+
+\begin{importantbox}
+STL 알고리즘은 보통 \texttt{[first, last)} 형태의 반복자 범위를 받는다. \texttt{sort()}는 정렬하고, \texttt{find()}는 첫 번째 일치 원소의 반복자를 반환하며, \texttt{count()}는 일치 횟수를 반환하고, \texttt{reverse()}는 현재 순서를 뒤집는다.
+\end{importantbox}
+
+\section{lambda}
+람다 표현식(lambda expression)은 이름 없는 함수를 코드 안에서 직접 만드는 문법이다. 한 번만 사용할 짧은 동작이나 STL 알고리즘에 전달할 정렬 기준을 작성할 때 특히 유용하다.
+
+\subsection{기본 문법}
+람다 표현식의 기본 구조는 다음과 같다.
+
+\begin{lstlisting}
+[capture](parameters)
+{
+    statements
+}
+\end{lstlisting}
+
+각 부분의 역할은 다음과 같다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+부분 & 의미 \\
+\midrule
+\texttt{[capture]} & 외부 변수를 람다 내부에서 사용하는 방법 \\
+\texttt{(parameters)} & 람다가 전달받는 매개변수 \\
+\texttt{\{ statements \}} & 실행할 코드 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+가장 간단한 람다는 다음과 같다.
+
+\begin{lstlisting}
+[]()
+{
+    cout << "Hello" << endl;
+};
+\end{lstlisting}
+
+그러나 위 람다는 정의만 하고 호출하지 않았다. 즉시 호출하려면 뒤에 괄호를 붙인다.
+
+\begin{lstlisting}
+[]()
+{
+    cout << "Hello" << endl;
+}();
+\end{lstlisting}
+
+\subsection{변수에 저장하기}
+람다 객체를 \texttt{auto} 변수에 저장한 뒤 일반 함수처럼 호출할 수 있다.
+
+\begin{lstlisting}
+auto greet = []()
+{
+    cout << "Hello" << endl;
+};
+
+greet();
+\end{lstlisting}
+
+람다의 정확한 타입은 컴파일러가 생성하므로 보통 \texttt{auto}를 사용한다.
+
+\subsection{매개변수와 반환값}
+람다는 일반 함수처럼 매개변수를 받을 수 있다.
+
+\begin{lstlisting}
+auto add = [](int a, int b)
+{
+    return a + b;
+};
+
+cout << add(10, 20) << endl;
+\end{lstlisting}
+
+반환형은 \texttt{return} 문으로부터 자동 추론된다. 필요하다면 후행 반환형 문법으로 직접 지정할 수 있다.
+
+\begin{lstlisting}
+auto divide = [](double a, double b) -> double
+{
+    return a / b;
+};
+\end{lstlisting}
+
+\subsection{값 캡처}
+람다 바깥의 지역 변수를 사용하려면 캡처 목록에 지정해야 한다.
+
+\begin{lstlisting}
+int bonus = 5;
+
+auto addBonus = [bonus](int score)
+{
+    return score + bonus;
+};
+\end{lstlisting}
+
+\texttt{[bonus]}는 \texttt{bonus}를 값으로 복사하여 람다 내부에 저장한다. 이후 외부의 \texttt{bonus}가 바뀌어도 이미 캡처된 값에는 영향을 주지 않는다.
+
+\begin{lstlisting}
+int bonus = 5;
+
+auto addBonus = [bonus](int score)
+{
+    return score + bonus;
+};
+
+bonus = 20;
+cout << addBonus(90) << endl;
+\end{lstlisting}
+
+출력은 \texttt{95}이다. 람다를 만들 때의 값 \texttt{5}가 복사되었기 때문이다.
+
+\subsection{참조 캡처}
+외부 변수를 직접 읽고 수정하려면 참조로 캡처한다.
+
+\begin{lstlisting}
+int total = 0;
+
+auto addToTotal = [&total](int value)
+{
+    total += value;
+};
+
+addToTotal(10);
+addToTotal(20);
+\end{lstlisting}
+
+람다 실행 후 외부 변수 \texttt{total}은 \texttt{30}이 된다.
+
+\subsection{기본 캡처 방식}
+\texttt{[=]}는 사용한 외부 변수를 기본적으로 값으로 캡처한다.
+
+\begin{lstlisting}
+auto function = [=]()
+{
+    cout << a << " " << b << endl;
+};
+\end{lstlisting}
+
+\texttt{[\&]}는 사용한 외부 변수를 기본적으로 참조로 캡처한다.
+
+\begin{lstlisting}
+auto function = [&]()
+{
+    a++;
+    b++;
+};
+\end{lstlisting}
+
+짧은 예제에서는 편리하지만, 어떤 변수가 어떤 방식으로 캡처되는지 불분명해질 수 있으므로 필요한 변수만 명시적으로 적는 방식이 더 읽기 쉬운 경우가 많다.
+
+\subsection{sort와 람다}
+\texttt{sort()}의 세 번째 인수에는 두 원소의 순서를 결정하는 비교 함수를 전달할 수 있다. 람다는 이 비교 기준을 코드 가까이에 작성하게 한다.
+
+\begin{lstlisting}
+vector<int> numbers = {40, 10, 30, 20};
+
+sort(numbers.begin(), numbers.end(), [](int a, int b)
+{
+    return a > b;
+});
+\end{lstlisting}
+
+비교 람다가 \texttt{a > b}를 반환하므로 큰 값이 앞에 오는 내림차순으로 정렬된다.
+
+비교 함수는 첫 번째 원소가 두 번째 원소보다 앞에 와야 할 때 \texttt{true}를 반환하도록 작성한다.
+
+\begin{verbatim}
+return a < b;   ascending order
+return a > b;   descending order
+\end{verbatim}
+
+\subsection{pair를 원하는 기준으로 정렬하기}
+학생 이름과 점수를 저장한 \texttt{pair<string, int>} 목록을 점수 기준 내림차순으로 정렬하려면 \texttt{second}를 비교한다.
+
+\begin{lstlisting}
+sort(students.begin(), students.end(),
+    [](const pair<string, int>& a,
+       const pair<string, int>& b)
+    {
+        return a.second > b.second;
+    });
+\end{lstlisting}
+
+두 점수가 같을 때 이름 오름차순까지 적용하려면 조건을 추가한다.
+
+\begin{lstlisting}
+sort(students.begin(), students.end(),
+    [](const pair<string, int>& a,
+       const pair<string, int>& b)
+    {
+        if (a.second != b.second)
+        {
+            return a.second > b.second;
+        }
+
+        return a.first < b.first;
+    });
+\end{lstlisting}
+
+\texttt{pair}를 상수 참조로 받으면 비교 과정에서 객체를 복사하지 않고, 람다 내부에서 원소를 수정하지도 못하게 한다.
+
+\subsection{전체 예제}
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <string>
+#include <utility>
+#include <algorithm>
+
+using namespace std;
+
+int main()
+{
+    vector<pair<string, int>> students = {
+        {"Alice", 92},
+        {"Bob", 85},
+        {"Charlie", 92},
+        {"David", 78}
+    };
+
+    sort(students.begin(), students.end(),
+        [](const pair<string, int>& a,
+           const pair<string, int>& b)
+        {
+            if (a.second != b.second)
+            {
+                return a.second > b.second;
+            }
+
+            return a.first < b.first;
+        });
+
+    for (const auto& student : students)
+    {
+        cout << student.first
+             << ": "
+             << student.second
+             << endl;
+    }
+
+    int bonus = 5;
+
+    auto addBonus = [bonus](int score)
+    {
+        return score + bonus;
+    };
+
+    cout << "Alice with bonus: "
+         << addBonus(92)
+         << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+Alice: 92
+Charlie: 92
+Bob: 85
+David: 78
+Alice with bonus: 97
+\end{verbatim}
+
+\begin{importantbox}
+람다는 이름 없는 함수 객체이다. \texttt{[]}에는 외부 변수의 캡처 방법을 적고, \texttt{()}에는 매개변수를 적는다. STL 알고리즘의 비교 기준처럼 짧고 특정 위치에서만 필요한 동작을 작성할 때 유용하다.
+\end{importantbox}
+
+\section{STL 요소의 연결}
+Day 10에서 학습한 다섯 요소는 서로 독립된 문법이 아니라 하나의 처리 흐름으로 연결된다.
+
+\begin{verbatim}
+vector<pair<string, int>>
+        |
+        | stores data
+        v
+begin() and end()
+        |
+        | define a range
+        v
+sort()
+        |
+        | uses a comparison rule
+        v
+lambda
+\end{verbatim}
+
+다음 코드를 단계별로 해석해 보자.
+
+\begin{lstlisting}
+vector<pair<string, int>> students = {
+    {"Alice", 92},
+    {"Bob", 85},
+    {"Charlie", 95}
+};
+
+sort(students.begin(), students.end(),
+    [](const auto& a, const auto& b)
+    {
+        return a.second > b.second;
+    });
+\end{lstlisting}
+
+\begin{enumerate}[leftmargin=2em]
+    \item \texttt{vector}가 여러 학생 정보를 저장한다.
+    \item 각 학생 정보는 이름과 점수를 묶은 \texttt{pair}이다.
+    \item \texttt{begin()}과 \texttt{end()}가 정렬할 전체 범위를 만든다.
+    \item \texttt{sort()}가 범위의 원소를 재배치한다.
+    \item 람다가 두 \texttt{pair}의 \texttt{second}를 비교하여 점수 내림차순 기준을 제공한다.
+\end{enumerate}
+
+이 구조는 이후 더 다양한 STL 컨테이너와 알고리즘을 배울 때도 반복된다.
+
+\begin{importantbox}
+STL 코드를 읽을 때는 ``무엇을 저장하는가'', ``어떤 범위를 처리하는가'', ``어떤 알고리즘을 적용하는가'', ``비교 또는 처리 기준은 무엇인가''의 순서로 나누어 해석하면 이해하기 쉽다.
+\end{importantbox}
+
+\section{종합 정리}
+\begin{importantbox}
+\begin{itemize}[leftmargin=1.5em]
+    \item STL은 컨테이너, 반복자, 알고리즘을 중심으로 구성된다.
+    \item \texttt{vector<T>}는 같은 타입의 여러 원소를 저장하는 동적 배열이다.
+    \item \texttt{push\_back()}은 끝에 원소를 추가하고 \texttt{pop\_back()}은 마지막 원소를 제거한다.
+    \item \texttt{size()}는 원소 수를 반환하고 \texttt{empty()}는 비어 있는지 확인한다.
+    \item \texttt{front()}와 \texttt{back()}은 첫 번째와 마지막 원소에 접근한다.
+    \item 범위 기반 반복문에서 참조를 사용하면 실제 원소를 수정할 수 있다.
+    \item 반복자는 컨테이너의 원소 위치를 나타내며 포인터와 유사하게 사용한다.
+    \item \texttt{begin()}은 첫 번째 원소, \texttt{end()}는 마지막 원소 다음 위치를 나타낸다.
+    \item \texttt{*it}는 현재 반복자가 가리키는 원소에 접근한다.
+    \item \texttt{cbegin()}과 \texttt{cend()}는 읽기 전용 반복자를 제공한다.
+    \item \texttt{pair<T, U>}는 서로 관련된 두 값을 하나로 묶는다.
+    \item \texttt{pair}의 값은 \texttt{first}와 \texttt{second}로 접근한다.
+    \item \texttt{sort()}, \texttt{find()}, \texttt{count()}, \texttt{reverse()}는 \texttt{<algorithm>}에 정의되어 있다.
+    \item STL 알고리즘은 일반적으로 \texttt{[first, last)} 반복자 범위를 처리한다.
+    \item \texttt{find()}가 값을 찾지 못하면 끝 반복자를 반환하므로 역참조 전에 비교해야 한다.
+    \item 람다는 이름 없는 함수 객체이며 \texttt{[capture](parameters) \{ body \}} 형태로 작성한다.
+    \item 값 캡처는 외부 값을 복사하고, 참조 캡처는 외부 변수 자체에 접근한다.
+    \item \texttt{sort()}에 람다를 전달하면 사용자 정의 정렬 기준을 작성할 수 있다.
+    \item \texttt{vector}, \texttt{iterator}, \texttt{pair}, \texttt{algorithm}, \texttt{lambda}는 실제 STL 코드에서 함께 연결되어 사용된다.
+\end{itemize}
+\end{importantbox}
+
+\section{개념별 실습 완성 코드}
+\subsection{vector}
+\begin{practicebox}
+문자열을 저장하는 \texttt{vector}를 만들고 과일 네 개를 추가한다. 원소 수와 모든 원소를 출력한 뒤 마지막 원소를 제거하고 다시 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    vector<string> fruits;
+
+    fruits.push_back("Apple");
+    fruits.push_back("Banana");
+    fruits.push_back("Orange");
+    fruits.push_back("Grape");
+
+    cout << fruits.size() << endl;
+
+    for (size_t i = 0; i < fruits.size(); i++)
+    {
+        cout << fruits[i] << endl;
+    }
+
+    fruits.pop_back();
+
+    cout << "After pop_back" << endl;
+
+    for (const string& fruit : fruits)
+    {
+        cout << fruit << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{iterator}
+\begin{practicebox}
+정수 \texttt{vector}의 모든 원소를 반복자로 출력한다. 일반 반복자로 각 원소에 \texttt{3}을 더한 뒤 상수 반복자로 결과를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+    vector<int> numbers = {5, 10, 15, 20, 25};
+
+    for (auto it = numbers.begin(); it != numbers.end(); it++)
+    {
+        cout << *it << " ";
+    }
+
+    cout << endl;
+
+    for (auto it = numbers.begin(); it != numbers.end(); it++)
+    {
+        *it += 3;
+    }
+
+    for (auto it = numbers.cbegin(); it != numbers.cend(); it++)
+    {
+        cout << *it << " ";
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{pair}
+\begin{practicebox}
+이름과 점수를 저장하는 \texttt{pair<string, int>} 세 개를 \texttt{vector}에 넣고 모든 학생의 이름과 점수를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <string>
+#include <utility>
+
+using namespace std;
+
+int main()
+{
+    vector<pair<string, int>> students;
+
+    students.push_back({"Alice", 95});
+    students.push_back({"Bob", 88});
+    students.push_back(make_pair(string("Charlie"), 92));
+
+    for (const auto& student : students)
+    {
+        cout << student.first
+             << ": "
+             << student.second
+             << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{algorithm}
+\begin{practicebox}
+정수 \texttt{vector}를 오름차순 정렬한다. 값 \texttt{7}을 찾고, 값 \texttt{3}의 개수를 출력한 뒤 전체 순서를 뒤집는다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int main()
+{
+    vector<int> numbers = {7, 3, 9, 3, 1, 7};
+
+    sort(numbers.begin(), numbers.end());
+
+    for (int number : numbers)
+    {
+        cout << number << " ";
+    }
+
+    cout << endl;
+
+    auto it = find(numbers.begin(), numbers.end(), 7);
+
+    if (it != numbers.end())
+    {
+        cout << "Found: " << *it << endl;
+    }
+    else
+    {
+        cout << "Not found" << endl;
+    }
+
+    cout << "Count of 3: "
+         << count(numbers.begin(), numbers.end(), 3)
+         << endl;
+
+    reverse(numbers.begin(), numbers.end());
+
+    for (int number : numbers)
+    {
+        cout << number << " ";
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{lambda}
+\begin{practicebox}
+학생 이름과 점수를 저장한 \texttt{vector<pair<string, int>>}를 점수 내림차순으로 정렬한다. 점수가 같으면 이름 오름차순으로 정렬한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <string>
+#include <utility>
+#include <algorithm>
+
+using namespace std;
+
+int main()
+{
+    vector<pair<string, int>> students = {
+        {"Alice", 90},
+        {"David", 85},
+        {"Bob", 90},
+        {"Charlie", 95}
+    };
+
+    sort(students.begin(), students.end(),
+        [](const pair<string, int>& a,
+           const pair<string, int>& b)
+        {
+            if (a.second != b.second)
+            {
+                return a.second > b.second;
+            }
+
+            return a.first < b.first;
+        });
+
+    for (const auto& student : students)
+    {
+        cout << student.first
+             << ": "
+             << student.second
+             << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{실습 파일 구성}
+\begin{practicebox}
+Day 10 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_vector.cpp}
+    \item \texttt{02\_iterator.cpp}
+    \item \texttt{03\_pair.cpp}
+    \item \texttt{04\_algorithm.cpp}
+    \item \texttt{05\_lambda.cpp}
+    \item \texttt{practice/p01\_vector.cpp}
+    \item \texttt{practice/p02\_iterator.cpp}
+    \item \texttt{practice/p03\_pair.cpp}
+    \item \texttt{practice/p04\_algorithm.cpp}
+    \item \texttt{practice/p05\_lambda.cpp}
+\end{itemize}
+\end{practicebox}
+
+\end{document}
