@@ -1,0 +1,690 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Python Programming}
+\rhead{Day 7}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% Python code style
+% -------------------------------------------------
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstset{style=pythonstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries Python Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 7: NumPy 기초\par}
+
+    \vspace{2cm}
+
+    {\large ndarray, Array Creation, Indexing, Vectorized Operations, Broadcasting, Linear Algebra\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item NumPy의 목적과 \texttt{ndarray}의 의미 설명하기
+    \item \texttt{np.array()}로 NumPy 배열 생성하기
+    \item \texttt{zeros()}, \texttt{ones()}, \texttt{arange()}, \texttt{linspace()} 사용하기
+    \item 1차원 배열에서 인덱싱과 슬라이싱 사용하기
+    \item 배열 사이의 원소별 연산과 스칼라 연산 수행하기
+    \item 브로드캐스팅을 이용하여 크기가 다른 배열 계산하기
+    \item \texttt{@}, \texttt{.T}, \texttt{det()}, \texttt{inv()}로 기본 행렬 연산 수행하기
+\end{itemize}
+\end{learningbox}
+
+% =================================================
+\section{NumPy와 \texttt{ndarray}}
+% =================================================
+
+NumPy는 Numerical Python의 줄임말로, Python에서 수치 계산을 효율적으로 수행하기 위한 라이브러리이다. Python 리스트도 숫자를 저장할 수 있지만, NumPy 배열은 대량의 수치 데이터를 빠르게 처리하고 행렬 및 선형대수 계산을 수행하는 데 적합하다.
+
+NumPy를 설치하지 않았다면 터미널에서 다음 명령을 한 번 실행한다.
+
+\begin{verbatim}
+pip install numpy
+\end{verbatim}
+
+NumPy는 일반적으로 \texttt{np}라는 별칭으로 불러온다.
+
+\begin{lstlisting}
+import numpy as np
+\end{lstlisting}
+
+\subsection{\texttt{ndarray}}
+
+NumPy의 기본 배열 자료형은 \texttt{ndarray}이다. \texttt{np.array()}에 Python 리스트를 전달하면 NumPy 배열을 만들 수 있다.
+
+\subsection{최종 코드: \texttt{01\_numpy\_intro.py}}
+
+\begin{lstlisting}
+import numpy as np
+
+numbers = np.array([1, 2, 3, 4, 5])
+
+print(numbers)
+print(type(numbers))
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+[1 2 3 4 5]
+<class 'numpy.ndarray'>
+\end{verbatim}
+
+Python 리스트는 원소 사이에 쉼표가 표시되지만, NumPy 배열은 기본 출력에서 쉼표 없이 표시된다.
+
+\begin{importantbox}
+NumPy의 대부분 기능은 \texttt{ndarray}를 중심으로 동작한다. 이후의 인덱싱, 벡터화 연산, 브로드캐스팅, 행렬 연산도 모두 NumPy 배열을 대상으로 수행한다.
+\end{importantbox}
+
+% =================================================
+\section{NumPy 배열 생성}
+% =================================================
+
+NumPy는 리스트를 변환하는 것뿐 아니라 일정한 규칙을 가진 배열을 빠르게 생성하는 함수도 제공한다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+함수 & 기능 \\
+\midrule
+\texttt{np.zeros(n)} & 0으로 채운 길이 \texttt{n}의 배열 생성 \\
+\texttt{np.ones(n)} & 1로 채운 길이 \texttt{n}의 배열 생성 \\
+\texttt{np.arange(start, stop, step)} & 일정한 간격의 배열 생성 \\
+\texttt{np.linspace(start, stop, count)} & 구간을 균등하게 나눈 배열 생성 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{\texttt{zeros()}와 \texttt{ones()}}
+
+\texttt{np.zeros(5)}는 0을 다섯 개 가진 배열을 만들고, \texttt{np.ones(5)}는 1을 다섯 개 가진 배열을 만든다. 기본 자료형은 실수이므로 \texttt{0.}, \texttt{1.}처럼 출력된다.
+
+\subsection{\texttt{arange()}}
+
+\texttt{np.arange(1, 11, 2)}는 1부터 시작하여 2씩 증가하고 11 직전에서 멈춘다. Python의 \texttt{range()}와 마찬가지로 끝값은 포함하지 않는다.
+
+\subsection{\texttt{linspace()}}
+
+\texttt{np.linspace(0, 1, 5)}는 0부터 1까지의 구간을 균등하게 나누어 총 다섯 개의 값을 만든다. 끝값도 포함된다는 점이 \texttt{arange()}와 다르다.
+
+\subsection{최종 코드: \texttt{02\_numpy\_array.py}}
+
+\begin{lstlisting}
+import numpy as np
+
+zeros = np.zeros(5)
+ones = np.ones(5)
+numbers = np.arange(1, 11, 2)
+values = np.linspace(0, 1, 5)
+
+print("Zeros :", zeros)
+print("Ones :", ones)
+print("Arange :", numbers)
+print("Linspace :", values)
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+Zeros : [0. 0. 0. 0. 0.]
+Ones : [1. 1. 1. 1. 1.]
+Arange : [1 3 5 7 9]
+Linspace : [0.   0.25 0.5  0.75 1.  ]
+\end{verbatim}
+
+\begin{importantbox}
+\texttt{arange()}는 간격을 기준으로 값을 만들고, \texttt{linspace()}는 전체 개수를 기준으로 값을 만든다. 그래프나 물리 시뮬레이션에서 일정 구간을 샘플링할 때는 \texttt{linspace()}가 자주 사용된다.
+\end{importantbox}
+
+% =================================================
+\section{인덱싱과 슬라이싱}
+% =================================================
+
+NumPy 배열은 Python 리스트처럼 인덱싱과 슬라이싱을 지원한다. 인덱스는 0부터 시작하며 음수 인덱스로 뒤쪽 원소에 접근할 수 있다.
+
+\begin{lstlisting}
+numbers[index]
+numbers[start:end]
+\end{lstlisting}
+
+슬라이싱에서 시작 위치는 포함하고 끝 위치는 포함하지 않는다.
+
+\subsection{최종 코드: \texttt{03\_numpy\_indexing.py}}
+
+\begin{lstlisting}
+import numpy as np
+
+numbers = np.array([10, 20, 30, 40, 50])
+
+print(numbers[0])
+print(numbers[2])
+print(numbers[-1])
+
+print(numbers[1:4])
+print(numbers[:3])
+print(numbers[2:])
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+10
+30
+50
+[20 30 40]
+[10 20 30]
+[30 40 50]
+\end{verbatim}
+
+\subsection{NumPy 슬라이싱의 View}
+
+Python 리스트를 슬라이싱하면 일반적으로 새로운 리스트가 만들어진다. 반면 NumPy의 슬라이싱 결과는 원본 배열의 일부를 바라보는 View인 경우가 많다. 따라서 슬라이스를 수정하면 원본 배열도 함께 바뀔 수 있다.
+
+\begin{lstlisting}
+part = numbers[1:4]
+part[0] = 999
+\end{lstlisting}
+
+원본과 완전히 독립된 배열이 필요할 때는 \texttt{copy()}를 사용한다.
+
+\begin{lstlisting}
+part = numbers[1:4].copy()
+\end{lstlisting}
+
+\begin{importantbox}
+NumPy 슬라이싱은 메모리를 절약하기 위해 원본 데이터를 공유할 수 있다. 원본 변경을 원하지 않는다면 \texttt{copy()}를 명시적으로 사용한다.
+\end{importantbox}
+
+% =================================================
+\section{벡터화 연산}
+% =================================================
+
+Python 리스트에서 \texttt{+}는 리스트를 연결하지만, NumPy 배열에서 산술 연산자는 같은 위치의 원소끼리 계산한다. 이러한 방식을 벡터화 연산(vectorized operation)이라고 한다.
+
+\begin{verbatim}
+[1 2 3] + [4 5 6] = [5 7 9]
+\end{verbatim}
+
+반복문을 직접 작성하지 않고 배열 전체를 한 번에 계산할 수 있으며, NumPy 내부의 최적화된 코드가 실행되므로 대량의 수치 계산에 효율적이다.
+
+\subsection{최종 코드: \texttt{04\_numpy\_operations.py}}
+
+\begin{lstlisting}
+import numpy as np
+
+a = np.array([1, 2, 3])
+b = np.array([4, 5, 6])
+
+print(a + b)
+print(a - b)
+print(a * b)
+print(a / b)
+
+print()
+
+print(a + 10)
+print(a * 5)
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+[5 7 9]
+[-3 -3 -3]
+[ 4 10 18]
+[0.25 0.4  0.5 ]
+
+[11 12 13]
+[ 5 10 15]
+\end{verbatim}
+
+\subsection{원소별 곱과 행렬곱}
+
+\texttt{a * b}는 같은 위치의 원소를 곱하는 원소별 곱이다. 선형대수의 행렬곱은 \texttt{@} 연산자를 사용한다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+연산 & 의미 \\
+\midrule
+\texttt{A * B} & 원소별 곱 \\
+\texttt{A @ B} & 행렬곱 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+NumPy에서는 가능한 한 Python 반복문 대신 배열 전체에 연산을 적용한다. 코드가 짧아지고 대량의 데이터 처리도 더 효율적이다.
+\end{importantbox}
+
+% =================================================
+\section{브로드캐스팅}
+% =================================================
+
+브로드캐스팅(broadcasting)은 크기가 다른 배열 사이의 연산을 NumPy가 자동으로 확장하여 처리하는 기능이다.
+
+예를 들어 배열과 하나의 숫자를 더하면 그 숫자가 모든 원소에 적용된다.
+
+\begin{lstlisting}
+a = np.array([1, 2, 3])
+print(a + 10)
+\end{lstlisting}
+
+개념적으로는 10이 \texttt{[10, 10, 10]}처럼 확장된 것으로 볼 수 있지만, NumPy는 실제로 같은 값을 반복 저장하지 않고 연산 규칙을 적용한다.
+
+\subsection{행렬과 벡터의 브로드캐스팅}
+
+2차원 행렬의 각 행 길이와 1차원 벡터의 길이가 같다면 벡터를 각 행에 적용할 수 있다.
+
+\subsection{최종 코드: \texttt{05\_numpy\_broadcasting.py}}
+
+\begin{lstlisting}
+import numpy as np
+
+a = np.array([1, 2, 3])
+b = np.array([10])
+
+print(a + b)
+
+print()
+
+matrix = np.array([[1, 2, 3],
+                   [4, 5, 6]])
+
+vector = np.array([10, 20, 30])
+
+print(matrix + vector)
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+[11 12 13]
+
+[[11 22 33]
+ [14 25 36]]
+\end{verbatim}
+
+행렬과 벡터의 계산은 개념적으로 다음과 같다.
+
+\begin{verbatim}
+[[1 2 3]     [[10 20 30]     [[11 22 33]
+ [4 5 6]]  +  [10 20 30]]  =  [14 25 36]]
+\end{verbatim}
+
+\begin{importantbox}
+브로드캐스팅은 배열의 크기가 다르더라도 일정한 규칙에 따라 호환될 때만 가능하다. 호환되지 않는 모양의 배열을 연산하면 오류가 발생한다.
+\end{importantbox}
+
+% =================================================
+\section{NumPy 선형대수}
+% =================================================
+
+NumPy는 행렬곱, 전치행렬, 행렬식, 역행렬과 같은 기본 선형대수 연산을 지원한다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+표현 & 기능 \\
+\midrule
+\texttt{A @ B} & 행렬곱 \\
+\texttt{A.T} & 전치행렬 \\
+\texttt{np.linalg.det(A)} & 행렬식 \\
+\texttt{np.linalg.inv(A)} & 역행렬 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{최종 코드: \texttt{06\_numpy\_linear\_algebra.py}}
+
+\begin{lstlisting}
+import numpy as np
+
+A = np.array([[1, 2],
+              [3, 4]])
+
+B = np.array([[5, 6],
+              [7, 8]])
+
+print("Matrix Multiplication")
+print(A @ B)
+
+print()
+
+print("Transpose")
+print(A.T)
+
+print()
+
+print("Determinant")
+print(np.linalg.det(A))
+
+print()
+
+print("Inverse")
+print(np.linalg.inv(A))
+\end{lstlisting}
+
+실행 결과는 다음과 같다.
+
+\begin{verbatim}
+Matrix Multiplication
+[[19 22]
+ [43 50]]
+
+Transpose
+[[1 3]
+ [2 4]]
+
+Determinant
+-2.0000000000000004
+
+Inverse
+[[-2.   1. ]
+ [ 1.5 -0.5]]
+\end{verbatim}
+
+부동소수점 계산에서는 수학적으로 $-2$인 값이 \texttt{-2.0000000000000004}처럼 출력될 수 있다. 이는 이진 부동소수점 표현에서 발생하는 정상적인 수치 오차이다.
+
+\subsection{연립방정식 풀이}
+
+연립방정식 $A\mathbf{x}=\mathbf{b}$를 풀 때 역행렬을 직접 계산하기보다 \texttt{np.linalg.solve(A, b)}를 사용하는 편이 일반적으로 더 효율적이고 수치적으로 안정적이다.
+
+\begin{lstlisting}
+x = np.linalg.solve(A, b)
+\end{lstlisting}
+
+\begin{importantbox}
+\texttt{np.linalg.inv()}는 역행렬이 존재하는 정사각행렬에만 사용할 수 있다. 실제 연립방정식 풀이에서는 역행렬을 직접 구하기보다 \texttt{solve()}를 우선 고려한다.
+\end{importantbox}
+
+% =================================================
+\section{Day 7 종합 실습: NumPy 기초 복습}
+% =================================================
+
+이번 종합 실습에서는 배열 생성, 인덱싱, 벡터화 연산, 브로드캐스팅, 선형대수 기능을 한 파일에서 복습한다.
+
+\subsection{프로그램 요구사항}
+
+\begin{enumerate}[leftmargin=1.8em]
+    \item \texttt{[10, 20, 30, 40, 50]} 배열과 자료형을 출력한다.
+    \item \texttt{zeros()}, \texttt{ones()}, \texttt{arange()}, \texttt{linspace()}로 배열을 생성한다.
+    \item 지정된 배열에서 첫 원소, 마지막 원소, 세 번째 원소와 여러 슬라이스를 출력한다.
+    \item 두 배열의 덧셈, 뺄셈, 원소별 곱, 나눗셈과 스칼라 연산을 수행한다.
+    \item 2차원 행렬과 1차원 벡터를 브로드캐스팅하여 더한다.
+    \item 두 행렬의 행렬곱, 전치행렬, 행렬식, 역행렬을 출력한다.
+\end{enumerate}
+
+\subsection{최종 코드: \texttt{practice\_day07.py}}
+
+\begin{lstlisting}
+import numpy as np
+
+# 1
+v = np.array([10, 20, 30, 40, 50])
+print(v)
+print(type(v))
+
+# 2
+print(np.zeros(4))
+print(np.ones(6))
+print(np.arange(2, 12, 2))
+print(np.linspace(0, 100, 5))
+
+# 3
+numbers = np.array([5, 10, 15, 20, 25])
+
+print(numbers[0])
+print(numbers[-1])
+print(numbers[2])
+print(numbers[:3])
+print(numbers[-2:])
+print(numbers[1:4])
+
+# 4
+a = np.array([2, 4, 6])
+b = np.array([1, 3, 5])
+
+print(a + b)
+print(a - b)
+print(a * b)
+print(a / b)
+print(a + 10)
+print(b * 2)
+
+# 5
+matrix = np.array([
+    [1, 2, 3],
+    [4, 5, 6]
+])
+
+vector = np.array([10, 20, 30])
+
+print(matrix + vector)
+
+# 6
+A = np.array([
+    [2, 1],
+    [5, 3]
+])
+
+B = np.array([
+    [1, 2],
+    [3, 4]
+])
+
+print(A @ B)
+print(A.T)
+print(np.linalg.det(A))
+print(np.linalg.inv(A))
+\end{lstlisting}
+
+\subsection{실행 결과}
+
+\begin{verbatim}
+[10 20 30 40 50]
+<class 'numpy.ndarray'>
+[0. 0. 0. 0.]
+[1. 1. 1. 1. 1. 1.]
+[ 2  4  6  8 10]
+[  0.  25.  50.  75. 100.]
+5
+25
+15
+[ 5 10 15]
+[20 25]
+[10 15 20]
+[ 3  7 11]
+[1 1 1]
+[ 2 12 30]
+[2.         1.33333333 1.2       ]
+[12 14 16]
+[ 2  6 10]
+[[11 22 33]
+ [14 25 36]]
+[[ 5  8]
+ [14 22]]
+[[2 5]
+ [1 3]]
+1.0000000000000009
+[[ 3. -1.]
+ [-5.  2.]]
+\end{verbatim}
+
+\subsection{프로그램 구조 분석}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+기능 & 사용한 개념 \\
+\midrule
+기본 배열 생성 & \texttt{np.array()}와 \texttt{ndarray} \\
+규칙적인 배열 생성 & \texttt{zeros()}, \texttt{ones()}, \texttt{arange()}, \texttt{linspace()} \\
+일부 원소 선택 & 인덱싱과 슬라이싱 \\
+배열 전체 계산 & 벡터화 연산 \\
+행렬과 벡터 계산 & 브로드캐스팅 \\
+행렬곱 및 역행렬 계산 & \texttt{np.linalg} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+NumPy의 핵심은 배열을 만든 뒤 반복문 없이 배열 전체에 연산을 적용하는 것이다. 필요한 고급 기능은 실제 프로젝트나 전공 문제에서 사용할 때 추가로 학습하면 된다.
+\end{importantbox}
+
+% =================================================
+\section{실습 파일 목록}
+% =================================================
+
+\begin{practicebox}
+Day 7의 학습 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_numpy\_intro.py}
+    \item \texttt{02\_numpy\_array.py}
+    \item \texttt{03\_numpy\_indexing.py}
+    \item \texttt{04\_numpy\_operations.py}
+    \item \texttt{05\_numpy\_broadcasting.py}
+    \item \texttt{06\_numpy\_linear\_algebra.py}
+    \item \texttt{practice\_day07.py}
+    \item \texttt{python\_day07.tex}
+    \item \texttt{python\_day07.pdf}
+\end{itemize}
+\end{practicebox}
+
+% =================================================
+\section{핵심 요약}
+% =================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item NumPy는 Python에서 효율적인 수치 계산을 제공하는 라이브러리이다.
+    \item NumPy의 기본 배열 자료형은 \texttt{ndarray}이다.
+    \item \texttt{np.array()}는 Python 리스트를 NumPy 배열로 변환한다.
+    \item \texttt{zeros()}와 \texttt{ones()}는 일정한 값으로 채운 배열을 생성한다.
+    \item \texttt{arange()}는 간격을 기준으로, \texttt{linspace()}는 개수를 기준으로 배열을 생성한다.
+    \item NumPy 배열은 Python 리스트처럼 인덱싱과 슬라이싱을 지원한다.
+    \item NumPy 슬라이싱은 원본 데이터를 공유하는 View일 수 있다.
+    \item 배열 연산은 같은 위치의 원소끼리 계산되는 벡터화 연산이다.
+    \item 배열과 하나의 숫자를 연산하면 그 숫자가 모든 원소에 적용된다.
+    \item 브로드캐스팅은 호환되는 서로 다른 크기의 배열을 자동으로 확장하여 계산한다.
+    \item \texttt{*}는 원소별 곱이고 \texttt{@}는 행렬곱이다.
+    \item \texttt{.T}는 전치행렬을 반환한다.
+    \item \texttt{np.linalg.det()}는 행렬식, \texttt{np.linalg.inv()}는 역행렬을 계산한다.
+    \item 실제 연립방정식 풀이에는 \texttt{np.linalg.solve()}가 더 적합한 경우가 많다.
+    \item NumPy의 고급 기능은 프로젝트와 전공 문제에서 필요한 시점에 추가 학습한다.
+\end{itemize}
+
+\end{document}
