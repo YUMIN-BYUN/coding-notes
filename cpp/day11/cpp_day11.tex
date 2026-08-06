@@ -1,0 +1,745 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+\hypersetup{colorlinks=true,linkcolor=titleblue,urlcolor=titleblue}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C++ Programming}
+\rhead{Day 11}
+\cfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{titleblue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible
+}
+\lstset{style=cppstyle}
+
+\newtcolorbox{learningbox}{colback=blue!4,colframe=titleblue,title=\textbf{학습 목표},fonttitle=\bfseries}
+\newtcolorbox{importantbox}{colback=yellow!8,colframe=orange!70!black,title=\textbf{핵심 포인트},fonttitle=\bfseries}
+\newtcolorbox{practicebox}{colback=red!3,colframe=red!55!black,title=\textbf{실습},fonttitle=\bfseries}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries C++ Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 11: 연관 컨테이너와 컨테이너 어댑터\par}
+    \vspace{2cm}
+    {\large set, map, unordered\_map, stack, queue\par}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{학습 목표}
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{set}의 중복 제거와 자동 정렬 특성 이해하기
+    \item \texttt{insert()}, \texttt{erase()}, \texttt{find()}로 원소 관리하기
+    \item 이진 탐색 트리의 기본 배치 원리 이해하기
+    \item \texttt{map}에 키와 값을 한 쌍으로 저장하기
+    \item \texttt{first}, \texttt{second}로 키와 값에 접근하기
+    \item \texttt{map}의 대괄호 연산자가 없는 키를 생성할 수 있음을 이해하기
+    \item \texttt{map}과 \texttt{unordered\_map}의 정렬 및 탐색 방식 비교하기
+    \item \texttt{stack}의 LIFO 구조와 \texttt{top()} 사용하기
+    \item \texttt{queue}의 FIFO 구조와 \texttt{front()}, \texttt{back()} 사용하기
+    \item 컨테이너 어댑터에서 \texttt{pop()}이 값을 반환하지 않는 이유 이해하기
+\end{itemize}
+\end{learningbox}
+
+\section{Day 11 개요}
+Day 10에서는 \texttt{vector}와 반복자를 중심으로 순차 컨테이너를 학습했다. Day 11에서는 값을 정렬하거나 키로 검색하는 연관 컨테이너와, 데이터의 입출력 순서를 제한하는 컨테이너 어댑터를 학습한다.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+자료구조 & 핵심 특징 & 대표 접근 방식 \\
+\midrule
+\texttt{set} & 중복 없는 정렬된 값 & 값 탐색 \\
+\texttt{map} & 정렬된 키와 값 & 키로 값 탐색 \\
+\texttt{unordered\_map} & 정렬되지 않은 키와 값 & 해시 기반 탐색 \\
+\texttt{stack} & 나중에 넣은 값이 먼저 나옴 & \texttt{top()} \\
+\texttt{queue} & 먼저 넣은 값이 먼저 나옴 & \texttt{front()} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+연관 컨테이너는 저장 위치보다 값이나 키를 중심으로 데이터를 관리한다. 컨테이너 어댑터는 내부 컨테이너의 기능을 제한하여 스택이나 큐의 동작만 제공한다.
+\end{importantbox}
+
+\section{set}
+\texttt{set}은 같은 자료형의 값을 저장하며 중복을 허용하지 않는 연관 컨테이너이다. 원소는 기본적으로 오름차순으로 정렬되어 유지된다.
+
+\subsection{헤더와 선언}
+\begin{lstlisting}
+#include <set>
+
+set<int> numbers;
+set<string> names;
+\end{lstlisting}
+
+\subsection{원소 삽입}
+\texttt{insert()}로 원소를 추가한다. 이미 존재하는 값은 다시 저장되지 않는다.
+
+\begin{lstlisting}
+set<int> numbers;
+
+numbers.insert(5);
+numbers.insert(2);
+numbers.insert(8);
+numbers.insert(2);
+\end{lstlisting}
+
+저장 결과는 다음과 같다.
+
+\begin{verbatim}
+2 5 8
+\end{verbatim}
+
+\subsection{자동 정렬과 이진 탐색 트리}
+일반적인 이진 탐색 트리는 각 노드에서 작은 값은 왼쪽, 큰 값은 오른쪽에 배치한다.
+
+\begin{verbatim}
+      7
+     / \
+    4   9
+   / \ / \
+  2  5 8 10
+\end{verbatim}
+
+이 구조를 왼쪽, 현재, 오른쪽 순서로 순회하면 값이 오름차순으로 나온다. 실제 표준은 내부 구현 방식을 강제하지 않지만, 많은 구현에서 \texttt{set}은 Red-Black Tree와 같은 균형 이진 탐색 트리를 사용한다. 따라서 삽입, 삭제, 탐색은 일반적으로 $O(\log n)$의 시간 복잡도를 가진다.
+
+\subsection{탐색과 삭제}
+\texttt{find()}는 값을 찾으면 해당 원소의 반복자를 반환하고, 찾지 못하면 \texttt{end()}를 반환한다.
+
+\begin{lstlisting}
+if (numbers.find(5) != numbers.end())
+{
+    cout << "5 exists" << endl;
+}
+\end{lstlisting}
+
+\texttt{erase()}에는 삭제할 값을 직접 전달할 수 있다.
+
+\begin{lstlisting}
+numbers.erase(2);
+\end{lstlisting}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <set>
+
+using namespace std;
+
+int main()
+{
+    set<int> numbers;
+
+    numbers.insert(5);
+    numbers.insert(2);
+    numbers.insert(8);
+    numbers.insert(2);
+    numbers.insert(1);
+
+    for (const auto& number : numbers)
+    {
+        cout << number << " ";
+    }
+
+    cout << endl;
+    cout << "Size: " << numbers.size() << endl;
+
+    if (numbers.find(5) != numbers.end())
+    {
+        cout << "5 exists" << endl;
+    }
+
+    numbers.erase(2);
+
+    for (const auto& number : numbers)
+    {
+        cout << number << " ";
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+정수 \texttt{7, 4, 7, 2, 4, 9}를 \texttt{set}에 넣고 모든 원소를 출력한다. 중복이 제거되고 \texttt{2 4 7 9}가 출력되는지 확인한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <set>
+
+using namespace std;
+
+int main()
+{
+    set<int> numbers;
+
+    numbers.insert(7);
+    numbers.insert(4);
+    numbers.insert(7);
+    numbers.insert(2);
+    numbers.insert(4);
+    numbers.insert(9);
+
+    for (const auto& number : numbers)
+    {
+        cout << number << " ";
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{map}
+\texttt{map}은 키와 값을 한 쌍으로 저장하는 연관 컨테이너이다. 각 키는 하나만 존재할 수 있으며, 값은 중복될 수 있다. 원소는 키를 기준으로 오름차순 정렬된다.
+
+\subsection{헤더와 선언}
+\begin{lstlisting}
+#include <map>
+
+map<string, int> scores;
+\end{lstlisting}
+
+첫 번째 타입은 키의 타입이고 두 번째 타입은 값의 타입이다.
+
+\subsection{대괄호 연산자로 삽입과 수정}
+\begin{lstlisting}
+scores["Alice"] = 95;
+scores["Bob"] = 87;
+scores["Chris"] = 100;
+\end{lstlisting}
+
+같은 키에 다시 대입하면 새 원소가 추가되지 않고 기존 값이 수정된다.
+
+\begin{lstlisting}
+scores["Alice"] = 98;
+\end{lstlisting}
+
+\subsection{first와 second}
+\texttt{map}의 각 원소는 키와 값을 저장한 \texttt{pair} 형태이다. 반복문에서 \texttt{first}는 키, \texttt{second}는 값이다.
+
+\begin{lstlisting}
+for (const auto& student : scores)
+{
+    cout << student.first << " : "
+         << student.second << endl;
+}
+\end{lstlisting}
+
+\subsection{없는 키와 대괄호 연산자}
+대괄호 연산자로 없는 키를 조회하면 해당 키와 기본값이 새로 삽입된다.
+
+\begin{lstlisting}
+cout << scores["John"] << endl;
+\end{lstlisting}
+
+\texttt{int}의 기본값은 \texttt{0}이므로 위 코드는 \texttt{"John" -> 0} 원소를 생성한다. 존재 여부만 확인할 때는 \texttt{find()}를 사용하는 것이 안전하다.
+
+\begin{lstlisting}
+if (scores.find("John") == scores.end())
+{
+    cout << "John not found" << endl;
+}
+\end{lstlisting}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <map>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    map<string, int> scores;
+
+    scores["Alice"] = 95;
+    scores["Bob"] = 87;
+    scores["Chris"] = 100;
+
+    cout << "Alice : " << scores["Alice"] << endl;
+    cout << "Bob : " << scores["Bob"] << endl;
+
+    cout << endl;
+
+    for (const auto& student : scores)
+    {
+        cout << student.first << " : "
+             << student.second << endl;
+    }
+
+    cout << endl;
+
+    scores.erase("Bob");
+
+    if (scores.find("Bob") == scores.end())
+    {
+        cout << "Bob not found" << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+학생 네 명의 이름과 나이를 \texttt{map<string, int>}에 저장한다. 모든 학생을 출력하고, Mike의 나이를 출력한 뒤 Jane을 삭제한다. Jane이 존재하지 않으면 \texttt{Jane not found}를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <map>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    map<string, int> students;
+
+    students["Tom"] = 20;
+    students["Jane"] = 22;
+    students["Mike"] = 21;
+    students["Lucy"] = 23;
+
+    for (const auto& student : students)
+    {
+        cout << student.first << " : "
+             << student.second << endl;
+    }
+
+    cout << students["Mike"] << endl;
+
+    students.erase("Jane");
+
+    if (students.find("Jane") == students.end())
+    {
+        cout << "Jane not found" << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{unordered\_map}
+\texttt{unordered\_map}도 키와 값을 한 쌍으로 저장하지만, 키를 정렬하지 않는다. 일반적으로 해시 테이블을 사용하여 평균 $O(1)$의 삽입, 삭제, 탐색 성능을 제공한다.
+
+\subsection{map과의 비교}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+항목 & \texttt{map} & \texttt{unordered\_map} \\
+\midrule
+원소 순서 & 키 기준 정렬 & 보장되지 않음 \\
+일반적 구현 & 균형 이진 탐색 트리 & 해시 테이블 \\
+탐색 복잡도 & $O(\log n)$ & 평균 $O(1)$ \\
+최악의 탐색 복잡도 & $O(\log n)$ & $O(n)$ \\
+주요 목적 & 정렬된 데이터 & 빠른 키 검색 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{사용 방법}
+사용 방식은 \texttt{map}과 거의 같다.
+
+\begin{lstlisting}
+#include <unordered_map>
+
+unordered_map<string, int> scores;
+
+scores["Alice"] = 95;
+scores.erase("Alice");
+\end{lstlisting}
+
+반복문으로 출력할 때 순서는 실행 환경이나 내부 상태에 따라 달라질 수 있다.
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <unordered_map>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    unordered_map<string, int> scores;
+
+    scores["Alice"] = 95;
+    scores["Bob"] = 87;
+    scores["Chris"] = 100;
+
+    cout << "Alice : " << scores["Alice"] << endl;
+    cout << endl;
+
+    for (const auto& student : scores)
+    {
+        cout << student.first << " : "
+             << student.second << endl;
+    }
+
+    cout << endl;
+
+    if (scores.find("Bob") != scores.end())
+    {
+        cout << "Bob exists" << endl;
+    }
+
+    scores.erase("Bob");
+
+    if (scores.find("Bob") == scores.end())
+    {
+        cout << "Bob deleted" << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+Apple, Banana, Orange, Grape의 가격을 \texttt{unordered\_map<string, int>}에 저장한다. 모든 원소와 Orange의 가격을 출력한다. Banana를 삭제한 뒤 존재하지 않으면 \texttt{Banana deleted}를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <unordered_map>
+
+using namespace std;
+
+int main()
+{
+    unordered_map<string, int> fruits;
+
+    fruits["Apple"] = 1200;
+    fruits["Banana"] = 800;
+    fruits["Orange"] = 1500;
+    fruits["Grape"] = 2000;
+
+    for (const auto& fruit : fruits)
+    {
+        cout << fruit.first << " : "
+             << fruit.second << endl;
+    }
+
+    cout << fruits["Orange"] << endl;
+
+    fruits.erase("Banana");
+
+    if (fruits.find("Banana") == fruits.end())
+    {
+        cout << "Banana deleted" << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{stack}
+\texttt{stack}은 나중에 들어온 원소가 먼저 나오는 LIFO(Last In, First Out) 구조를 제공하는 컨테이너 어댑터이다.
+
+\begin{verbatim}
+Top
+30
+20
+10
+\end{verbatim}
+
+\subsection{주요 함수}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+함수 & 역할 \\
+\midrule
+\texttt{push(value)} & 맨 위에 원소 추가 \\
+\texttt{top()} & 맨 위 원소 접근 \\
+\texttt{pop()} & 맨 위 원소 제거 \\
+\texttt{size()} & 원소 개수 반환 \\
+\texttt{empty()} & 비어 있는지 확인 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{pop의 특징}
+\texttt{pop()}은 제거한 값을 반환하지 않는다. 값을 저장하면서 제거하려면 먼저 \texttt{top()}을 호출한 뒤 \texttt{pop()}을 호출한다.
+
+\begin{lstlisting}
+int value = numbers.top();
+numbers.pop();
+\end{lstlisting}
+
+빈 스택에서 \texttt{top()}이나 \texttt{pop()}을 호출하면 올바른 동작이 보장되지 않으므로 먼저 \texttt{empty()}를 확인해야 한다.
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <stack>
+
+using namespace std;
+
+int main()
+{
+    stack<int> numbers;
+
+    numbers.push(10);
+    numbers.push(20);
+    numbers.push(30);
+
+    cout << "Top : " << numbers.top() << endl;
+
+    numbers.pop();
+
+    cout << "Top : " << numbers.top() << endl;
+    cout << "Size : " << numbers.size() << endl;
+
+    while (!numbers.empty())
+    {
+        cout << numbers.top() << " ";
+        numbers.pop();
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+정수 \texttt{5, 10, 15, 20}을 스택에 넣는다. 현재 맨 위 값을 출력하고 \texttt{pop()}을 두 번 호출한다. 남은 원소를 모두 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <stack>
+
+using namespace std;
+
+int main()
+{
+    stack<int> numbers;
+
+    numbers.push(5);
+    numbers.push(10);
+    numbers.push(15);
+    numbers.push(20);
+
+    cout << "Top : " << numbers.top() << endl;
+
+    numbers.pop();
+    numbers.pop();
+
+    while (!numbers.empty())
+    {
+        cout << numbers.top() << " ";
+        numbers.pop();
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{queue}
+\texttt{queue}는 먼저 들어온 원소가 먼저 나오는 FIFO(First In, First Out) 구조를 제공하는 컨테이너 어댑터이다.
+
+\begin{verbatim}
+Front                 Back
+100  200  300  400
+\end{verbatim}
+
+\subsection{주요 함수}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+함수 & 역할 \\
+\midrule
+\texttt{push(value)} & 뒤쪽에 원소 추가 \\
+\texttt{front()} & 맨 앞 원소 접근 \\
+\texttt{back()} & 맨 뒤 원소 접근 \\
+\texttt{pop()} & 맨 앞 원소 제거 \\
+\texttt{size()} & 원소 개수 반환 \\
+\texttt{empty()} & 비어 있는지 확인 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{stack과 queue 비교}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+항목 & \texttt{stack} & \texttt{queue} \\
+\midrule
+출력 순서 & LIFO & FIFO \\
+원소 추가 & \texttt{push()} & \texttt{push()} \\
+원소 제거 & \texttt{pop()} & \texttt{pop()} \\
+접근 함수 & \texttt{top()} & \texttt{front()}, \texttt{back()} \\
+중간 원소 접근 & 불가능 & 불가능 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+int main()
+{
+    queue<int> numbers;
+
+    numbers.push(10);
+    numbers.push(20);
+    numbers.push(30);
+
+    cout << "Front : " << numbers.front() << endl;
+    cout << "Back : " << numbers.back() << endl;
+
+    numbers.pop();
+
+    cout << "Front : " << numbers.front() << endl;
+
+    while (!numbers.empty())
+    {
+        cout << numbers.front() << " ";
+        numbers.pop();
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+정수 \texttt{100, 200, 300, 400}을 큐에 넣는다. 맨 앞과 맨 뒤 값을 출력한 뒤 \texttt{pop()}을 한 번 호출한다. 남은 모든 원소를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+int main()
+{
+    queue<int> numbers;
+
+    numbers.push(100);
+    numbers.push(200);
+    numbers.push(300);
+    numbers.push(400);
+
+    cout << numbers.front() << endl;
+    cout << numbers.back() << endl;
+
+    numbers.pop();
+
+    while (!numbers.empty())
+    {
+        cout << numbers.front() << " ";
+        numbers.pop();
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{컨테이너 선택 기준}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+필요한 기능 & 적합한 컨테이너 & 이유 \\
+\midrule
+순서대로 저장하고 인덱스로 접근 & \texttt{vector} & 연속 저장과 빠른 임의 접근 \\
+중복 없는 정렬된 값 저장 & \texttt{set} & 자동 정렬과 유일한 원소 \\
+정렬된 키와 값 저장 & \texttt{map} & 키 기준 순서 유지 \\
+순서 없이 빠르게 키 검색 & \texttt{unordered\_map} & 평균 상수 시간 탐색 \\
+최근 원소부터 처리 & \texttt{stack} & LIFO 구조 \\
+먼저 들어온 원소부터 처리 & \texttt{queue} & FIFO 구조 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+자료구조를 선택할 때는 저장할 데이터의 형태뿐 아니라 정렬 필요 여부, 중복 허용 여부, 접근 방식, 탐색 빈도를 함께 고려해야 한다.
+\end{importantbox}
+
+\section{실습 파일 구성}
+\begin{practicebox}
+Day 11 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_set.cpp}
+    \item \texttt{02\_map.cpp}
+    \item \texttt{03\_unordered\_map.cpp}
+    \item \texttt{04\_stack.cpp}
+    \item \texttt{05\_queue.cpp}
+    \item \texttt{practice/p01\_set.cpp}
+    \item \texttt{practice/p02\_map.cpp}
+    \item \texttt{practice/p03\_unordered\_map.cpp}
+    \item \texttt{practice/p04\_stack.cpp}
+    \item \texttt{practice/p05\_queue.cpp}
+\end{itemize}
+\end{practicebox}
+
+\end{document}
