@@ -1,0 +1,617 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Python Programming}
+\rhead{Day 9}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% Python code style
+% -------------------------------------------------
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstset{style=pythonstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries Python Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 9: Matplotlib 기초\par}
+
+    \vspace{2cm}
+
+    {\large Line Plot, Styling, Multiple Plots, Bar, Scatter, Histogram, Subplot\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item Matplotlib의 목적과 \texttt{pyplot}의 기본 사용법 설명하기
+    \item \texttt{plot()}으로 기본 선 그래프 그리기
+    \item 색상, 선 스타일, 마커, 범례를 이용해 그래프 꾸미기
+    \item 하나의 좌표축에 여러 개의 선 그래프 그리기
+    \item \texttt{bar()}로 막대 그래프 그리기
+    \item \texttt{scatter()}로 두 변수의 관계 나타내기
+    \item \texttt{hist()}로 데이터의 분포 확인하기
+    \item \texttt{subplot()}과 \texttt{tight\_layout()}으로 여러 그래프 배치하기
+\end{itemize}
+\end{learningbox}
+
+% =================================================
+\section{Matplotlib와 기본 선 그래프}
+% =================================================
+
+Matplotlib는 Python에서 데이터를 그래프로 시각화하기 위한 대표적인 라이브러리이다. 수치 데이터의 변화, 항목별 비교, 변수 간 관계, 데이터 분포 등을 다양한 형태의 그래프로 표현할 수 있다.
+
+Matplotlib를 설치하지 않았다면 터미널에서 다음 명령을 한 번 실행한다.
+
+\begin{verbatim}
+pip install matplotlib
+\end{verbatim}
+
+그래프를 그릴 때는 일반적으로 \texttt{matplotlib.pyplot}을 \texttt{plt}라는 별칭으로 불러온다.
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+\end{lstlisting}
+
+\subsection{기본 선 그래프}
+
+\texttt{plt.plot(x, y)}는 x값과 y값을 이용해 각 데이터 점을 연결한 선 그래프를 만든다. 그래프를 실제 화면에 표시하려면 마지막에 \texttt{plt.show()}를 호출한다.
+
+제목과 축 이름은 각각 \texttt{title()}, \texttt{xlabel()}, \texttt{ylabel()}로 지정할 수 있으며, \texttt{grid(True)}를 사용하면 격자를 표시할 수 있다.
+
+\subsection{최종 코드: \texttt{01\_basic\_plot.py}}
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+
+x = [1, 2, 3, 4, 5]
+y = [2, 4, 6, 8, 10]
+
+plt.plot(x, y)
+
+plt.title("Simple Line Plot")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.grid(True)
+
+plt.show()
+\end{lstlisting}
+
+\begin{importantbox}
+\texttt{plot()}은 그래프를 만들고, \texttt{show()}는 완성된 그래프를 화면에 표시한다. 제목과 축 이름은 그래프가 무엇을 의미하는지 명확하게 전달하기 위해 함께 작성하는 것이 좋다.
+\end{importantbox}
+
+% =================================================
+\section{그래프 스타일}
+% =================================================
+
+\texttt{plot()}에는 그래프의 모양을 조절하는 여러 옵션을 전달할 수 있다. 자주 사용하는 옵션은 색상, 선 스타일, 마커, 범례 이름이다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+옵션 & 기능 \\
+\midrule
+\texttt{color} & 선 색상 지정 \\
+\texttt{linestyle} & 선 모양 지정 \\
+\texttt{marker} & 데이터 점 모양 지정 \\
+\texttt{label} & 범례에 표시할 이름 지정 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{label}을 지정한 뒤에는 \texttt{plt.legend()}를 호출해야 범례가 화면에 나타난다.
+
+색상은 이름뿐 아니라 RGB 튜플이나 HEX 코드로도 지정할 수 있다. Matplotlib의 RGB 값은 일반적으로 0부터 1 사이의 값을 사용한다.
+
+\begin{lstlisting}
+color=(1, 0, 0)
+color="#FF0000"
+\end{lstlisting}
+
+\subsection{최종 코드: \texttt{02\_plot\_style.py}}
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+
+x = [1, 2, 3, 4, 5]
+y = [3, 5, 4, 7, 6]
+
+plt.plot(
+    x,
+    y,
+    color="red",
+    linestyle="--",
+    marker="o",
+    label="Data"
+)
+
+plt.title("Styled Line Plot")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.grid(True)
+plt.legend()
+
+plt.show()
+\end{lstlisting}
+
+\begin{importantbox}
+간단한 그래프는 색상 이름을 사용하는 것이 편리하고, 정확한 색상을 지정해야 할 때는 RGB 튜플이나 HEX 코드를 사용할 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{여러 개의 선 그래프}
+% =================================================
+
+하나의 좌표축에서 여러 데이터를 비교하려면 \texttt{plt.plot()}을 여러 번 호출한다. \texttt{show()}가 호출되기 전까지는 새로 그린 그래프가 같은 좌표축에 계속 추가된다.
+
+각 선에 서로 다른 \texttt{label}을 지정하고 \texttt{legend()}를 사용하면 어떤 선이 어떤 데이터를 나타내는지 쉽게 구분할 수 있다.
+
+\subsection{최종 코드: \texttt{03\_multiple\_plots.py}}
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+
+x = [1, 2, 3, 4, 5]
+
+student_a = [70, 75, 80, 90, 95]
+student_b = [65, 72, 78, 85, 90]
+
+plt.plot(
+    x,
+    student_a,
+    marker="o",
+    label="Student A"
+)
+
+plt.plot(
+    x,
+    student_b,
+    marker="s",
+    label="Student B"
+)
+
+plt.title("Student Scores")
+plt.xlabel("Exam")
+plt.ylabel("Score")
+plt.grid(True)
+plt.legend()
+
+plt.show()
+\end{lstlisting}
+
+\begin{importantbox}
+같은 x축에서 여러 데이터의 변화 추세를 비교할 때는 \texttt{plot()}을 반복 호출하고, \texttt{label}과 \texttt{legend()}를 함께 사용하는 방식이 기본이다.
+\end{importantbox}
+
+% =================================================
+\section{막대 그래프}
+% =================================================
+
+막대 그래프는 서로 다른 항목의 크기를 비교할 때 사용한다. \texttt{plt.bar(x, y)}에서 x에는 항목 이름이나 위치를, y에는 각 항목의 값을 전달한다.
+
+\texttt{color}로 막대 색상을 지정할 수 있고, \texttt{width}로 막대의 너비를 조절할 수 있다. 막대의 높이를 비교할 때는 \texttt{grid(axis="y")}를 사용해 가로 방향 격자만 표시하면 읽기 편하다.
+
+\subsection{최종 코드: \texttt{04\_bar\_chart.py}}
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+
+fruits = ["Apple", "Banana", "Orange", "Grape"]
+sales = [15, 23, 18, 30]
+
+plt.bar(
+    fruits,
+    sales,
+    color="skyblue",
+    width=0.6
+)
+
+plt.title("Fruit Sales")
+plt.xlabel("Fruit")
+plt.ylabel("Sales")
+plt.grid(axis="y")
+
+plt.show()
+\end{lstlisting}
+
+\begin{importantbox}
+\texttt{bar()}는 이미 항목별 값이 정리된 데이터를 비교하는 그래프이다. 각 막대의 높이가 해당 항목의 값을 나타낸다.
+\end{importantbox}
+
+% =================================================
+\section{산점도}
+% =================================================
+
+산점도는 두 변수의 관계를 점으로 나타내는 그래프이다. 데이터 사이에 자연스러운 순서가 없거나 점들을 선으로 연결할 필요가 없을 때 적합하다.
+
+\texttt{plt.scatter(x, y)}를 사용하며, \texttt{s}로 점의 크기를 지정하고 \texttt{marker}로 점의 모양을 바꿀 수 있다.
+
+예를 들어 공부 시간과 시험 점수처럼 두 변수 사이의 관계를 확인할 때 산점도를 사용할 수 있다. 실험 데이터에서는 측정값을 \texttt{scatter()}로 표시하고 이론 곡선을 \texttt{plot()}으로 함께 표시하는 방식도 자주 사용한다.
+
+\subsection{최종 코드: \texttt{05\_scatter\_plot.py}}
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+
+height = [160, 165, 170, 175, 180]
+score = [70, 75, 82, 88, 95]
+
+plt.scatter(
+    height,
+    score,
+    color="blue",
+    s=80,
+    marker="o"
+)
+
+plt.title("Height vs Score")
+plt.xlabel("Height (cm)")
+plt.ylabel("Score")
+plt.grid(True)
+
+plt.show()
+\end{lstlisting}
+
+\begin{importantbox}
+\texttt{scatter()}는 두 변수의 관계나 상관관계를 시각적으로 확인할 때 사용한다. 점 사이를 연결하지 않는다는 점이 기본 선 그래프와 가장 큰 차이이다.
+\end{importantbox}
+
+% =================================================
+\section{히스토그램}
+% =================================================
+
+히스토그램은 데이터가 어떤 구간에 얼마나 많이 분포하는지 확인하는 그래프이다. 막대 그래프가 항목별 값을 비교한다면, 히스토그램은 원본 수치 데이터를 여러 구간으로 나눈 뒤 각 구간에 포함되는 데이터 개수를 보여준다.
+
+\texttt{plt.hist(data)}를 사용하며, \texttt{bins}는 데이터를 몇 개의 구간으로 나눌지를 지정한다. \texttt{edgecolor}를 사용하면 각 막대의 경계를 명확하게 표시할 수 있다.
+
+\subsection{최종 코드: \texttt{06\_histogram.py}}
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+
+scores = [
+    72, 75, 81, 83, 84,
+    85, 86, 87, 88, 90,
+    91, 92, 95, 96, 98
+]
+
+plt.hist(
+    scores,
+    bins=5,
+    color="skyblue",
+    edgecolor="black"
+)
+
+plt.title("Score Distribution")
+plt.xlabel("Score")
+plt.ylabel("Frequency")
+plt.grid(axis="y")
+
+plt.show()
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+함수 & 입력 데이터 & 목적 \\
+\midrule
+\texttt{bar()} & 항목별로 이미 정리된 값 & 항목 간 크기 비교 \\
+\texttt{hist()} & 개별 원본 수치 데이터 & 데이터 분포 확인 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+\texttt{bins}의 값에 따라 히스토그램의 구간 수가 달라진다. 같은 데이터라도 구간 수를 어떻게 정하느냐에 따라 분포가 다르게 보일 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{여러 그래프 배치}
+% =================================================
+
+한 화면에 여러 그래프를 함께 배치하려면 \texttt{plt.subplot()}을 사용할 수 있다.
+
+\begin{lstlisting}
+plt.subplot(rows, columns, index)
+\end{lstlisting}
+
+예를 들어 \texttt{plt.subplot(2, 2, 1)}은 화면을 2행 2열로 나눈 뒤 첫 번째 위치를 선택한다. 이후 호출하는 \texttt{plot()}, \texttt{bar()}, \texttt{scatter()}, \texttt{hist()}는 현재 선택된 위치에 그려진다.
+
+여러 그래프의 제목이나 축 이름이 겹칠 수 있으므로 마지막에 \texttt{plt.tight\_layout()}을 사용하면 간격을 자동으로 조정할 수 있다.
+
+\subsection{최종 코드: \texttt{07\_subplot.py}}
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+
+x = [1, 2, 3, 4, 5]
+y = [2, 4, 6, 8, 10]
+
+plt.subplot(2, 2, 1)
+plt.plot(x, y)
+plt.title("Line")
+
+plt.subplot(2, 2, 2)
+plt.bar(x, y)
+plt.title("Bar")
+
+plt.subplot(2, 2, 3)
+plt.scatter(x, y)
+plt.title("Scatter")
+
+plt.subplot(2, 2, 4)
+plt.hist(y)
+plt.title("Histogram")
+
+plt.tight_layout()
+plt.show()
+\end{lstlisting}
+
+\begin{importantbox}
+\texttt{subplot()}은 하나의 창을 여러 영역으로 나누는 기능이고, \texttt{tight\_layout()}은 여러 그래프가 서로 겹치지 않도록 간격을 정리하는 기능이다.
+\end{importantbox}
+
+% =================================================
+\section{Day 9 종합 실습: 학생 데이터 시각화}
+% =================================================
+
+이번 종합 실습에서는 학생 점수와 공부 시간, 과목별 평균 데이터를 이용해 선 그래프, 막대 그래프, 산점도, 히스토그램을 하나의 화면에 배치한다.
+
+\subsection{프로그램 요구사항}
+
+\begin{enumerate}[leftmargin=1.8em]
+    \item 학생 이름과 점수를 이용해 학생별 점수 선 그래프를 그린다.
+    \item 과목 이름과 평균 점수를 이용해 과목별 평균 막대 그래프를 그린다.
+    \item 공부 시간과 점수를 이용해 두 변수의 관계를 산점도로 나타낸다.
+    \item 학생들의 점수 데이터를 이용해 점수 분포 히스토그램을 그린다.
+    \item \texttt{subplot(2, 2, ...)}을 이용해 네 그래프를 한 화면에 배치한다.
+    \item 각 그래프에 적절한 제목과 축 이름을 작성한다.
+    \item 필요한 그래프에는 격자를 추가한다.
+    \item 마지막에 \texttt{tight\_layout()}과 \texttt{show()}를 호출한다.
+\end{enumerate}
+
+\subsection{최종 코드: \texttt{practice\_day09.py}}
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+
+students = [
+    "Alice", "Bob", "Charlie", "David", "Emma",
+    "Frank", "Grace", "Henry", "Ivy", "Jack"
+]
+
+scores = [72, 75, 81, 83, 84, 85, 86, 87, 88, 90]
+study_hours = [1, 2, 3, 3, 4, 4, 5, 6, 7, 8]
+
+subjects = ["Math", "English", "Physics", "Chemistry"]
+averages = [82, 76, 91, 85]
+
+plt.subplot(2, 2, 1)
+plt.plot(
+    students,
+    scores,
+    marker="o"
+)
+plt.title("Student Scores")
+plt.xlabel("Students")
+plt.ylabel("Scores")
+plt.grid(True)
+
+plt.subplot(2, 2, 2)
+plt.bar(
+    subjects,
+    averages,
+    color="skyblue"
+)
+plt.title("Subject Averages")
+plt.xlabel("Subjects")
+plt.ylabel("Average Score")
+plt.grid(axis="y")
+
+plt.subplot(2, 2, 3)
+plt.scatter(
+    study_hours,
+    scores,
+    marker="*",
+    s=80
+)
+plt.title("Study Hours vs Scores")
+plt.xlabel("Study Hours")
+plt.ylabel("Scores")
+plt.grid(True)
+
+plt.subplot(2, 2, 4)
+plt.hist(
+    scores,
+    bins=5,
+    color="green",
+    edgecolor="black"
+)
+plt.title("Score Distribution")
+plt.xlabel("Scores")
+plt.ylabel("Frequency")
+plt.grid(axis="y")
+
+plt.tight_layout()
+plt.show()
+\end{lstlisting}
+
+\subsection{프로그램 구조 분석}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+기능 & 사용한 개념 \\
+\midrule
+학생별 점수 변화 표시 & \texttt{plot()} \\
+과목별 평균 비교 & \texttt{bar()} \\
+공부 시간과 점수 관계 확인 & \texttt{scatter()} \\
+점수 분포 확인 & \texttt{hist()} \\
+한 화면에 그래프 배치 & \texttt{subplot()} \\
+그래프 간격 자동 조정 & \texttt{tight\_layout()} \\
+그래프 출력 & \texttt{show()} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+같은 데이터라도 목적에 따라 적절한 그래프가 다르다. 값의 변화는 선 그래프, 항목별 비교는 막대 그래프, 두 변수의 관계는 산점도, 데이터의 분포는 히스토그램이 기본적인 선택이다.
+\end{importantbox}
+
+% =================================================
+\section{실습 파일 목록}
+% =================================================
+
+\begin{practicebox}
+Day 9의 학습 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_basic\_plot.py}
+    \item \texttt{02\_plot\_style.py}
+    \item \texttt{03\_multiple\_plots.py}
+    \item \texttt{04\_bar\_chart.py}
+    \item \texttt{05\_scatter\_plot.py}
+    \item \texttt{06\_histogram.py}
+    \item \texttt{07\_subplot.py}
+    \item \texttt{practice\_day09.py}
+    \item \texttt{python\_day09.tex}
+    \item \texttt{python\_day09.pdf}
+\end{itemize}
+\end{practicebox}
+
+% =================================================
+\section{핵심 요약}
+% =================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Matplotlib는 Python에서 데이터를 그래프로 시각화하기 위한 대표적인 라이브러리이다.
+    \item \texttt{matplotlib.pyplot}은 일반적으로 \texttt{plt}라는 별칭으로 불러온다.
+    \item \texttt{plot(x, y)}은 데이터 점을 선으로 연결한 선 그래프를 만든다.
+    \item \texttt{title()}, \texttt{xlabel()}, \texttt{ylabel()}로 제목과 축 이름을 지정한다.
+    \item \texttt{grid()}는 그래프에 격자를 표시한다.
+    \item \texttt{color}, \texttt{linestyle}, \texttt{marker}로 그래프 스타일을 조절할 수 있다.
+    \item 색상은 이름, RGB 튜플, HEX 코드 등으로 지정할 수 있다.
+    \item \texttt{label}과 \texttt{legend()}를 사용하면 여러 그래프를 쉽게 구분할 수 있다.
+    \item 하나의 좌표축에 여러 선을 그리려면 \texttt{plot()}을 여러 번 호출한다.
+    \item \texttt{bar()}는 서로 다른 항목의 크기를 비교할 때 사용한다.
+    \item \texttt{scatter()}는 두 변수의 관계를 점으로 표현한다.
+    \item \texttt{s}는 산점도의 점 크기를 조절한다.
+    \item \texttt{hist()}는 원본 데이터의 분포를 여러 구간으로 나누어 표시한다.
+    \item \texttt{bins}는 히스토그램의 구간 수를 지정한다.
+    \item \texttt{subplot()}은 한 화면을 여러 영역으로 나누어 그래프를 배치한다.
+    \item \texttt{tight\_layout()}은 여러 그래프 사이의 간격을 자동으로 정리한다.
+    \item \texttt{show()}는 완성된 그래프를 화면에 표시한다.
+    \item Matplotlib의 고급 기능은 실제 프로젝트에서 필요한 시점에 추가로 학습한다.
+\end{itemize}
+
+\end{document}
