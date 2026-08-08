@@ -1,0 +1,933 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+\hypersetup{colorlinks=true,linkcolor=titleblue,urlcolor=titleblue}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C++ Programming}
+\rhead{Day 12}
+\cfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{titleblue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible
+}
+\lstset{style=cppstyle}
+
+\newtcolorbox{learningbox}{colback=blue!4,colframe=titleblue,title=\textbf{학습 목표},fonttitle=\bfseries}
+\newtcolorbox{importantbox}{colback=yellow!8,colframe=orange!70!black,title=\textbf{핵심 포인트},fonttitle=\bfseries}
+\newtcolorbox{practicebox}{colback=red!3,colframe=red!55!black,title=\textbf{실습},fonttitle=\bfseries}
+
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries C++ Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 12: STL 활용 심화\par}
+    \vspace{2cm}
+    {\large priority\_queue, Lambda Capture, find\_if, count\_if, transform, Object Container\par}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{학습 목표}
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{priority\_queue}의 우선순위 기반 처리 방식 이해하기
+    \item \texttt{top()}, \texttt{push()}, \texttt{pop()}을 이용해 우선순위 큐 사용하기
+    \item 람다 캡처에서 값 캡처와 참조 캡처의 차이 이해하기
+    \item \texttt{find\_if()}와 람다를 이용해 조건을 만족하는 첫 원소 찾기
+    \item \texttt{count\_if()}와 predicate를 이용해 조건을 만족하는 원소 개수 세기
+    \item \texttt{transform()}을 이용해 범위의 원소를 새로운 값으로 변환하기
+    \item 사용자 정의 클래스 객체를 \texttt{vector}에 저장하기
+    \item 클래스, 컨테이너, 반복자, 람다, STL 알고리즘을 하나의 코드에서 결합하기
+\end{itemize}
+\end{learningbox}
+
+\section{Day 12 개요}
+Day 10에서는 \texttt{vector}, 반복자, 기본 STL 알고리즘과 람다 표현식을 학습했고,
+Day 11에서는 \texttt{set}, \texttt{map}, \texttt{unordered\_map},
+\texttt{stack}, \texttt{queue}를 학습했다.
+Day 12에서는 이 내용을 확장하여 우선순위 기반 컨테이너와 조건 기반 STL 알고리즘을 다루고,
+마지막에는 클래스 객체를 STL 컨테이너에 저장하여 여러 개념을 연결한다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+주제 & 핵심 역할 \\
+\midrule
+\texttt{priority\_queue} & 우선순위가 높은 원소부터 처리 \\
+Lambda Capture & 람다 바깥 변수 사용 \\
+\texttt{find\_if()} & 조건을 만족하는 첫 원소 탐색 \\
+\texttt{count\_if()} & 조건을 만족하는 원소 개수 계산 \\
+\texttt{transform()} & 범위의 원소를 규칙에 따라 변환 \\
+Object Container & 클래스와 STL 알고리즘 결합 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+Day 12의 핵심은 STL 함수를 개별적으로 외우는 것이 아니라 람다로 조건이나 변환 규칙을 만들고,
+그 규칙을 STL 알고리즘에 전달하는 흐름을 이해하는 것이다.
+\end{importantbox}
+
+\section{priority\_queue}
+\texttt{priority\_queue}는 원소가 들어온 순서가 아니라 우선순위에 따라 원소를 처리하는 컨테이너 어댑터이다.
+기본 \texttt{priority\_queue<int>}에서는 가장 큰 값이 가장 높은 우선순위를 가진다.
+
+\subsection{queue와의 차이}
+일반적인 \texttt{queue}는 FIFO 구조이므로 먼저 들어온 원소가 먼저 나온다.
+반면 \texttt{priority\_queue}는 현재 저장된 원소 중 우선순위가 가장 높은 원소를 \texttt{top()}으로 제공한다.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+컨테이너 & 처리 기준 & 접근 함수 \\
+\midrule
+\texttt{queue} & 먼저 들어온 원소 & \texttt{front()} \\
+\texttt{priority\_queue} & 우선순위가 높은 원소 & \texttt{top()} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{주요 함수}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+함수 & 역할 \\
+\midrule
+\texttt{push(value)} & 원소 추가 \\
+\texttt{top()} & 가장 높은 우선순위의 원소 접근 \\
+\texttt{pop()} & 가장 높은 우선순위의 원소 제거 \\
+\texttt{size()} & 원소 개수 반환 \\
+\texttt{empty()} & 비어 있는지 확인 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{priority\_queue}는 모든 원소를 완전히 정렬된 배열처럼 유지하는 컨테이너가 아니다.
+내부적으로 우선순위가 가장 높은 원소를 빠르게 얻을 수 있는 형태로 관리한다.
+기본 구현에서는 힙 자료구조가 사용된다.
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+int main()
+{
+    priority_queue<int> pq;
+
+    pq.push(30);
+    pq.push(10);
+    pq.push(50);
+    pq.push(20);
+    pq.push(40);
+
+    cout << "Size: " << pq.size() << endl;
+    cout << "Top: " << pq.top() << endl;
+
+    while (!pq.empty())
+    {
+        cout << pq.top() << " ";
+        pq.pop();
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+Size: 5
+Top: 50
+50 40 30 20 10
+\end{verbatim}
+
+\subsection{실습}
+\begin{practicebox}
+정수 점수 \texttt{75, 92, 60, 88, 100}을 \texttt{priority\_queue<int>}에 저장한다.
+가장 높은 점수를 먼저 출력하고, 이후 모든 점수를 우선순위가 높은 순서대로 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+int main()
+{
+    priority_queue<int> pq;
+
+    pq.push(75);
+    pq.push(92);
+    pq.push(60);
+    pq.push(88);
+    pq.push(100);
+
+    cout << "Highest score: " << pq.top() << endl;
+
+    while (!pq.empty())
+    {
+        cout << pq.top() << " ";
+        pq.pop();
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{Lambda Capture}
+Day 10에서 람다 표현식의 기본 문법을 학습했다.
+람다 캡처(lambda capture)는 람다 바깥에서 선언된 지역 변수를 람다 내부에서 사용할 수 있게 하는 기능이다.
+
+\subsection{값 캡처}
+대괄호 안에 변수 이름을 작성하면 해당 변수의 값을 캡처한다.
+
+\begin{lstlisting}
+int number = 10;
+
+auto show = [number]()
+{
+    cout << number << endl;
+};
+\end{lstlisting}
+
+\texttt{[number]}는 람다가 만들어지는 시점의 \texttt{number} 값을 람다 내부에 복사한다.
+따라서 바깥 변수가 이후 변경되더라도 이미 캡처된 값은 별도로 유지된다.
+
+\subsection{참조 캡처}
+변수 이름 앞에 \texttt{\&}를 붙이면 참조로 캡처한다.
+
+\begin{lstlisting}
+int number = 10;
+
+auto update = [&number]()
+{
+    number += 5;
+};
+\end{lstlisting}
+
+이 경우 람다 내부의 \texttt{number}는 바깥 변수 자체를 참조하므로 람다 내부에서 변경하면 원본 값도 변경된다.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+캡처 & 의미 & 원본 변경 \\
+\midrule
+\texttt{[number]} & 값 복사 & 직접 변경하지 않음 \\
+\texttt{[\&number]} & 참조 & 변경 가능 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    int number = 10;
+
+    auto copyLambda = [number]()
+    {
+        cout << "Copy: " << number << endl;
+    };
+
+    auto refLambda = [&number]()
+    {
+        number += 5;
+        cout << "Reference: " << number << endl;
+    };
+
+    copyLambda();
+    refLambda();
+
+    cout << "Outside: " << number << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+Copy: 10
+Reference: 15
+Outside: 15
+\end{verbatim}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{score = 80}을 선언한다.
+값 캡처를 사용하는 람다에서 현재 점수를 출력하고,
+참조 캡처를 사용하는 람다에서 점수에 10을 더한다.
+두 람다 실행 후 바깥의 \texttt{score}를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    int score = 80;
+
+    auto printScore = [score]()
+    {
+        cout << "Score: " << score << endl;
+    };
+
+    auto plusTenScore = [&score]()
+    {
+        score += 10;
+        cout << "Updated score: " << score << endl;
+    };
+
+    printScore();
+    plusTenScore();
+
+    cout << "Outside: " << score << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{find\_if}
+\texttt{find\_if()}는 지정한 범위에서 조건을 만족하는 첫 번째 원소를 찾는 STL 알고리즘이다.
+정확한 값을 찾는 \texttt{find()}와 달리 세 번째 인자로 조건을 검사하는 함수를 전달한다.
+
+\subsection{기본 구조}
+\begin{lstlisting}
+find_if(begin, end, condition);
+\end{lstlisting}
+
+람다를 조건으로 전달하면 각 원소에 대해 조건을 검사한다.
+
+\begin{lstlisting}
+auto it = find_if(
+    numbers.begin(),
+    numbers.end(),
+    [](int n)
+    {
+        return n > 30;
+    }
+);
+\end{lstlisting}
+
+조건을 만족하는 원소를 찾으면 해당 위치의 반복자를 반환한다.
+끝까지 찾지 못하면 \texttt{end()}를 반환한다.
+
+\subsection{find와 find\_if 비교}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+알고리즘 & 탐색 기준 & 반환값 \\
+\midrule
+\texttt{find()} & 특정 값 & 반복자 \\
+\texttt{find\_if()} & 사용자 정의 조건 & 반복자 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+    vector<int> numbers = {10, 25, 30, 45, 50};
+
+    auto it = find_if(
+        numbers.begin(),
+        numbers.end(),
+        [](int n)
+        {
+            return n > 30;
+        }
+    );
+
+    if (it != numbers.end())
+    {
+        cout << "Found: " << *it << endl;
+    }
+    else
+    {
+        cout << "Not found" << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{3, 7, 12, 5, 18, 9}가 저장된 벡터에서
+\texttt{find\_if()}와 람다를 사용하여 처음 등장하는 짝수를 찾는다.
+짝수가 없으면 \texttt{No even number}를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+    vector<int> numbers = {3, 7, 12, 5, 18, 9};
+
+    auto it = find_if(
+        numbers.begin(),
+        numbers.end(),
+        [](int n)
+        {
+            return n % 2 == 0;
+        }
+    );
+
+    if (it != numbers.end())
+    {
+        cout << "First even number: " << *it << endl;
+    }
+    else
+    {
+        cout << "No even number" << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{count\_if}
+\texttt{count\_if()}는 지정한 범위의 모든 원소를 검사하여 조건을 만족하는 원소의 개수를 반환한다.
+\texttt{find\_if()}가 첫 번째 일치 위치를 찾는다면, \texttt{count\_if()}는 전체 범위를 검사하여 개수를 계산한다.
+
+\subsection{Predicate}
+\texttt{find\_if()}와 \texttt{count\_if()}에 전달되는 조건 함수처럼
+원소를 검사하여 \texttt{true} 또는 \texttt{false}를 반환하는 함수를 predicate라고 한다.
+
+\begin{lstlisting}
+[](int n)
+{
+    return n >= 20;
+}
+\end{lstlisting}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+    vector<int> numbers = {10, 25, 7, 30, 18, 40};
+
+    int count = count_if(
+        numbers.begin(),
+        numbers.end(),
+        [](int n)
+        {
+            return n >= 20;
+        }
+    );
+
+    cout << "Count: " << count << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+Count: 3
+\end{verbatim}
+
+\subsection{실습}
+\begin{practicebox}
+점수 \texttt{95, 72, 88, 61, 100, 79, 84}가 저장된 벡터에서
+\texttt{count\_if()}와 람다를 사용하여 80점 이상인 점수의 개수를 계산한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+    vector<int> scores = {95, 72, 88, 61, 100, 79, 84};
+
+    int count = count_if(
+        scores.begin(),
+        scores.end(),
+        [](int n)
+        {
+            return n >= 80;
+        }
+    );
+
+    cout << "Scores above 80: " << count << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{transform}
+\texttt{transform()}은 입력 범위의 각 원소에 변환 규칙을 적용하고 그 결과를 출력 범위에 저장하는 STL 알고리즘이다.
+
+\subsection{기본 구조}
+\begin{lstlisting}
+transform(begin, end, output, operation);
+\end{lstlisting}
+
+첫 번째와 두 번째 인자는 읽을 입력 범위를 지정하고,
+세 번째 인자는 변환 결과를 저장하기 시작할 위치를 지정한다.
+네 번째 인자는 각 원소를 어떻게 변환할지 결정하는 함수이다.
+
+\begin{lstlisting}
+transform(
+    numbers.begin(),
+    numbers.end(),
+    doubled.begin(),
+    [](int n)
+    {
+        return n * 2;
+    }
+);
+\end{lstlisting}
+
+\subsection{출력 공간}
+다른 벡터에 결과를 저장하면서 \texttt{doubled.begin()}을 출력 위치로 사용할 경우,
+결과를 저장할 공간이 미리 존재해야 한다.
+
+\begin{lstlisting}
+vector<int> doubled(numbers.size());
+\end{lstlisting}
+
+원본 컨테이너 자체를 변환하려면 입력 범위와 출력 시작 위치에 같은 컨테이너를 사용할 수 있다.
+
+\begin{lstlisting}
+transform(
+    numbers.begin(),
+    numbers.end(),
+    numbers.begin(),
+    [](int n)
+    {
+        return n * 2;
+    }
+);
+\end{lstlisting}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+    vector<int> numbers = {1, 2, 3, 4, 5};
+    vector<int> doubled(numbers.size());
+
+    transform(
+        numbers.begin(),
+        numbers.end(),
+        doubled.begin(),
+        [](int n)
+        {
+            return n * 2;
+        }
+    );
+
+    cout << "Original: ";
+
+    for (int n : numbers)
+    {
+        cout << n << " ";
+    }
+
+    cout << endl;
+    cout << "Doubled: ";
+
+    for (int n : doubled)
+    {
+        cout << n << " ";
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+점수 \texttt{60, 70, 80, 90, 100}을 \texttt{scores}에 저장한다.
+원본은 변경하지 않고 \texttt{transform()}과 람다를 사용하여 각 점수에 5점을 더한 결과를
+\texttt{bonusScores}에 저장한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+    vector<int> scores = {60, 70, 80, 90, 100};
+    vector<int> bonusScores(scores.size());
+
+    transform(
+        scores.begin(),
+        scores.end(),
+        bonusScores.begin(),
+        [](int n)
+        {
+            return n + 5;
+        }
+    );
+
+    cout << "Original: ";
+
+    for (const auto& score : scores)
+    {
+        cout << score << " ";
+    }
+
+    cout << endl;
+    cout << "Bonus: ";
+
+    for (const auto& score : bonusScores)
+    {
+        cout << score << " ";
+    }
+
+    cout << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{Object Container}
+지금까지는 주로 정수와 문자열을 STL 컨테이너에 저장했다.
+클래스 객체 역시 \texttt{vector}와 같은 컨테이너에 저장할 수 있다.
+이를 통해 클래스, 템플릿 기반 컨테이너, 반복자, 람다, 알고리즘을 하나의 흐름으로 연결할 수 있다.
+
+\subsection{vector에 객체 저장}
+다음과 같은 \texttt{Student} 클래스가 있다고 하자.
+
+\begin{lstlisting}
+class Student
+{
+public:
+    string name;
+    int score;
+
+    Student(string name, int score)
+    {
+        this->name = name;
+        this->score = score;
+    }
+};
+\end{lstlisting}
+
+객체의 자료형을 템플릿 인자로 지정하면 \texttt{vector<Student>}를 만들 수 있다.
+
+\begin{lstlisting}
+vector<Student> students;
+
+students.push_back(Student("Alice", 85));
+students.push_back(Student("Bob", 92));
+\end{lstlisting}
+
+\subsection{객체와 find\_if}
+\texttt{vector<Student>}의 각 원소는 \texttt{Student} 객체이므로 람다의 매개변수도
+\texttt{Student} 객체를 받을 수 있어야 한다.
+
+\begin{lstlisting}
+[](const Student& student)
+{
+    return student.score >= 90;
+}
+\end{lstlisting}
+
+\texttt{const Student\&}는 객체를 복사하지 않고 참조로 받아 읽기만 한다.
+\texttt{find\_if()}가 반환한 반복자가 객체를 가리키므로 멤버에는 화살표 연산자로 접근할 수 있다.
+
+\begin{lstlisting}
+cout << it->name << endl;
+cout << it->score << endl;
+\end{lstlisting}
+
+이는 다음 표현과 같은 의미이다.
+
+\begin{lstlisting}
+cout << (*it).name << endl;
+cout << (*it).score << endl;
+\end{lstlisting}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+class Student
+{
+public:
+    string name;
+    int score;
+
+    Student(string name, int score)
+    {
+        this->name = name;
+        this->score = score;
+    }
+};
+
+int main()
+{
+    vector<Student> students;
+
+    students.push_back(Student("Alice", 85));
+    students.push_back(Student("Bob", 92));
+    students.push_back(Student("Charlie", 78));
+    students.push_back(Student("David", 95));
+
+    auto it = find_if(
+        students.begin(),
+        students.end(),
+        [](const Student& student)
+        {
+            return student.score >= 90;
+        }
+    );
+
+    if (it != students.end())
+    {
+        cout << "First student above 90:" << endl;
+        cout << "Name: " << it->name << endl;
+        cout << "Score: " << it->score << endl;
+    }
+
+    int count = count_if(
+        students.begin(),
+        students.end(),
+        [](const Student& student)
+        {
+            return student.score >= 90;
+        }
+    );
+
+    cout << "Count: " << count << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{Book} 클래스를 만들고 \texttt{title}과 \texttt{price}를 멤버로 저장한다.
+네 권의 책을 \texttt{vector<Book>}에 저장한 뒤,
+\texttt{find\_if()}로 30000원 이상인 첫 번째 책을 찾고
+\texttt{count\_if()}로 25000원 이상인 책의 개수를 계산한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+class Book
+{
+public:
+    string title;
+    int price;
+
+    Book(string title, int price)
+    {
+        this->title = title;
+        this->price = price;
+    }
+};
+
+int main()
+{
+    vector<Book> books;
+
+    books.push_back(Book("C++ Basics", 25000));
+    books.push_back(Book("Python Guide", 18000));
+    books.push_back(Book("Algorithms", 32000));
+    books.push_back(Book("Data Science", 29000));
+
+    auto it = find_if(
+        books.begin(),
+        books.end(),
+        [](const Book& book)
+        {
+            return book.price >= 30000;
+        }
+    );
+
+    int count = count_if(
+        books.begin(),
+        books.end(),
+        [](const Book& book)
+        {
+            return book.price >= 25000;
+        }
+    );
+
+    if (it != books.end())
+    {
+        cout << "First expensive book:" << endl;
+        cout << "Title: " << it->title << endl;
+        cout << "Price: " << it->price << endl;
+    }
+    else
+    {
+        cout << "There is no book above 30000" << endl;
+    }
+
+    cout << "Books above 25000: " << count << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{개념 연결}
+Day 12의 각 기능은 독립적으로 끝나는 것이 아니라 이전에 배운 C++ 개념과 연결된다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+이전 학습 내용 & Day 12에서의 연결 \\
+\midrule
+참조 & 람다의 참조 캡처와 \texttt{const T\&} 매개변수 \\
+클래스 & \texttt{vector<Student>}, \texttt{vector<Book>} \\
+템플릿 & \texttt{vector<T>}와 STL 컨테이너의 기반 \\
+반복자 & \texttt{find\_if()}의 반환값과 \texttt{begin()}, \texttt{end()} \\
+람다 & STL 알고리즘에 조건과 변환 규칙 전달 \\
+컨테이너 어댑터 & \texttt{queue}에서 \texttt{priority\_queue}로 확장 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+STL 알고리즘은 컨테이너의 원소를 직접 알고 있는 것이 아니라 반복자로 범위를 전달받는다.
+람다는 그 범위의 원소를 어떻게 검사하거나 변환할지를 정의한다.
+클래스 객체도 같은 방식으로 처리할 수 있으므로,
+클래스와 STL은 실제 프로그램에서 자연스럽게 함께 사용된다.
+\end{importantbox}
+
+\section{종합 정리}
+\begin{importantbox}
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{priority\_queue}는 기본적으로 가장 큰 값을 \texttt{top()}에서 제공한다.
+    \item 값 캡처는 바깥 변수의 값을 복사하고, 참조 캡처는 바깥 변수 자체를 참조한다.
+    \item \texttt{find\_if()}는 조건을 만족하는 첫 번째 원소의 반복자를 반환한다.
+    \item \texttt{count\_if()}는 조건을 만족하는 원소의 개수를 반환한다.
+    \item predicate는 원소를 검사하여 \texttt{true} 또는 \texttt{false}를 반환하는 조건 함수이다.
+    \item \texttt{transform()}은 각 원소에 변환 함수를 적용하고 결과를 출력 범위에 저장한다.
+    \item 다른 벡터에 \texttt{transform()} 결과를 저장할 때는 저장 공간을 준비해야 한다.
+    \item 클래스 객체도 STL 컨테이너에 저장할 수 있다.
+    \item 객체를 읽기만 하는 람다 매개변수에는 \texttt{const T\&}를 사용할 수 있다.
+    \item 클래스, 컨테이너, 반복자, 람다, 알고리즘을 함께 사용하면 실제 데이터를 유연하게 처리할 수 있다.
+\end{itemize}
+\end{importantbox}
+
+\section{실습 파일 구성}
+\begin{practicebox}
+Day 12 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_priority\_queue.cpp}
+    \item \texttt{02\_lambda\_capture.cpp}
+    \item \texttt{03\_find\_if.cpp}
+    \item \texttt{04\_count\_if.cpp}
+    \item \texttt{05\_transform.cpp}
+    \item \texttt{06\_object\_container.cpp}
+    \item \texttt{practice/p01\_priority\_queue.cpp}
+    \item \texttt{practice/p02\_lambda\_capture.cpp}
+    \item \texttt{practice/p03\_find\_if.cpp}
+    \item \texttt{practice/p04\_count\_if.cpp}
+    \item \texttt{practice/p05\_transform.cpp}
+    \item \texttt{practice/p06\_object\_container.cpp}
+\end{itemize}
+\end{practicebox}
+
+\end{document}
