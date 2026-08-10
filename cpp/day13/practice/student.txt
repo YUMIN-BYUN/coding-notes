@@ -1,0 +1,7 @@
+Name: Bob
+Major: Physics
+Score: 88
+
+Name: Charlie
+Major: ComputerScience
+Score: 91

@@ -1,0 +1,854 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+\hypersetup{colorlinks=true,linkcolor=titleblue,urlcolor=titleblue}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C++ Programming}
+\rhead{Day 13}
+\cfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{titleblue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible
+}
+\lstset{style=cppstyle}
+
+\newtcolorbox{learningbox}{colback=blue!4,colframe=titleblue,title=\textbf{학습 목표},fonttitle=\bfseries}
+\newtcolorbox{importantbox}{colback=yellow!8,colframe=orange!70!black,title=\textbf{핵심 포인트},fonttitle=\bfseries}
+\newtcolorbox{practicebox}{colback=red!3,colframe=red!55!black,title=\textbf{실습},fonttitle=\bfseries}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries C++ Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 13: File I/O와 Exception Handling\par}
+    \vspace{2cm}
+    {\large ofstream, ifstream, ios::app, File Parsing, try/catch, throw\par}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{학습 목표}
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{ofstream}을 이용해 파일에 데이터를 저장하기
+    \item \texttt{ifstream}을 이용해 파일의 데이터를 읽기
+    \item \texttt{ios::app}을 이용해 기존 파일 끝에 데이터를 추가하기
+    \item \texttt{getline()}과 스트림 추출 연산자 \texttt{>>}의 차이 이해하기
+    \item 파일의 데이터를 여러 변수로 나누어 읽는 File Parsing 수행하기
+    \item \texttt{try}와 \texttt{catch}를 이용해 예외 처리 구조 작성하기
+    \item \texttt{throw}와 \texttt{runtime\_error}를 이용해 예외 발생시키기
+    \item \texttt{exception}과 \texttt{what()}을 이용해 예외 메시지 처리하기
+\end{itemize}
+\end{learningbox}
+
+\section{Day 13 개요}
+Day 13에서는 프로그램 외부의 파일과 데이터를 주고받는 File I/O와 실행 중 발생할 수 있는 문제를 처리하는 Exception Handling을 학습한다.
+파일 출력에서는 \texttt{ofstream}, 파일 입력에서는 \texttt{ifstream}을 사용하고,
+기존 파일의 내용을 유지하면서 데이터를 추가할 때는 \texttt{ios::app}을 사용한다.
+또한 파일의 데이터를 변수로 분리하여 처리하는 File Parsing을 학습한다.
+마지막으로 \texttt{try}, \texttt{catch}, \texttt{throw}를 이용한 기본적인 예외 처리 방법을 다룬다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+주제 & 핵심 역할 \\
+\midrule
+\texttt{ofstream} & 파일에 데이터 쓰기 \\
+\texttt{ifstream} & 파일에서 데이터 읽기 \\
+\texttt{ios::app} & 기존 파일 끝에 데이터 추가 \\
+File Parsing & 파일 데이터를 변수로 분리 \\
+\texttt{try / catch} & 예외 발생 가능 코드와 처리 코드 분리 \\
+\texttt{throw} & 예외 발생시키기 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+Day 13의 핵심은 파일 스트림을 이용해 외부 데이터를 읽고 쓰는 흐름과,
+예외가 발생했을 때 프로그램의 제어 흐름이 \texttt{catch}로 이동하는 구조를 이해하는 것이다.
+\end{importantbox}
+
+\section{File Output: ofstream}
+\texttt{ofstream}은 output file stream의 의미로, 프로그램에서 파일에 데이터를 출력할 때 사용한다.
+파일 입출력 기능을 사용하려면 \texttt{<fstream>} 헤더가 필요하다.
+
+\subsection{파일 열기와 데이터 쓰기}
+다음 코드는 \texttt{data.txt} 파일을 연다.
+
+\begin{lstlisting}
+ofstream file("data.txt");
+\end{lstlisting}
+
+파일이 존재하지 않으면 새 파일을 만들 수 있다.
+파일에 데이터를 쓸 때는 \texttt{cout}과 마찬가지로 \texttt{<<} 연산자를 사용한다.
+
+\begin{lstlisting}
+file << "Hello" << endl;
+file << 100 << endl;
+\end{lstlisting}
+
+파일이 정상적으로 열렸는지는 \texttt{is\_open()}으로 확인할 수 있다.
+
+\begin{lstlisting}
+if (!file.is_open())
+{
+    cout << "Failed to open file." << endl;
+    return 1;
+}
+\end{lstlisting}
+
+\texttt{main()}에서 \texttt{return 0;}은 정상 종료를 의미하고,
+0이 아닌 값은 일반적으로 오류가 발생한 종료 상태를 나타낸다.
+파일 사용이 끝나면 \texttt{close()}로 닫는다.
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    ofstream file("data.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return 1;
+    }
+
+    string name = "Alice";
+    int score = 95;
+
+    file << "Name: " << name << endl;
+    file << "Score: " << score << endl;
+
+    file.close();
+
+    cout << "File saved successfully." << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+파일에는 다음 내용이 저장된다.
+
+\begin{verbatim}
+Name: Alice
+Score: 95
+\end{verbatim}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{student.txt} 파일을 생성하고 Bob의 이름, 전공, 점수를 저장한다.
+파일이 정상적으로 열렸는지 확인하고 저장이 끝나면 파일을 닫는다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    ofstream file("student.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return 1;
+    }
+
+    string name = "Bob";
+    string major = "Physics";
+    int score = 88;
+
+    file << "Name: " << name << endl;
+    file << "Major: " << major << endl;
+    file << "Score: " << score << endl;
+
+    file.close();
+
+    cout << "Student data saved " << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{File Input: ifstream}
+\texttt{ifstream}은 input file stream의 의미로, 파일에 저장된 데이터를 프로그램으로 읽어올 때 사용한다.
+\texttt{cin}이 키보드 입력을 받는다면 \texttt{ifstream}은 파일에서 입력을 받는다.
+
+\subsection{파일 열기}
+다음과 같이 읽을 파일을 지정한다.
+
+\begin{lstlisting}
+ifstream file("data.txt");
+\end{lstlisting}
+
+\texttt{ifstream}은 읽을 파일이 존재해야 하므로 파일이 정상적으로 열렸는지 확인하는 것이 중요하다.
+
+\subsection{getline으로 한 줄 읽기}
+\texttt{>>} 연산자는 공백을 기준으로 값을 나누어 읽는다.
+공백을 포함한 한 줄 전체를 읽으려면 \texttt{getline()}을 사용한다.
+
+\begin{lstlisting}
+string line;
+getline(file, line);
+\end{lstlisting}
+
+파일의 모든 줄을 읽을 때는 다음 패턴을 사용할 수 있다.
+
+\begin{lstlisting}
+while (getline(file, line))
+{
+    cout << line << endl;
+}
+\end{lstlisting}
+
+\texttt{getline()}이 한 줄을 읽는 데 성공하는 동안 반복하고,
+더 이상 읽을 데이터가 없으면 반복문을 종료한다.
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    ifstream file("data.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return 1;
+    }
+
+    string line;
+
+    while (getline(file, line))
+    {
+        cout << line << endl;
+    }
+
+    file.close();
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{student.txt}를 \texttt{ifstream}으로 열고,
+\texttt{getline()}과 \texttt{while}을 사용하여 파일의 모든 줄을 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    ifstream file("student.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return 1;
+    }
+
+    string line;
+
+    while (getline(file, line))
+    {
+        cout << line << endl;
+    }
+
+    file.close();
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{Append Mode: ios::app}
+기본 \texttt{ofstream}으로 기존 파일을 열면 이전 내용을 덮어쓰게 된다.
+기존 내용을 유지하면서 파일 끝에 새로운 데이터를 추가하려면 \texttt{ios::app}을 사용한다.
+
+\subsection{기본 구조}
+\begin{lstlisting}
+ofstream file("student.txt", ios::app);
+\end{lstlisting}
+
+\texttt{app}은 append를 의미하며, 이후 출력되는 내용은 기존 파일의 끝에 추가된다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+형태 & 동작 \\
+\midrule
+\texttt{ofstream file("data.txt")} & 기존 내용을 덮어쓰며 출력 \\
+\texttt{ofstream file("data.txt", ios::app)} & 기존 내용 뒤에 추가 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    ofstream file("student.txt", ios::app);
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return 1;
+    }
+
+    string name = "Alice";
+    string major = "Mathematics";
+    int score = 95;
+
+    file << endl;
+    file << "Name: " << name << endl;
+    file << "Major: " << major << endl;
+    file << "Score: " << score << endl;
+
+    file.close();
+
+    cout << "Student data appended." << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+기존 \texttt{student.txt}에 Charlie의 정보를 추가한다.
+\texttt{ios::app}을 사용하고 기존 학생과 구분되도록 빈 줄 하나를 먼저 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    ofstream file("student.txt", ios::app);
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return 1;
+    }
+
+    file << endl;
+
+    string name = "Charlie";
+    string major = "ComputerScience";
+    int score = 91;
+
+    file << "Name: " << name << endl;
+    file << "Major: " << major << endl;
+    file << "Score: " << score << endl;
+
+    file.close();
+
+    cout << "Student data appended." << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{File Parsing}
+File Parsing은 파일에 저장된 데이터를 단순한 한 줄 문자열로 읽는 것이 아니라,
+각 데이터를 변수에 나누어 저장하여 프로그램에서 사용할 수 있도록 처리하는 것이다.
+
+\subsection{스트림 추출 연산자로 데이터 분리}
+파일의 내용이 다음과 같다고 하자.
+
+\begin{verbatim}
+Alice 95
+Bob 88
+Charlie 91
+\end{verbatim}
+
+다음 코드로 이름과 점수를 각각의 변수에 읽을 수 있다.
+
+\begin{lstlisting}
+string name;
+int score;
+
+file >> name >> score;
+\end{lstlisting}
+
+여러 줄을 계속 읽으려면 입력 작업 자체를 \texttt{while}의 조건으로 사용할 수 있다.
+
+\begin{lstlisting}
+while (file >> name >> score)
+{
+    cout << name << " " << score << endl;
+}
+\end{lstlisting}
+
+\subsection{읽은 데이터 계산하기}
+읽은 점수를 합계와 개수에 반영할 수 있다.
+
+\begin{lstlisting}
+int total = 0;
+int count = 0;
+
+while (file >> name >> score)
+{
+    total += score;
+    count++;
+}
+\end{lstlisting}
+
+평균을 계산할 때 정수 나눗셈을 피하려면 \texttt{static\_cast<double>}을 사용한다.
+
+\begin{lstlisting}
+double average = static_cast<double>(total) / count;
+\end{lstlisting}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    ifstream file("scores.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return 1;
+    }
+
+    string name;
+    int score;
+
+    int total = 0;
+    int count = 0;
+
+    while (file >> name >> score)
+    {
+        cout << "Name: " << name
+             << ", Score: " << score << endl;
+
+        total += score;
+        count++;
+    }
+
+    file.close();
+
+    if (count > 0)
+    {
+        double average = static_cast<double>(total) / count;
+
+        cout << "Total: " << total << endl;
+        cout << "Average: " << average << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{grades.txt}에 저장된 이름과 점수를 읽어 각 학생의 점수를 출력하고,
+전체 점수의 총합과 평균을 계산한다.
+\end{practicebox}
+
+\begin{verbatim}
+Tom 80
+Jane 92
+Mike 75
+Emma 98
+\end{verbatim}
+
+\begin{lstlisting}
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    ifstream file("grades.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file" << endl;
+        return 1;
+    }
+
+    string name;
+    int score;
+
+    int total = 0;
+    int count = 0;
+
+    while (file >> name >> score)
+    {
+        cout << name << ": " << score << endl;
+        total += score;
+        count++;
+    }
+
+    file.close();
+
+    if (count > 0)
+    {
+        double average = static_cast<double>(total) / count;
+
+        cout << "Total: " << total << endl;
+        cout << "Average: " << average << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{Exception Handling: try와 catch}
+예외 처리는 프로그램 실행 중 발생할 수 있는 문제를 처리하는 방법이다.
+\texttt{try} 블록에는 예외가 발생할 수 있는 코드를 작성하고,
+예외가 발생하면 대응되는 \texttt{catch} 블록에서 처리한다.
+
+\subsection{기본 구조}
+\begin{lstlisting}
+try
+{
+    throw 1;
+}
+catch (...)
+{
+    cout << "Error occurred." << endl;
+}
+\end{lstlisting}
+
+\texttt{catch (...)}는 예외의 종류와 관계없이 예외를 잡는다.
+\texttt{throw}가 실행되면 현재 \texttt{try} 블록의 나머지 코드는 실행되지 않고,
+처리할 수 있는 \texttt{catch} 블록으로 제어가 이동한다.
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    try
+    {
+        cout << "Try block started." << endl;
+
+        throw 1;
+
+        cout << "Try block finished." << endl;
+    }
+    catch (...)
+    {
+        cout << "Exception caught." << endl;
+    }
+
+    cout << "Program continues." << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+출력 결과는 다음과 같다.
+
+\begin{verbatim}
+Try block started.
+Exception caught.
+Program continues.
+\end{verbatim}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{try} 블록에서 \texttt{Start}를 출력한 뒤 \texttt{throw 100;}으로 예외를 발생시킨다.
+\texttt{catch (...)}에서 예외를 처리하고, 이후 프로그램이 계속 실행되는지 확인한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    try
+    {
+        cout << "Start" << endl;
+        throw 100;
+        cout << "End" << endl;
+    }
+    catch (...)
+    {
+        cout << "Exception detected." << endl;
+    }
+
+    cout << "Program finished." << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{throw와 Standard Exception}
+단순한 정수도 \texttt{throw}할 수 있지만,
+실제 오류 정보를 전달하려면 표준 예외 클래스를 사용할 수 있다.
+Day 13에서는 \texttt{runtime\_error}와 \texttt{exception}을 사용한다.
+
+\subsection{runtime\_error}
+\texttt{runtime\_error}를 사용하려면 \texttt{<stdexcept>} 헤더가 필요하다.
+
+\begin{lstlisting}
+throw runtime_error("Invalid value.");
+\end{lstlisting}
+
+예외는 다음과 같이 받을 수 있다.
+
+\begin{lstlisting}
+catch (const exception& e)
+{
+    cout << e.what() << endl;
+}
+\end{lstlisting}
+
+\texttt{const exception\&}는 예외 객체를 복사하지 않고 참조로 받으며,
+\texttt{what()}은 예외 객체에 저장된 오류 메시지를 반환한다.
+\texttt{runtime\_error}는 표준 \texttt{exception} 계열의 예외이므로
+\texttt{catch (const exception\& e)}로 처리할 수 있다.
+
+\subsection{함수에서 예외 발생시키기}
+예외를 발견하는 코드와 처리하는 코드는 서로 다른 함수에 있을 수 있다.
+
+\begin{lstlisting}
+double divide(double a, double b)
+{
+    if (b == 0)
+    {
+        throw runtime_error("Cannot divide by zero.");
+    }
+
+    return a / b;
+}
+\end{lstlisting}
+
+함수에서 발생한 예외는 호출한 쪽의 \texttt{catch}에서 처리할 수 있다.
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <stdexcept>
+
+using namespace std;
+
+double divide(double a, double b)
+{
+    if (b == 0)
+    {
+        throw runtime_error("Cannot divide by zero.");
+    }
+
+    return a / b;
+}
+
+int main()
+{
+    double a;
+    double b;
+
+    cout << "Enter two numbers: ";
+    cin >> a >> b;
+
+    try
+    {
+        double result = divide(a, b);
+
+        cout << "Result: " << result << endl;
+    }
+    catch (const exception& e)
+    {
+        cout << "Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{checkScore(int score)} 함수를 만들고 점수가 0보다 작거나 100보다 크면
+\texttt{runtime\_error}를 발생시킨다.
+정상 범위의 점수라면 점수를 출력하고, 예외는 \texttt{main()}의 \texttt{catch}에서 처리한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <stdexcept>
+
+using namespace std;
+
+void checkScore(int score)
+{
+    if (score < 0 || score > 100)
+    {
+        throw runtime_error("Score must be between 0 and 100.");
+    }
+
+    cout << "Valid score: " << score << endl;
+}
+
+int main()
+{
+    int score;
+    cout << "Enter a score: ";
+    cin >> score;
+
+    try
+    {
+        checkScore(score);
+    }
+    catch (const exception& e)
+    {
+        cout << "Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{개념 연결}
+Day 13의 각 기능은 이전에 배운 C++ 문법과 연결된다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+이전 학습 내용 & Day 13에서의 연결 \\
+\midrule
+스트림 입출력 & \texttt{cin}, \texttt{cout}에서 파일 스트림으로 확장 \\
+참조 & \texttt{catch (const exception\& e)} \\
+클래스와 상속 & \texttt{runtime\_error}와 \texttt{exception} \\
+함수 & 함수 내부에서 \texttt{throw}하고 호출한 쪽에서 처리 \\
+형 변환 & 평균 계산에서 \texttt{static\_cast<double>} 사용 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+\texttt{ofstream}과 \texttt{ifstream}은 기존의 스트림 입출력 문법을 파일로 확장한 것이다.
+예외 처리에서는 문제가 발생한 위치에서 \texttt{throw}하고,
+처리할 위치에서 \texttt{catch}하여 프로그램의 오류 처리 흐름을 분리할 수 있다.
+\end{importantbox}
+
+\section{종합 정리}
+\begin{importantbox}
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{ofstream}은 파일에 데이터를 출력할 때 사용한다.
+    \item \texttt{ifstream}은 파일의 데이터를 읽을 때 사용한다.
+    \item 파일이 정상적으로 열렸는지는 \texttt{is\_open()}으로 확인할 수 있다.
+    \item \texttt{getline()}은 공백을 포함하여 한 줄 전체를 읽는다.
+    \item \texttt{ios::app}은 기존 파일 내용을 유지하면서 파일 끝에 데이터를 추가한다.
+    \item \texttt{file >> variable} 형태를 이용하면 파일 데이터를 변수로 나누어 읽을 수 있다.
+    \item 평균 계산에서 정수 나눗셈을 피하려면 \texttt{static\_cast<double>}을 사용할 수 있다.
+    \item \texttt{try}에는 예외가 발생할 수 있는 코드를 작성하고 \texttt{catch}에서 예외를 처리한다.
+    \item \texttt{throw}가 실행되면 현재 \texttt{try}의 나머지 코드는 실행되지 않는다.
+    \item \texttt{runtime\_error}는 오류 메시지를 포함한 예외를 발생시키는 데 사용할 수 있다.
+    \item \texttt{catch (const exception\& e)}로 표준 예외를 받고 \texttt{e.what()}으로 메시지를 확인할 수 있다.
+\end{itemize}
+\end{importantbox}
+
+\section{실습 파일 구성}
+\begin{practicebox}
+Day 13 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_file\_output.cpp}
+    \item \texttt{02\_file\_input.cpp}
+    \item \texttt{03\_file\_append.cpp}
+    \item \texttt{04\_file\_parsing.cpp}
+    \item \texttt{05\_exception\_basic.cpp}
+    \item \texttt{06\_throw\_catch.cpp}
+    \item \texttt{data.txt}
+    \item \texttt{scores.txt}
+    \item \texttt{practice/p01\_file\_output.cpp}
+    \item \texttt{practice/p02\_file\_input.cpp}
+    \item \texttt{practice/p03\_file\_append.cpp}
+    \item \texttt{practice/p04\_file\_parsing.cpp}
+    \item \texttt{practice/p05\_exception\_basic.cpp}
+    \item \texttt{practice/p06\_throw\_catch.cpp}
+    \item \texttt{practice/student.txt}
+    \item \texttt{practice/grades.txt}
+\end{itemize}
+\end{practicebox}
+
+\end{document}
