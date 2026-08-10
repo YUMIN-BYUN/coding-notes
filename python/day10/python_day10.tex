@@ -1,0 +1,567 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Python Programming}
+\rhead{Day 10}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% Python code style
+% -------------------------------------------------
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstset{style=pythonstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries Python Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 10: Project Preparation \& Integration\par}
+
+    \vspace{2cm}
+
+    {\large Main Guard, Modules, Data Pipeline, Error Handling, Project Structure\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{if \_\_name\_\_ == "\_\_main\_\_":}의 목적 설명하기
+    \item \texttt{main()} 함수를 이용해 프로그램의 실행 흐름 구성하기
+    \item Python 파일을 모듈로 분리하고 \texttt{import}로 불러오기
+    \item 입력, 처리, 분석, 출력의 데이터 흐름을 함수로 구성하기
+    \item 함수로 나눈 프로그램에 예외 처리를 통합하기
+    \item 역할별 파일을 분리해 작은 프로젝트 구조 설계하기
+    \item Day 10의 개념을 하나의 프로그램에 통합하기
+\end{itemize}
+\end{learningbox}
+
+% =================================================
+\section{Main Guard와 프로그램 진입점}
+% =================================================
+
+Python 파일은 직접 실행할 수도 있고, 다른 파일에서 모듈로 불러와 사용할 수도 있다. 이 두 상황을 구분할 때 사용하는 것이 \texttt{\_\_name\_\_}과 \texttt{\_\_main\_\_}이다.
+
+파일을 직접 실행하면 Python은 해당 파일의 \texttt{\_\_name\_\_} 변수에 \texttt{"\_\_main\_\_"}을 저장한다. 반대로 다른 파일에서 import하면 \texttt{\_\_name\_\_}에는 모듈 이름이 들어간다.
+
+따라서 다음 조건문은 현재 파일이 직접 실행된 경우에만 내부 코드를 실행한다.
+
+\begin{lstlisting}
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\texttt{main()}이라는 이름 자체는 Python이 강제하는 특별한 이름이 아니다. 다른 이름을 사용해도 실행에는 문제가 없다. 다만 프로그램의 주 실행 흐름을 담당하는 함수라는 의미가 명확하기 때문에 관례적으로 \texttt{main()}을 많이 사용한다.
+
+\subsection{최종 코드: \texttt{01\_main\_guard.py}}
+
+\begin{lstlisting}
+def greet(name):
+    print(f"Hello, {name}!")
+
+
+def main():
+    print("Program started")
+    greet("Alice")
+    print("Program finished")
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\begin{importantbox}
+C++의 \texttt{main()}은 언어가 정한 프로그램 진입점이지만, Python의 \texttt{main()}은 관례적인 함수 이름이다. Python에서 실제로 특별한 부분은 \texttt{if \_\_name\_\_ == "\_\_main\_\_":}이다.
+\end{importantbox}
+
+% =================================================
+\section{모듈 구조}
+% =================================================
+
+Python에서는 하나의 \texttt{.py} 파일을 하나의 모듈로 사용할 수 있다. 기능을 여러 파일로 나누면 코드의 역할이 명확해지고, 다른 파일에서 필요한 기능만 불러와 재사용할 수 있다.
+
+예를 들어 계산 기능을 \texttt{calculator.py}에 모아 두고, 실행 파일인 \texttt{02\_module\_structure.py}에서 import하여 사용할 수 있다.
+
+일반적인 import 방식은 다음과 같다.
+
+\begin{lstlisting}
+import calculator
+\end{lstlisting}
+
+이 경우 함수는 모듈 이름을 통해 호출한다.
+
+\begin{lstlisting}
+calculator.add(10, 5)
+\end{lstlisting}
+
+특정 함수만 가져오거나 별칭을 사용할 수도 있다.
+
+\begin{lstlisting}
+from calculator import add
+import calculator as calc
+\end{lstlisting}
+
+학습용 파일에서는 \texttt{01\_}, \texttt{02\_}처럼 번호를 붙여 관리하지만, 실제로 import할 모듈 파일은 \texttt{calculator.py}, \texttt{analysis.py}, \texttt{data.py}처럼 역할이 드러나는 이름을 사용하는 것이 좋다.
+
+\subsection{모듈 코드: \texttt{calculator.py}}
+
+\begin{lstlisting}
+def add(a, b):
+    return a + b
+
+
+def subtract(a, b):
+    return a - b
+
+
+def multiply(a, b):
+    return a * b
+
+
+def divide(a, b):
+    return a / b
+\end{lstlisting}
+
+\subsection{최종 코드: \texttt{02\_module\_structure.py}}
+
+\begin{lstlisting}
+import calculator
+
+
+def main():
+    print(calculator.add(10, 5))
+    print(calculator.subtract(10, 5))
+    print(calculator.multiply(10, 5))
+    print(calculator.divide(10, 5))
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\begin{importantbox}
+모듈 분리의 핵심은 기능과 실행을 분리하는 것이다. 한 파일은 계산, 데이터 처리, 분석과 같은 기능을 제공하고, 다른 파일은 그 기능을 import하여 전체 프로그램을 구성할 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{Data Pipeline}
+% =================================================
+
+Data Pipeline은 데이터가 프로그램 안에서 어떤 순서로 이동하고 처리되는지를 나타내는 흐름이다. 작은 프로그램이라도 입력, 처리, 분석, 출력의 역할을 분리하면 전체 구조를 이해하기 쉬워진다.
+
+예를 들어 학생 점수 분석 프로그램은 다음과 같은 흐름을 가진다.
+
+\begin{verbatim}
+load data
+    ↓
+analyze data
+    ↓
+display result
+\end{verbatim}
+
+각 단계를 하나의 함수로 분리하면 함수는 하나의 역할에 집중할 수 있다. 데이터 로딩 함수는 데이터를 반환하고, 분석 함수는 계산 결과를 반환하며, 출력 함수는 전달받은 결과를 화면에 표시한다.
+
+\subsection{최종 코드: \texttt{03\_data\_pipeline.py}}
+
+\begin{lstlisting}
+def load_data():
+    return [80, 95, 70, 100, 85]
+
+
+def analyze_data(scores):
+    average = sum(scores) / len(scores)
+    highest = max(scores)
+    lowest = min(scores)
+
+    return average, highest, lowest
+
+
+def display_result(average, highest, lowest):
+    print(f"Average: {average}")
+    print(f"Highest: {highest}")
+    print(f"Lowest: {lowest}")
+
+
+def main():
+    scores = load_data()
+
+    average, highest, lowest = analyze_data(scores)
+
+    display_result(average, highest, lowest)
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\begin{importantbox}
+프로젝트에서는 함수 하나가 여러 일을 동시에 하기보다 역할을 나누는 것이 좋다. \texttt{main()}은 각 함수를 순서대로 호출하며 전체 데이터 흐름을 조립하는 역할을 담당한다.
+\end{importantbox}
+
+% =================================================
+\section{Error Handling Integration}
+% =================================================
+
+예외 처리는 단순히 \texttt{try-except} 문법을 사용하는 것에서 끝나지 않는다. 프로그램을 함수로 나눈 뒤에도 어느 위치에서 오류를 처리할지 결정해야 한다.
+
+사용자가 여러 숫자를 입력하고 평균을 계산하는 프로그램에서는 숫자가 아닌 값을 입력할 수 있고, 아무 값도 입력하지 않을 수도 있다.
+
+\begin{itemize}[leftmargin=1.5em]
+    \item 숫자가 아닌 값을 정수로 변환하면 \texttt{ValueError}가 발생한다.
+    \item 빈 리스트의 평균을 계산하면 0으로 나누게 되어 \texttt{ZeroDivisionError}가 발생한다.
+\end{itemize}
+
+함수들은 각자의 역할에 집중하게 두고, \texttt{main()}에서 전체 프로그램 실행 중 발생하는 예외를 처리하면 구조가 명확해진다.
+
+\subsection{최종 코드: \texttt{04\_error\_handling.py}}
+
+\begin{lstlisting}
+def get_numbers():
+    text = input("Enter numbers separated by spaces: ")
+    return [int(x) for x in text.split()]
+
+
+def calculate_average(numbers):
+    return sum(numbers) / len(numbers)
+
+
+def main():
+    try:
+        numbers = get_numbers()
+        average = calculate_average(numbers)
+
+        print(f"Average: {average}")
+
+    except ValueError:
+        print("Please enter numbers only.")
+
+    except ZeroDivisionError:
+        print("No numbers were entered.")
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\begin{importantbox}
+예상 가능한 오류는 가능한 한 구체적인 예외 타입으로 처리하는 것이 좋다. 오류가 발생하면 현재의 정상 실행 흐름은 중단되고 일치하는 \texttt{except} 블록으로 이동한다.
+\end{importantbox}
+
+% =================================================
+\section{Project Structure}
+% =================================================
+
+프로그램이 커지면 모든 코드를 하나의 파일에 작성하는 방식은 관리하기 어려워진다. 이때 역할에 따라 파일을 나누면 코드의 책임이 명확해지고 수정과 재사용도 쉬워진다.
+
+Day 10에서는 학생 점수 분석 프로그램을 다음과 같이 세 파일로 나눈다.
+
+\begin{verbatim}
+day10/
+├── 05_main.py
+├── analysis.py
+└── data.py
+\end{verbatim}
+
+\texttt{data.py}는 데이터를 제공하고, \texttt{analysis.py}는 분석 기능을 제공하며, \texttt{05\_main.py}는 두 모듈을 불러와 전체 실행 흐름을 관리한다.
+
+\subsection{데이터 모듈: \texttt{data.py}}
+
+\begin{lstlisting}
+def load_scores():
+    return [80, 95, 70, 100, 85]
+\end{lstlisting}
+
+\subsection{분석 모듈: \texttt{analysis.py}}
+
+\begin{lstlisting}
+def calculate_average(scores):
+    return sum(scores) / len(scores)
+
+
+def find_highest(scores):
+    return max(scores)
+
+
+def find_lowest(scores):
+    return min(scores)
+\end{lstlisting}
+
+\subsection{최종 코드: \texttt{05\_main.py}}
+
+\begin{lstlisting}
+import data
+import analysis
+
+
+def main():
+    try:
+        scores = data.load_scores()
+
+        average = analysis.calculate_average(scores)
+        highest = analysis.find_highest(scores)
+        lowest = analysis.find_lowest(scores)
+
+        print(f"Average: {average}")
+        print(f"Highest: {highest}")
+        print(f"Lowest: {lowest}")
+
+    except ZeroDivisionError:
+        print("No data available.")
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+파일 & 역할 \\
+\midrule
+\texttt{data.py} & 데이터 제공 \\
+\texttt{analysis.py} & 데이터 분석 \\
+\texttt{05\_main.py} & 모듈을 조립하고 프로그램 실행 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+프로젝트 구조의 핵심은 파일을 많이 만드는 것이 아니라 각 파일의 역할을 명확하게 나누는 것이다. 실행 파일은 전체 흐름을 조립하고, 기능 파일은 특정 작업을 담당하도록 구성한다.
+\end{importantbox}
+
+% =================================================
+\section{Day 10 종합 실습: Student Score Analyzer}
+% =================================================
+
+이번 종합 실습에서는 사용자에게 점수들을 입력받고 평균, 최고점, 최저점을 계산하여 출력한다. Day 10에서 배운 함수 분리, 데이터 흐름, 예외 처리, \texttt{main()} 함수, main guard를 하나의 프로그램에 통합한다.
+
+\subsection{프로그램 요구사항}
+
+\begin{enumerate}[leftmargin=1.8em]
+    \item \texttt{get\_scores()}에서 공백으로 구분된 점수들을 입력받는다.
+    \item 입력 문자열을 정수 리스트로 변환하여 반환한다.
+    \item \texttt{analyze\_scores(scores)}에서 평균, 최고점, 최저점을 계산한다.
+    \item 세 분석 결과를 반환한다.
+    \item \texttt{display\_result()}에서 분석 결과를 화면에 출력한다.
+    \item \texttt{main()}에서 입력, 분석, 출력 함수를 순서대로 호출한다.
+    \item 숫자가 아닌 값이 입력되면 \texttt{ValueError}를 처리한다.
+    \item 아무 점수도 입력되지 않으면 \texttt{ZeroDivisionError}를 처리한다.
+    \item 마지막에 main guard를 사용하여 \texttt{main()}을 호출한다.
+\end{enumerate}
+
+\subsection{최종 코드: \texttt{practice\_day10.py}}
+
+\begin{lstlisting}
+def get_scores():
+    text = input("Enter numbers separated by spaces: ")
+    return [int(x) for x in text.split()]
+
+
+def analyze_scores(scores):
+    average = sum(scores) / len(scores)
+    highest = max(scores)
+    lowest = min(scores)
+
+    return average, highest, lowest
+
+
+def display_result(average, highest, lowest):
+    print(f"Average: {average}")
+    print(f"Highest: {highest}")
+    print(f"Lowest: {lowest}")
+
+
+def main():
+    try:
+        scores = get_scores()
+        average, highest, lowest = analyze_scores(scores)
+        display_result(average, highest, lowest)
+
+    except ValueError:
+        print("Please enter numbers only.")
+
+    except ZeroDivisionError:
+        print("No scores were entered.")
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\subsection{프로그램 구조 분석}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+기능 & 사용한 개념 \\
+\midrule
+점수 입력과 변환 & \texttt{input()}, \texttt{split()}, list comprehension \\
+평균, 최고점, 최저점 계산 & 함수, \texttt{sum()}, \texttt{len()}, \texttt{max()}, \texttt{min()} \\
+여러 값 반환 & tuple unpacking \\
+결과 출력 & 함수 분리, f-string \\
+전체 실행 흐름 관리 & \texttt{main()} \\
+잘못된 숫자 입력 처리 & \texttt{ValueError} \\
+빈 입력 처리 & \texttt{ZeroDivisionError} \\
+직접 실행 여부 확인 & main guard \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+Day 10의 목표는 새로운 문법을 많이 배우는 것이 아니라 지금까지 배운 문법을 역할별 함수와 파일 구조 안에 배치해 하나의 프로그램으로 구성하는 감각을 익히는 것이다.
+\end{importantbox}
+
+% =================================================
+\section{실습 파일 목록}
+% =================================================
+
+\begin{practicebox}
+Day 10의 학습 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_main\_guard.py}
+    \item \texttt{02\_module\_structure.py}
+    \item \texttt{03\_data\_pipeline.py}
+    \item \texttt{04\_error\_handling.py}
+    \item \texttt{05\_main.py}
+    \item \texttt{analysis.py}
+    \item \texttt{calculator.py}
+    \item \texttt{data.py}
+    \item \texttt{practice\_day10.py}
+    \item \texttt{python\_day10.tex}
+    \item \texttt{python\_day10.pdf}
+\end{itemize}
+\end{practicebox}
+
+% =================================================
+\section{핵심 요약}
+% =================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{\_\_name\_\_}은 Python이 각 모듈에 자동으로 제공하는 특별한 변수이다.
+    \item 파일을 직접 실행하면 \texttt{\_\_name\_\_}의 값은 \texttt{"\_\_main\_\_"}이 된다.
+    \item \texttt{if \_\_name\_\_ == "\_\_main\_\_":}은 파일을 직접 실행했을 때만 특정 코드를 실행하도록 한다.
+    \item Python의 \texttt{main()}은 강제된 진입점이 아니라 프로그램의 주 실행 흐름을 나타내기 위한 관례적인 함수 이름이다.
+    \item 하나의 \texttt{.py} 파일은 다른 Python 파일에서 모듈로 사용할 수 있다.
+    \item \texttt{import}를 이용하면 다른 모듈의 함수와 클래스를 재사용할 수 있다.
+    \item 프로젝트에서는 역할이 드러나는 모듈 이름을 사용하는 것이 좋다.
+    \item Data Pipeline은 데이터가 입력되고 처리되며 결과로 출력되는 전체 흐름을 의미한다.
+    \item 입력, 분석, 출력 기능을 함수로 분리하면 각 함수의 책임이 명확해진다.
+    \item 분석 함수는 결과를 직접 출력하기보다 반환하면 다른 코드에서 재사용하기 쉽다.
+    \item \texttt{main()}은 여러 함수를 순서대로 호출해 전체 프로그램 흐름을 조립할 수 있다.
+    \item 예외 처리는 함수로 나눈 프로그램의 실행 흐름에도 통합할 수 있다.
+    \item 예상 가능한 오류는 가능한 한 구체적인 예외 타입으로 처리하는 것이 좋다.
+    \item 오류가 발생하면 현재 정상 실행 흐름은 중단되고 일치하는 \texttt{except} 블록으로 이동한다.
+    \item 프로그램이 커지면 데이터, 분석, 실행처럼 역할별로 파일을 분리할 수 있다.
+    \item 프로젝트 구조에서 중요한 것은 파일의 개수보다 각 파일의 역할과 책임을 명확하게 나누는 것이다.
+    \item Day 10은 Python 문법 학습을 실제 프로그램 구조와 프로젝트 준비 단계로 연결하는 과정이다.
+\end{itemize}
+
+\end{document}
