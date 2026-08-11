@@ -1,0 +1,1139 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+\hypersetup{colorlinks=true,linkcolor=titleblue,urlcolor=titleblue}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C++ Programming}
+\rhead{Day 14}
+\cfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{titleblue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible
+}
+\lstset{style=cppstyle}
+
+\newtcolorbox{learningbox}{colback=blue!4,colframe=titleblue,title=\textbf{학습 목표},fonttitle=\bfseries}
+\newtcolorbox{importantbox}{colback=yellow!8,colframe=orange!70!black,title=\textbf{핵심 포인트},fonttitle=\bfseries}
+\newtcolorbox{practicebox}{colback=red!3,colframe=red!55!black,title=\textbf{실습},fonttitle=\bfseries}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries C++ Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 14: Integration and Program Structure\par}
+    \vspace{2cm}
+    {\large Program Structure, Class + vector, find\_if, File Save/Load, Exception Handling\par}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{학습 목표}
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item 메뉴 기반 프로그램의 전체 흐름을 함수로 분리하기
+    \item 클래스 객체를 \texttt{vector}에 저장하고 여러 객체를 관리하기
+    \item 참조 전달과 \texttt{const} 참조를 상황에 맞게 사용하기
+    \item \texttt{find\_if}와 lambda를 이용해 객체 컨테이너에서 원하는 데이터를 검색하기
+    \item \texttt{ofstream}으로 객체 데이터를 파일에 저장하기
+    \item \texttt{ifstream}으로 파일 데이터를 읽어 객체 컨테이너로 복원하기
+    \item \texttt{try}, \texttt{throw}, \texttt{catch}를 파일 처리와 연결하기
+    \item Day 1--13에서 배운 문법을 하나의 프로그램 구조 안에서 연결하기
+\end{itemize}
+\end{learningbox}
+
+\section{Day 14 개요}
+Day 14는 새로운 문법을 대량으로 학습하는 날이 아니라,
+Day 1--13에서 배운 핵심 개념을 실제 프로그램 구조 안에서 연결하는 통합 복습이다.
+개념 예제에서는 \texttt{Book}을 사용하고, 각 실습에서는 같은 구조를 \texttt{Movie}에 적용한다.
+이를 통해 예제 코드를 그대로 복사하는 것이 아니라 동일한 개념을 다른 객체에 적용하는 연습을 한다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+주제 & 핵심 역할 \\
+\midrule
+Program Structure & 메뉴와 기능을 함수로 분리 \\
+Class + \texttt{vector} & 여러 객체를 하나의 컨테이너에서 관리 \\
+\texttt{find\_if} + lambda & 조건에 맞는 객체 검색 \\
+File Save & 객체 데이터를 파일에 저장 \\
+File Load & 파일 데이터를 객체로 복원 \\
+Exception Handling & 오류 발생과 처리 흐름 분리 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+Day 14의 핵심은 개별 문법을 다시 외우는 것이 아니라,
+클래스, STL, 함수, 파일 입출력, 예외 처리가 하나의 프로그램 안에서 어떤 순서로 연결되는지를 이해하는 것이다.
+\end{importantbox}
+
+\section{Program Structure}
+작은 예제에서는 모든 코드를 \texttt{main()}에 작성할 수 있지만,
+프로그램이 커질수록 메뉴 출력, 데이터 추가, 검색, 저장과 같은 기능을 함수로 분리하는 것이 중요하다.
+\texttt{main()}은 세부 작업을 직접 수행하기보다 프로그램의 전체 흐름을 관리하도록 구성할 수 있다.
+
+\subsection{메뉴 반복 구조}
+메뉴 기반 프로그램에서는 보통 반복문 안에서 메뉴를 출력하고 사용자의 선택을 입력받는다.
+
+\begin{lstlisting}
+while (true)
+{
+    showMenu();
+    cin >> choice;
+
+    if (choice == 0)
+    {
+        break;
+    }
+}
+\end{lstlisting}
+
+\texttt{showMenu()}와 입력이 반복문 안에 있어야 매 반복마다 새로운 선택을 받을 수 있다.
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+void showMenu()
+{
+    cout << "===== Book Manager =====" << endl;
+    cout << "1. Add Book" << endl;
+    cout << "2. Show Books" << endl;
+    cout << "3. Find Book" << endl;
+    cout << "0. Exit" << endl;
+    cout << "Select: ";
+}
+
+int main()
+{
+    int choice;
+
+    while (true)
+    {
+        showMenu();
+        cin >> choice;
+
+        if (choice == 1)
+        {
+            cout << "Add Book selected." << endl;
+        }
+        else if (choice == 2)
+        {
+            cout << "Show Books selected." << endl;
+        }
+        else if (choice == 3)
+        {
+            cout << "Find Book selected." << endl;
+        }
+        else if (choice == 0)
+        {
+            cout << "Program finished." << endl;
+            break;
+        }
+        else
+        {
+            cout << "Invalid choice." << endl;
+        }
+
+        cout << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{Movie Manager} 메뉴를 만든다.
+\texttt{showMenu()} 함수를 사용하고 \texttt{while (true)} 안에서 메뉴 출력과 입력을 반복한다.
+1, 2, 3은 각각 Add Movie, Show Movies, Find Movie를 선택하고, 0은 프로그램을 종료한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+void showMenu()
+{
+    cout << "==== Movie Manager ====" << endl;
+    cout << "1. Add Movie" << endl;
+    cout << "2. Show Movies" << endl;
+    cout << "3. Find Movie" << endl;
+    cout << "0. Exit" << endl;
+    cout << "Select: ";
+}
+
+int main()
+{
+    int choice;
+
+    while (true)
+    {
+        showMenu();
+        cin >> choice;
+
+        if (choice == 1)
+        {
+            cout << "Add Movie selected" << endl;
+        }
+        else if (choice == 2)
+        {
+            cout << "Show Movies selected" << endl;
+        }
+        else if (choice == 3)
+        {
+            cout << "Find Movie selected" << endl;
+        }
+        else if (choice == 0)
+        {
+            cout << "Program finished" << endl;
+            break;
+        }
+        else
+        {
+            cout << "Invalid choice." << endl;
+        }
+
+        cout << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{Class와 vector 통합}
+클래스는 하나의 객체 구조를 정의하고, \texttt{vector}는 같은 타입의 여러 데이터를 관리한다.
+따라서 \texttt{vector<Book>}을 사용하면 여러 \texttt{Book} 객체를 하나의 컨테이너에서 관리할 수 있다.
+
+\subsection{객체 컨테이너}
+다음 선언은 정수가 아니라 \texttt{Book} 객체를 저장하는 vector를 만든다.
+
+\begin{lstlisting}
+vector<Book> books;
+\end{lstlisting}
+
+객체는 \texttt{push\_back()}으로 추가할 수 있다.
+
+\begin{lstlisting}
+books.push_back(Book("C++", 30000));
+\end{lstlisting}
+
+함수가 원본 vector를 수정해야 한다면 참조 전달을 사용한다.
+
+\begin{lstlisting}
+void addBook(vector<Book>& books)
+\end{lstlisting}
+
+반대로 출력처럼 읽기만 하는 함수는 \texttt{const} 참조를 사용할 수 있다.
+
+\begin{lstlisting}
+void showBooks(const vector<Book>& books)
+\end{lstlisting}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+class Book
+{
+public:
+    string title;
+    int price;
+
+    Book(string title, int price)
+    {
+        this->title = title;
+        this->price = price;
+    }
+
+    void showInfo() const
+    {
+        cout << "Title: " << title << endl;
+        cout << "Price: " << price << endl;
+    }
+};
+
+void addBook(vector<Book>& books)
+{
+    string title;
+    int price;
+
+    cout << "Title: ";
+    cin >> title;
+
+    cout << "Price: ";
+    cin >> price;
+
+    books.push_back(Book(title, price));
+
+    cout << "Book added." << endl;
+}
+
+void showBooks(const vector<Book>& books)
+{
+    if (books.empty())
+    {
+        cout << "No books." << endl;
+        return;
+    }
+
+    for (const Book& book : books)
+    {
+        book.showInfo();
+        cout << endl;
+    }
+}
+
+int main()
+{
+    vector<Book> books;
+
+    addBook(books);
+    addBook(books);
+
+    cout << endl;
+
+    showBooks(books);
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{Movie} 클래스를 만들고 \texttt{vector<Movie>}에 여러 영화를 저장한다.
+\texttt{addMovie(vector<Movie>\& movies)}로 원본 vector에 영화를 추가하고,
+\texttt{showMovies(const vector<Movie>\& movies)}로 모든 영화를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+class Movie
+{
+public:
+    string title;
+    int rating;
+
+    Movie(string title, int rating)
+    {
+        this->title = title;
+        this->rating = rating;
+    }
+
+    void showInfo() const
+    {
+        cout << "Title: " << title << endl;
+        cout << "Rating: " << rating << endl;
+    }
+};
+
+void addMovie(vector<Movie>& movies)
+{
+    string title;
+    int rating;
+
+    cout << "Title: ";
+    cin >> title;
+
+    cout << "Rating: ";
+    cin >> rating;
+
+    movies.push_back(Movie(title, rating));
+}
+
+void showMovies(const vector<Movie>& movies)
+{
+    if (movies.empty())
+    {
+        cout << "No movies" << endl;
+        return;
+    }
+
+    for (const Movie& movie : movies)
+    {
+        movie.showInfo();
+        cout << endl;
+    }
+}
+
+int main()
+{
+    vector<Movie> movies;
+
+    addMovie(movies);
+    addMovie(movies);
+
+    cout << endl;
+
+    showMovies(movies);
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{Search: find\_if와 Lambda}
+\texttt{find\_if}는 컨테이너에서 특정 조건을 만족하는 첫 번째 원소를 찾는 STL 알고리즘이다.
+객체의 멤버 값을 기준으로 검색할 때 lambda를 조건 함수로 사용할 수 있다.
+
+\subsection{검색 구조}
+\begin{lstlisting}
+auto it = find_if(
+    books.begin(),
+    books.end(),
+    [&target](const Book& book)
+    {
+        return book.title == target;
+    }
+);
+\end{lstlisting}
+
+lambda는 각 \texttt{Book}을 검사하고 제목이 \texttt{target}과 같으면 \texttt{true}를 반환한다.
+검색에 성공하면 iterator가 해당 객체를 가리키고, 실패하면 \texttt{books.end()}가 반환된다.
+
+\begin{lstlisting}
+if (it != books.end())
+{
+    it->showInfo();
+}
+\end{lstlisting}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+class Book
+{
+public:
+    string title;
+    int price;
+
+    Book(string title, int price)
+    {
+        this->title = title;
+        this->price = price;
+    }
+
+    void showInfo() const
+    {
+        cout << "Title: " << title << endl;
+        cout << "Price: " << price << endl;
+    }
+};
+
+void findBook(const vector<Book>& books)
+{
+    string target;
+
+    cout << "Title to find: ";
+    cin >> target;
+
+    auto it = find_if(
+        books.begin(),
+        books.end(),
+        [&target](const Book& book)
+        {
+            return book.title == target;
+        }
+    );
+
+    if (it != books.end())
+    {
+        cout << "Book found." << endl;
+        it->showInfo();
+    }
+    else
+    {
+        cout << "Book not found." << endl;
+    }
+}
+
+int main()
+{
+    vector<Book> books;
+
+    books.push_back(Book("C++", 30000));
+    books.push_back(Book("Python", 25000));
+    books.push_back(Book("Physics", 40000));
+
+    findBook(books);
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{vector<Movie>}에서 사용자가 입력한 제목과 일치하는 영화를 찾는다.
+\texttt{find\_if}와 lambda를 사용하고, 검색에 성공하면 영화 정보를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+class Movie
+{
+public:
+    string title;
+    int rating;
+
+    Movie(string title, int rating)
+    {
+        this->title = title;
+        this->rating = rating;
+    }
+
+    void showInfo() const
+    {
+        cout << "Title: " << title << endl;
+        cout << "Rating: " << rating << endl;
+    }
+};
+
+void findMovie(const vector<Movie>& movies)
+{
+    string target;
+
+    cout << "Enter the title of movie you want to find: ";
+    cin >> target;
+
+    auto it = find_if(
+        movies.begin(),
+        movies.end(),
+        [&target](const Movie& movie)
+        {
+            return movie.title == target;
+        }
+    );
+
+    if (it != movies.end())
+    {
+        cout << "Movie found" << endl;
+        it->showInfo();
+    }
+    else
+    {
+        cout << "Movie not found" << endl;
+    }
+}
+
+int main()
+{
+    vector<Movie> movies;
+
+    movies.push_back(Movie("Interstellar", 9));
+    movies.push_back(Movie("Inception", 8));
+    movies.push_back(Movie("Tenet", 7));
+
+    findMovie(movies);
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{File Save: ofstream}
+프로그램 내부의 객체 데이터는 프로그램이 종료되면 사라진다.
+\texttt{ofstream}을 사용하면 \texttt{vector<Book>}의 데이터를 외부 파일에 저장할 수 있다.
+
+\subsection{객체 데이터 저장}
+\begin{lstlisting}
+ofstream file("books.txt");
+
+for (const Book& book : books)
+{
+    file << book.title << " " << book.price << endl;
+}
+\end{lstlisting}
+
+파일에 저장만 하므로 vector와 각 객체를 수정할 필요가 없다.
+따라서 \texttt{const} 참조를 사용한다.
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+
+using namespace std;
+
+class Book
+{
+public:
+    string title;
+    int price;
+
+    Book(string title, int price)
+    {
+        this->title = title;
+        this->price = price;
+    }
+};
+
+void saveBooks(const vector<Book>& books)
+{
+    ofstream file("books.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return;
+    }
+
+    for (const Book& book : books)
+    {
+        file << book.title << " " << book.price << endl;
+    }
+
+    file.close();
+
+    cout << "Books saved." << endl;
+}
+
+int main()
+{
+    vector<Book> books;
+
+    books.push_back(Book("C++", 30000));
+    books.push_back(Book("Python", 25000));
+    books.push_back(Book("Physics", 40000));
+
+    saveBooks(books);
+
+    return 0;
+}
+\end{lstlisting}
+
+파일에는 다음 내용이 저장된다.
+
+\begin{verbatim}
+C++ 30000
+Python 25000
+Physics 40000
+\end{verbatim}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{vector<Movie>}에 저장된 영화 정보를 \texttt{movies.txt}에 저장한다.
+각 줄은 \texttt{title rating} 형식으로 저장하고, 파일 열기에 실패하면 오류 메시지를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+
+using namespace std;
+
+class Movie
+{
+public:
+    string title;
+    int rating;
+
+    Movie(string title, int rating)
+    {
+        this->title = title;
+        this->rating = rating;
+    }
+};
+
+void saveMovies(const vector<Movie>& movies)
+{
+    ofstream file("movies.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return;
+    }
+
+    for (const Movie& movie : movies)
+    {
+        file << movie.title << " " << movie.rating << endl;
+    }
+
+    file.close();
+
+    cout << "Movies saved successfully." << endl;
+}
+
+int main()
+{
+    vector<Movie> movies;
+
+    movies.push_back(Movie("Interstellar", 9));
+    movies.push_back(Movie("Inception", 8));
+    movies.push_back(Movie("Tenet", 7));
+
+    saveMovies(movies);
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{File Load: ifstream}
+\texttt{ifstream}을 사용하면 파일에 저장된 데이터를 다시 프로그램으로 읽어올 수 있다.
+Day 14에서는 파일에서 읽은 데이터를 이용해 객체를 생성하고 vector에 추가한다.
+
+\subsection{파일에서 객체 복원}
+\begin{lstlisting}
+string title;
+int price;
+
+while (file >> title >> price)
+{
+    books.push_back(Book(title, price));
+}
+\end{lstlisting}
+
+\texttt{while} 조건에서 파일 입력이 성공하는 동안 반복하고,
+읽은 데이터로 새로운 \texttt{Book} 객체를 만들어 원본 vector에 추가한다.
+이 함수는 vector를 수정하므로 \texttt{const}를 붙이지 않은 참조를 사용한다.
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+
+using namespace std;
+
+class Book
+{
+public:
+    string title;
+    int price;
+
+    Book(string title, int price)
+    {
+        this->title = title;
+        this->price = price;
+    }
+
+    void showInfo() const
+    {
+        cout << "Title: " << title << endl;
+        cout << "Price: " << price << endl;
+    }
+};
+
+void loadBooks(vector<Book>& books)
+{
+    ifstream file("books.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return;
+    }
+
+    string title;
+    int price;
+
+    while (file >> title >> price)
+    {
+        books.push_back(Book(title, price));
+    }
+
+    file.close();
+
+    cout << "Books loaded successfully." << endl;
+}
+
+void showBooks(const vector<Book>& books)
+{
+    for (const Book& book : books)
+    {
+        book.showInfo();
+        cout << endl;
+    }
+}
+
+int main()
+{
+    vector<Book> books;
+
+    loadBooks(books);
+
+    cout << endl;
+
+    showBooks(books);
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{movies.txt}의 영화 데이터를 \texttt{ifstream}으로 읽고,
+각 줄의 제목과 평점으로 \texttt{Movie} 객체를 만들어 \texttt{vector<Movie>}에 추가한다.
+불러온 뒤 모든 영화를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+
+using namespace std;
+
+class Movie
+{
+public:
+    string title;
+    int rating;
+
+    Movie(string title, int rating)
+    {
+        this->title = title;
+        this->rating = rating;
+    }
+
+    void showInfo() const
+    {
+        cout << title << " " << rating << endl;
+    }
+};
+
+void loadMovies(vector<Movie>& movies)
+{
+    ifstream file("movies.txt");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file." << endl;
+        return;
+    }
+
+    string title;
+    int rating;
+
+    while (file >> title >> rating)
+    {
+        movies.push_back(Movie(title, rating));
+    }
+
+    file.close();
+
+    cout << "Movies loaded successfully." << endl;
+}
+
+void showMovies(const vector<Movie>& movies)
+{
+    for (const Movie& movie : movies)
+    {
+        movie.showInfo();
+    }
+}
+
+int main()
+{
+    vector<Movie> movies;
+
+    loadMovies(movies);
+
+    showMovies(movies);
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{Exception Handling 통합}
+파일 작업에서는 파일이 존재하지 않거나 열리지 않는 상황이 발생할 수 있다.
+기존에는 \texttt{if}와 \texttt{return}으로 처리했지만,
+이번에는 \texttt{throw}로 예외를 발생시키고 \texttt{catch}에서 처리한다.
+
+\subsection{파일 오류와 runtime\_error}
+\begin{lstlisting}
+if (!file.is_open())
+{
+    throw runtime_error("Failed to open file.");
+}
+\end{lstlisting}
+
+예외가 발생하면 현재 \texttt{try} 블록의 나머지 코드는 실행되지 않고 대응되는 \texttt{catch}로 제어가 이동한다.
+
+\begin{lstlisting}
+catch (const exception& e)
+{
+    cout << "Error: " << e.what() << endl;
+}
+\end{lstlisting}
+
+\subsection{최종 코드}
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <stdexcept>
+
+using namespace std;
+
+class Book
+{
+public:
+    string title;
+    int price;
+
+    Book(string title, int price)
+    {
+        this->title = title;
+        this->price = price;
+    }
+
+    void showInfo() const
+    {
+        cout << "Title: " << title << endl;
+        cout << "Price: " << price << endl;
+    }
+};
+
+void loadBooks(vector<Book>& books)
+{
+    try
+    {
+        ifstream file("books.txt");
+
+        if (!file.is_open())
+        {
+            throw runtime_error("Failed to open file.");
+        }
+
+        string title;
+        int price;
+
+        while (file >> title >> price)
+        {
+            books.push_back(Book(title, price));
+        }
+
+        file.close();
+
+        cout << "Books loaded successfully." << endl;
+    }
+    catch (const exception& e)
+    {
+        cout << "Error: " << e.what() << endl;
+    }
+}
+
+int main()
+{
+    vector<Book> books;
+
+    loadBooks(books);
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{실습}
+\begin{practicebox}
+\texttt{movies.txt}를 읽는 코드를 \texttt{try / throw / catch} 구조로 작성한다.
+파일이 열리지 않으면 \texttt{runtime\_error}를 발생시키고,
+\texttt{catch (const exception\& e)}에서 오류 메시지를 출력한다.
+\end{practicebox}
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <stdexcept>
+
+using namespace std;
+
+class Movie
+{
+public:
+    string title;
+    int rating;
+
+    Movie(string title, int rating)
+    {
+        this->title = title;
+        this->rating = rating;
+    }
+
+    void showInfo() const
+    {
+        cout << title << " " << rating << endl;
+    }
+};
+
+void loadMovies(vector<Movie>& movies)
+{
+    try
+    {
+        ifstream file("movies.txt");
+
+        if (!file.is_open())
+        {
+            throw runtime_error("Failed to open movies.txt");
+        }
+
+        string title;
+        int rating;
+
+        while (file >> title >> rating)
+        {
+            movies.push_back(Movie(title, rating));
+        }
+
+        file.close();
+
+        cout << "Movies loaded successfully." << endl;
+    }
+    catch (const exception& e)
+    {
+        cout << "Error: " << e.what() << endl;
+    }
+}
+
+int main()
+{
+    vector<Movie> movies;
+
+    loadMovies(movies);
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{개념 연결}
+Day 14에서는 이전에 배운 기능들을 하나의 데이터 관리 흐름으로 연결한다.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+이전 학습 내용 & Day 14에서의 연결 \\
+\midrule
+함수 & 메뉴와 각 기능을 역할별 함수로 분리 \\
+참조 & 원본 \texttt{vector}를 함수에서 직접 수정 \\
+\texttt{const} & 읽기 전용 함수와 객체에 적용 \\
+클래스 & \texttt{Book}, \texttt{Movie} 데이터 구조 정의 \\
+STL \texttt{vector} & 여러 객체를 동적으로 관리 \\
+Lambda & 검색 조건을 짧은 함수 형태로 작성 \\
+\texttt{find\_if} & 객체 컨테이너에서 조건 검색 \\
+File I/O & 객체 데이터를 저장하고 다시 복원 \\
+Exception & 파일 오류를 \texttt{throw / catch}로 처리 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{importantbox}
+데이터 관리 프로그램의 기본 흐름은 입력을 받아 객체를 만들고,
+객체를 vector에 저장한 뒤 검색하거나 출력하고,
+필요하면 파일에 저장하거나 파일에서 다시 불러오는 구조로 정리할 수 있다.
+예외 처리는 이 과정에서 발생하는 오류를 정상 로직과 분리하여 처리한다.
+\end{importantbox}
+
+\section{종합 정리}
+\begin{importantbox}
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{main()}은 프로그램의 전체 흐름을 관리하고 세부 기능은 함수로 분리할 수 있다.
+    \item \texttt{vector<ClassName>} 형태로 여러 객체를 하나의 컨테이너에서 관리할 수 있다.
+    \item 원본 vector를 수정해야 할 때는 참조 전달 \texttt{\&}를 사용한다.
+    \item 읽기만 하는 함수에서는 \texttt{const vector<T>\&}를 사용하면 복사를 피하면서 수정을 막을 수 있다.
+    \item \texttt{find\_if}와 lambda를 조합하면 객체의 멤버 값을 기준으로 검색할 수 있다.
+    \item 검색 실패 여부는 반환된 iterator가 \texttt{container.end()}와 같은지 확인한다.
+    \item \texttt{ofstream}으로 vector의 객체 데이터를 파일에 저장할 수 있다.
+    \item \texttt{ifstream}과 \texttt{while (file >> ...)}을 사용하면 파일 데이터를 반복해서 읽을 수 있다.
+    \item 파일에서 읽은 값으로 객체를 생성한 뒤 \texttt{push\_back()}하면 컨테이너를 복원할 수 있다.
+    \item \texttt{throw runtime\_error(...)}로 실행 중 오류를 예외로 전달할 수 있다.
+    \item \texttt{catch (const exception\& e)}와 \texttt{e.what()}으로 예외 메시지를 처리할 수 있다.
+    \item Day 14의 목적은 개별 문법 암기가 아니라 Day 1--13의 개념을 실제 프로그램 흐름 안에서 연결하는 것이다.
+\end{itemize}
+\end{importantbox}
+
+\section{실습 파일 구성}
+\begin{practicebox}
+Day 14 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_program\_structure.cpp}
+    \item \texttt{02\_class\_and\_vector.cpp}
+    \item \texttt{03\_search\_and\_algorithm.cpp}
+    \item \texttt{04\_file\_save.cpp}
+    \item \texttt{05\_file\_load.cpp}
+    \item \texttt{06\_exception\_handling.cpp}
+    \item \texttt{practice/p01\_movie\_manager.cpp}
+    \item \texttt{practice/p02\_movie\_collection.cpp}
+    \item \texttt{practice/p03\_movie\_search.cpp}
+    \item \texttt{practice/p04\_movie\_save.cpp}
+    \item \texttt{practice/p05\_movie\_load.cpp}
+    \item \texttt{practice/p06\_movie\_exception.cpp}
+    \item \texttt{practice/movies.txt}
+\end{itemize}
+\end{practicebox}
+
+\end{document}
