@@ -1,0 +1,739 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Python Programming}
+\rhead{Day 11}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% Python code style
+% -------------------------------------------------
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstset{style=pythonstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{학습 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{종합 실습},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries Python Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 11: Comprehensive Practice\par}
+
+    \vspace{2cm}
+
+    {\large Basics, Functions, Data Structures, OOP, NumPy, Pandas, Matplotlib\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{학습 목표}
+% =================================================
+
+\begin{learningbox}
+Day 11은 Python Day 1--10에서 학습한 내용을 새로운 개념 없이 종합적으로 복습하는 과정이다.
+이 장을 마치면 다음 내용을 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item 조건문, 반복문, 리스트, 딕셔너리를 이용해 데이터를 처리하기
+    \item 기능을 함수로 분리하고 매개변수와 반환값을 활용하기
+    \item 중첩된 리스트와 딕셔너리를 탐색하고 수정하기
+    \item 클래스, 객체, 상속, 오버라이딩을 이용해 데이터를 구조화하기
+    \item NumPy 배열의 인덱싱, 슬라이싱, 배열 연산을 수행하기
+    \item Pandas DataFrame을 생성하고 데이터를 선택, 수정, 분석하기
+    \item Matplotlib을 이용해 데이터를 여러 형태의 그래프로 시각화하기
+\end{itemize}
+\end{learningbox}
+
+\begin{importantbox}
+Day 11의 목적은 새로운 문법을 추가하는 것이 아니라 이미 학습한 Python 기능을 직접 다시 구현하면서 기본기를 점검하는 것이다.
+\end{importantbox}
+
+% =================================================
+\section{Basic Python}
+% =================================================
+
+첫 번째 실습에서는 학생 점수 데이터를 이용해 Python의 기본 자료구조와 제어문을 복습한다.
+\texttt{sum()}, \texttt{max()}, \texttt{min()}, \texttt{sorted()}에 의존하지 않고 반복문과 조건문으로 직접 처리한다.
+
+\subsection{최종 코드: \texttt{01\_basic.py}}
+
+\begin{lstlisting}
+students = [
+    {"name": "Alice", "score": 85},
+    {"name": "Bob", "score": 72},
+    {"name": "Charlie", "score": 93},
+    {"name": "David", "score": 68},
+    {"name": "Emma", "score": 88}
+]
+
+total = 0
+
+for i in range(0, len(students)):
+    print(f'{students[i]["name"]}: {students[i]["score"]}')
+    total += students[i]["score"]
+
+print()
+
+average = total / len(students)
+
+print(f"Total: {total}")
+print(f"Average: {average}")
+print()
+
+print("Students with score >= 80")
+
+for i in range(0, len(students)):
+    if students[i]["score"] >= 80:
+        print(f'{students[i]["name"]}: {students[i]["score"]}')
+
+print()
+
+top_index = 0
+
+for i in range(1, len(students)):
+    if students[i]["score"] > students[top_index]["score"]:
+        top_index = i
+
+print(f'Top Student: {students[top_index]["name"]}')
+print(f'Score: {students[top_index]["score"]}')
+print()
+
+for i in range(0, len(students)):
+    if students[i]["score"] >= 90:
+        grade = "A"
+    elif students[i]["score"] >= 80:
+        grade = "B"
+    elif students[i]["score"] >= 70:
+        grade = "C"
+    elif students[i]["score"] >= 60:
+        grade = "D"
+    else:
+        grade = "F"
+
+    print(f'{students[i]["name"]}: {grade}')
+\end{lstlisting}
+
+\begin{importantbox}
+최댓값을 직접 찾을 때는 첫 번째 원소를 현재 최고값으로 설정하고 두 번째 원소부터 비교하며 더 큰 값이 나오면 갱신할 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{Functions}
+% =================================================
+
+두 번째 실습에서는 기본 데이터 처리 로직을 함수로 분리한다.
+함수 내부에서 모든 결과를 출력하기보다 필요한 값을 \texttt{return}으로 반환하여 호출한 코드에서 재사용한다.
+
+\subsection{최종 코드: \texttt{02\_functions.py}}
+
+\begin{lstlisting}
+students = [
+    {"name": "Alice", "score": 85},
+    {"name": "Bob", "score": 72},
+    {"name": "Charlie", "score": 93},
+    {"name": "David", "score": 68},
+    {"name": "Emma", "score": 88}
+]
+
+
+def calculate_total(students):
+    total = 0
+
+    for student in students:
+        total += student["score"]
+
+    return total
+
+
+def calculate_average(students):
+    return calculate_total(students) / len(students)
+
+
+def get_high_scorers(students, cutoff):
+    result = []
+
+    for student in students:
+        if student["score"] >= cutoff:
+            result.append(student)
+
+    return result
+
+
+def get_top_student(students):
+    top_index = 0
+
+    for i in range(1, len(students)):
+        if students[i]["score"] > students[top_index]["score"]:
+            top_index = i
+
+    return students[top_index]
+
+
+def get_grade(score):
+    if score >= 90:
+        return "A"
+    elif score >= 80:
+        return "B"
+    elif score >= 70:
+        return "C"
+    elif score >= 60:
+        return "D"
+    else:
+        return "F"
+
+
+print(f"Total: {calculate_total(students)}")
+print(f"Average: {calculate_average(students)}")
+print()
+
+print("Students with score >= 80")
+
+for student in get_high_scorers(students, 80):
+    print(f'{student["name"]}: {student["score"]}')
+
+print()
+
+top_student = get_top_student(students)
+
+print(f'Top Student: {top_student["name"]}')
+print(f'Score: {top_student["score"]}')
+print()
+
+print("Grades")
+
+for student in students:
+    print(f'{student["name"]}: {get_grade(student["score"])}')
+\end{lstlisting}
+
+\begin{importantbox}
+함수의 결과를 여러 번 사용할 경우 같은 함수를 반복 호출하기보다 반환값을 변수에 저장하여 재사용할 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{Data Structures}
+% =================================================
+
+세 번째 실습에서는 리스트 안에 딕셔너리가 있고, 그 딕셔너리 안에 다시 리스트와 딕셔너리가 들어 있는 중첩 자료구조를 다룬다.
+학생 중심 데이터를 탐색하고 수정한 뒤 과목 중심 데이터로 다시 구성한다.
+
+\subsection{최종 코드: \texttt{03\_data\_structures.py}}
+
+\begin{lstlisting}
+students = [
+    {
+        "name": "Alice",
+        "major": "Physics",
+        "courses": ["Python", "Math"],
+        "scores": {"Python": 88, "Math": 92}
+    },
+    {
+        "name": "Bob",
+        "major": "Engineering",
+        "courses": ["Python", "C++"],
+        "scores": {"Python": 76, "C++": 85}
+    },
+    {
+        "name": "Charlie",
+        "major": "Physics",
+        "courses": ["Math", "C++"],
+        "scores": {"Math": 95, "C++": 91}
+    },
+    {
+        "name": "David",
+        "major": "Engineering",
+        "courses": ["Python", "Math", "C++"],
+        "scores": {"Python": 82, "Math": 79, "C++": 88}
+    }
+]
+
+print("Physics Students")
+
+for student in students:
+    if student["major"] == "Physics":
+        print(f'{student["name"]}: {student["courses"]}')
+
+print()
+
+print("Python Students")
+
+for student in students:
+    for course in student["courses"]:
+        if course == "Python":
+            print(f'{student["name"]}: {student["scores"]["Python"]}')
+
+print()
+
+for student in students:
+    if student["name"] == "Bob":
+        student["courses"].append("Math")
+        student["scores"]["Math"] = 84
+        print(student)
+
+print()
+
+new_student = {
+    "name": "Emma",
+    "major": "Physics",
+    "courses": ["Python", "C++", "Math"],
+    "scores": {"Python": 94, "C++": 90, "Math": 89}
+}
+
+students.append(new_student)
+
+for student in students:
+    print(student["name"])
+
+print()
+
+cpp_list = []
+
+for student in students:
+    for course in student["courses"]:
+        if course == "C++":
+            cpp_list.append(
+                {
+                    "name": student["name"],
+                    "score": student["scores"]["C++"]
+                }
+            )
+
+top_index = 0
+
+for i in range(1, len(cpp_list)):
+    if cpp_list[i]["score"] > cpp_list[top_index]["score"]:
+        top_index = i
+
+print(f'Top C++ Student: {cpp_list[top_index]["name"]}')
+print(f'Score: {cpp_list[top_index]["score"]}')
+print()
+
+course_students = {}
+py_group = []
+cpp_group = []
+math_group = []
+
+for student in students:
+    for course in student["courses"]:
+        if course == "Python":
+            py_group.append(student["name"])
+        elif course == "C++":
+            cpp_group.append(student["name"])
+        elif course == "Math":
+            math_group.append(student["name"])
+
+course_students["Python"] = py_group
+course_students["Math"] = math_group
+course_students["C++"] = cpp_group
+
+print(course_students)
+\end{lstlisting}
+
+\begin{importantbox}
+중첩 자료구조에서는 현재 접근하고 있는 값이 리스트인지 딕셔너리인지 구분하는 것이 중요하다.
+리스트에는 인덱스와 \texttt{append()}를 사용하고, 딕셔너리에는 key를 이용해 값을 읽거나 추가할 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{Object-Oriented Programming}
+% =================================================
+
+네 번째 실습에서는 영화 데이터를 클래스로 표현한다.
+기본 클래스와 자식 클래스를 만들고, 객체들을 하나의 리스트에 저장하여 상속과 오버라이딩을 복습한다.
+
+\subsection{최종 코드: \texttt{04\_oop.py}}
+
+\begin{lstlisting}
+class Movie:
+    def __init__(self, title, year, rating):
+        self.title = title
+        self.year = year
+        self.rating = rating
+
+    def show_info(self):
+        print(f"Title: {self.title}")
+        print(f"Year: {self.year}")
+        print(f"Rating: {self.rating}")
+
+    def is_high_rating(self):
+        return self.rating >= 9.0
+
+
+movies = []
+
+movies.append(Movie("Interstellar", 2014, 9.1))
+movies.append(Movie("Inception", 2010, 8.8))
+movies.append(Movie("Parasite", 2019, 8.6))
+movies.append(Movie("The Dark Knight", 2008, 9.0))
+
+for movie in movies:
+    movie.show_info()
+    print()
+
+print("High Rated Movies")
+
+for movie in movies:
+    if movie.is_high_rating():
+        print(movie.title)
+
+print()
+
+
+class StreamingMovie(Movie):
+    def __init__(self, title, year, rating, platform):
+        super().__init__(title, year, rating)
+        self.platform = platform
+
+    def show_info(self):
+        super().show_info()
+        print(f"Platform: {self.platform}")
+
+
+movies.append(StreamingMovie("Dune", 2021, 8.5, "Netflix"))
+movies.append(StreamingMovie("Oppenheimer", 2023, 8.9, "Watcha"))
+
+for movie in movies:
+    movie.show_info()
+    print()
+
+top_rating_movie = movies[0]
+
+for i in range(1, len(movies)):
+    if movies[i].rating > top_rating_movie.rating:
+        top_rating_movie = movies[i]
+
+print("Top Movie")
+print(f"Title: {top_rating_movie.title}")
+print(f"Rating: {top_rating_movie.rating}")
+\end{lstlisting}
+
+\begin{importantbox}
+부모 클래스의 생성자와 메서드는 \texttt{super()}를 이용해 재사용할 수 있다.
+같은 \texttt{show\_info()} 호출이라도 실제 객체가 자식 클래스의 객체라면 오버라이딩된 메서드가 실행된다.
+\end{importantbox}
+
+% =================================================
+\section{NumPy}
+% =================================================
+
+다섯 번째 실습에서는 NumPy 배열 생성, 인덱싱, 슬라이싱, 원소별 배열 연산과 2차원 배열 접근을 복습한다.
+
+\subsection{최종 코드: \texttt{05\_numpy.py}}
+
+\begin{lstlisting}
+import numpy as np
+
+
+a = np.array([10, 20, 30, 40, 50])
+b = np.array([2, 4, 6, 8, 10])
+
+matrix = np.array([
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+])
+
+print(a[0])
+print(a[-1])
+print(a[2])
+print()
+
+print(a[1:4])
+print()
+
+print(a + b)
+print(a - b)
+print(a * b)
+print(a / b)
+print()
+
+print(a + 5)
+print()
+
+print(b * 3)
+print()
+
+print(matrix[1, 1])
+print()
+
+print(matrix[1, :])
+print()
+
+print(matrix * 2)
+print(matrix + 10)
+print()
+
+print(np.zeros(5))
+print(np.ones(5))
+print(np.arange(0, 10, 2))
+print(np.linspace(0, 1, 5))
+\end{lstlisting}
+
+\begin{importantbox}
+NumPy 배열에 대한 \texttt{+}, \texttt{-}, \texttt{*}, \texttt{/} 연산은 같은 위치의 원소에 대해 수행된다.
+스칼라와 배열을 연산하면 해당 연산이 배열의 모든 원소에 적용된다.
+\end{importantbox}
+
+% =================================================
+\section{Pandas}
+% =================================================
+
+여섯 번째 실습에서는 딕셔너리로부터 DataFrame을 생성하고 열과 행을 선택한 뒤 새로운 열을 추가하고 기본 통계를 확인한다.
+
+\subsection{최종 코드: \texttt{06\_pandas.py}}
+
+\begin{lstlisting}
+import pandas as pd
+
+
+data = {
+    "Name": ["Alice", "Bob", "Charlie", "David", "Emma"],
+    "Physics": [88, 76, 95, 82, 91],
+    "Math": [92, 85, 90, 78, 94]
+}
+
+df = pd.DataFrame(data)
+
+print(df)
+print()
+
+print(df["Physics"])
+print(df["Name"])
+print()
+
+print(df.loc[2])
+print(df.loc[1:3, ["Name", "Physics"]])
+print()
+
+print(df.iloc[0])
+print(df.iloc[-1])
+print()
+
+df["Average"] = (df["Physics"] + df["Math"]) / 2
+
+print(df)
+print()
+
+print(f"Average of Physics: {df['Physics'].mean()}")
+print(f"Average of Math: {df['Math'].mean()}")
+print(f"Maximum of Physics: {df['Physics'].max()}")
+print(f"Minimum of Math: {df['Math'].min()}")
+print()
+
+print(df.describe())
+\end{lstlisting}
+
+\begin{importantbox}
+\texttt{loc}는 label을 기준으로 데이터를 선택하고 \texttt{iloc}는 정수 위치를 기준으로 선택한다.
+DataFrame의 열끼리 직접 연산하여 새로운 열을 만들 수도 있다.
+\end{importantbox}
+
+% =================================================
+\section{Matplotlib}
+% =================================================
+
+일곱 번째 실습에서는 NumPy 배열을 Matplotlib에 전달하여 선 그래프, 산점도, 막대그래프를 그린다.
+제목, 축 이름, 범례, 격자를 추가하여 기본적인 데이터 시각화 흐름을 복습한다.
+
+\subsection{최종 코드: \texttt{07\_matplotlib.py}}
+
+\begin{lstlisting}
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+x = np.array([1, 2, 3, 4, 5])
+
+physics = np.array([70, 75, 83, 88, 95])
+math = np.array([65, 72, 80, 85, 90])
+
+plt.plot(x, physics)
+plt.title("Physics Scores")
+plt.xlabel("Test")
+plt.ylabel("Score")
+plt.show()
+
+plt.plot(x, physics, label="Physics")
+plt.plot(x, math, label="Math")
+plt.title("Physics vs Math")
+plt.xlabel("Test")
+plt.ylabel("Score")
+plt.grid(True)
+plt.legend()
+plt.show()
+
+plt.scatter(physics, math)
+plt.title("Physics vs Math Scores")
+plt.xlabel("Physics Scores")
+plt.ylabel("Math Scores")
+plt.show()
+
+students = ["Alice", "Bob", "Charlie", "David", "Emma"]
+
+plt.bar(students, physics)
+plt.title("Physics Scores by Student")
+plt.xlabel("Student")
+plt.ylabel("Physics Score")
+plt.show()
+
+x = np.linspace(0, 10, 100)
+y = x ** 2
+
+plt.plot(x, y)
+plt.title("y = x^2")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.grid(True)
+plt.show()
+\end{lstlisting}
+
+\begin{importantbox}
+NumPy는 수치 데이터를 생성하고 계산하는 역할을 담당하며 Matplotlib은 계산된 데이터를 그래프로 표현할 수 있다.
+\texttt{plt.show()}를 각 그래프 뒤에 호출하면 그래프를 하나씩 분리하여 확인할 수 있다.
+\end{importantbox}
+
+% =================================================
+\section{종합 실습 파일 목록}
+% =================================================
+
+\begin{practicebox}
+Day 11의 실습 파일은 다음과 같이 관리한다.
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{01\_basic.py}
+    \item \texttt{02\_functions.py}
+    \item \texttt{03\_data\_structures.py}
+    \item \texttt{04\_oop.py}
+    \item \texttt{05\_numpy.py}
+    \item \texttt{06\_pandas.py}
+    \item \texttt{07\_matplotlib.py}
+    \item \texttt{python\_day11.tex}
+    \item \texttt{python\_day11.pdf}
+\end{itemize}
+\end{practicebox}
+
+% =================================================
+\section{Day 11 핵심 요약}
+% =================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item 리스트와 딕셔너리는 여러 데이터를 구조적으로 저장하고 반복문으로 처리할 수 있다.
+    \item 조건문을 이용하면 데이터의 값에 따라 서로 다른 처리를 수행할 수 있다.
+    \item 최댓값을 직접 찾을 때는 하나의 값을 현재 최고값으로 두고 순회하면서 갱신할 수 있다.
+    \item 함수는 반복되는 기능을 분리하고 매개변수를 통해 데이터를 전달받으며 \texttt{return}으로 결과를 반환한다.
+    \item 함수의 반환값은 변수에 저장하여 여러 번 재사용할 수 있다.
+    \item 중첩 자료구조에서는 각 단계의 자료형을 구분하며 접근해야 한다.
+    \item 클래스는 데이터와 관련 기능을 하나의 객체로 묶을 수 있다.
+    \item \texttt{\_\_init\_\_()}은 객체가 생성될 때 인스턴스 변수를 초기화한다.
+    \item 상속을 이용하면 기존 클래스의 기능을 재사용하고 새로운 기능을 추가할 수 있다.
+    \item 메서드 오버라이딩을 이용하면 자식 클래스에서 부모 클래스의 동작을 변경하거나 확장할 수 있다.
+    \item NumPy 배열은 인덱싱과 슬라이싱을 지원하며 배열 전체에 효율적으로 수치 연산을 적용할 수 있다.
+    \item 2차원 NumPy 배열은 행과 열의 인덱스를 이용해 원하는 원소와 부분 배열에 접근할 수 있다.
+    \item Pandas DataFrame은 행과 열 형태의 데이터를 다루기 위한 자료구조이다.
+    \item \texttt{loc}와 \texttt{iloc}를 이용하면 원하는 행과 열을 선택할 수 있다.
+    \item DataFrame의 열끼리 연산하여 새로운 열을 만들고 \texttt{mean()}, \texttt{max()}, \texttt{min()}, \texttt{describe()}로 데이터를 분석할 수 있다.
+    \item Matplotlib의 \texttt{plot()}, \texttt{scatter()}, \texttt{bar()}를 이용해 여러 형태의 그래프를 만들 수 있다.
+    \item NumPy로 생성하거나 계산한 데이터를 Matplotlib으로 시각화할 수 있다.
+    \item Day 11은 Python Day 1--10에서 학습한 내용을 영역별 종합 실습으로 다시 확인하는 과정이다.
+\end{itemize}
+
+\end{document}
