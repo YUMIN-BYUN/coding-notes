@@ -1,0 +1,403 @@
+\documentclass[11pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Colors
+% -------------------------------------------------
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+% -------------------------------------------------
+% Hyperlinks
+% -------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=titleblue,
+    urlcolor=titleblue
+}
+
+% -------------------------------------------------
+% Header / Footer
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Python Programming}
+\rhead{Day 12}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+% -------------------------------------------------
+% Section style
+% -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{titleblue}}
+  {\thesection.}{0.6em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection.}{0.5em}{}
+
+% -------------------------------------------------
+% Python code style
+% -------------------------------------------------
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true
+}
+
+\lstset{style=pythonstyle}
+
+% -------------------------------------------------
+% Boxes
+% -------------------------------------------------
+\newtcolorbox{learningbox}{
+    colback=blue!4,
+    colframe=titleblue,
+    title=\textbf{프로젝트 목표},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{importantbox}{
+    colback=yellow!8,
+    colframe=orange!70!black,
+    title=\textbf{핵심 포인트},
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{practicebox}{
+    colback=red!3,
+    colframe=red!55!black,
+    title=\textbf{프로젝트 구성},
+    fonttitle=\bfseries
+}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+
+    {\Huge\bfseries Python Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 12: Stock Portfolio Analyzer\par}
+
+    \vspace{2cm}
+
+    {\large OOP, CSV, Pandas, Matplotlib, File Output\par}
+
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =================================================
+\section{프로젝트 개요}
+% =================================================
+
+\begin{learningbox}
+Day 12에서는 주식 포트폴리오 데이터를 CSV 파일에서 읽고, 객체 지향 구조로 종목과 포트폴리오를 표현한 뒤, Pandas를 이용해 분석하고 Matplotlib으로 시각화한다. 최종 분석 결과는 CSV와 PNG 파일로 저장한다.
+\end{learningbox}
+
+\begin{importantbox}
+프로그램의 전체 흐름은 \texttt{CSV 입력 $\rightarrow$ Stock 객체 생성 $\rightarrow$ Portfolio 계산 $\rightarrow$ Pandas 분석 $\rightarrow$ Matplotlib 시각화 $\rightarrow$ 결과 저장}이다.
+\end{importantbox}
+
+% =================================================
+\section{파일 구조}
+% =================================================
+
+\begin{practicebox}
+\begin{verbatim}
+Day12/
+|
+|-- main.py
+|-- stock.py
+|-- portfolio.py
+|-- analysis.py
+|-- visualization.py
+|
+|-- data/
+|   `-- portfolio.csv
+|
+`-- output/
+    |-- portfolio_analysis.csv
+    `-- return_rates.png
+\end{verbatim}
+\end{practicebox}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{stock.py}: 주식 한 종목의 데이터와 계산을 담당한다.
+    \item \texttt{portfolio.py}: 여러 Stock 객체를 관리하고 전체 포트폴리오 값을 계산한다.
+    \item \texttt{analysis.py}: Portfolio 데이터를 DataFrame으로 변환하고 수익률을 분석한다.
+    \item \texttt{visualization.py}: 종목별 수익률을 막대그래프로 시각화하고 이미지로 저장한다.
+    \item \texttt{main.py}: 입력, 객체 생성, 분석, 저장, 시각화의 전체 흐름을 연결한다.
+    \item \texttt{data/portfolio.csv}: 포트폴리오의 입력 데이터를 저장한다.
+    \item \texttt{output/}: 분석 결과 CSV와 그래프 이미지를 저장한다.
+\end{itemize}
+
+% =================================================
+\section{Input Data}
+% =================================================
+
+\subsection{\texttt{data/portfolio.csv}}
+
+\begin{lstlisting}[language={}]
+ticker,shares,buy_price,current_price
+AAPL,10,180,210
+MSFT,5,400,450
+NVDA,8,120,150
+GOOGL,6,170,160
+TSLA,4,300,250
+\end{lstlisting}
+
+% =================================================
+\section{Stock Class}
+% =================================================
+
+\subsection{\texttt{stock.py}}
+
+\begin{lstlisting}
+class Stock:
+    def __init__(self, ticker, shares, buy_price, current_price):
+        self.ticker = ticker
+        self.shares = shares
+        self.buy_price = buy_price
+        self.current_price = current_price
+
+    def get_investment(self):
+        return self.shares * self.buy_price
+
+    def get_current_value(self):
+        return self.shares * self.current_price
+
+    def get_profit(self):
+        return self.get_current_value() - self.get_investment()
+
+    def get_return_rate(self):
+        return (self.get_profit() / self.get_investment()) * 100
+\end{lstlisting}
+
+% =================================================
+\section{Portfolio Class}
+% =================================================
+
+\subsection{\texttt{portfolio.py}}
+
+\begin{lstlisting}
+class Portfolio:
+    def __init__(self):
+        self.stocks = []
+
+    def add_stock(self, stock):
+        self.stocks.append(stock)
+
+    def get_total_investment(self):
+        total = 0
+        for stock in self.stocks:
+            total += stock.get_investment()
+        return total
+
+    def get_total_current_value(self):
+        total = 0
+        for stock in self.stocks:
+            total += stock.get_current_value()
+        return total
+
+    def get_total_profit(self):
+        return self.get_total_current_value() - self.get_total_investment()
+
+    def get_total_return_rate(self):
+        return (self.get_total_profit() / self.get_total_investment()) * 100
+\end{lstlisting}
+
+% =================================================
+\section{Portfolio Analysis}
+% =================================================
+
+\subsection{\texttt{analysis.py}}
+
+\begin{lstlisting}
+import pandas as pd
+
+
+def create_dataframe(portfolio):
+    data = []
+
+    for stock in portfolio.stocks:
+        data.append({
+            "ticker": stock.ticker,
+            "shares": stock.shares,
+            "investment": stock.get_investment(),
+            "current_value": stock.get_current_value(),
+            "profit": stock.get_profit(),
+            "return_rate": stock.get_return_rate()
+        })
+
+    df = pd.DataFrame(data)
+    return df
+
+
+def analyze_portfolio(df):
+    sorted_df = df.sort_values("return_rate", ascending=False)
+
+    best_stock = sorted_df.iloc[0]
+    worst_stock = sorted_df.iloc[-1]
+
+    print("=== Portfolio Analysis ===")
+    print(f"Best Stock: {best_stock['ticker']} ({best_stock['return_rate']:.2f}%)")
+    print(f"Worst Stock: {worst_stock['ticker']} ({worst_stock['return_rate']:.2f}%)")
+\end{lstlisting}
+
+% =================================================
+\section{Visualization}
+% =================================================
+
+\subsection{\texttt{visualization.py}}
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+
+
+def plot_returns(df):
+    x = df["ticker"]
+    y = df["return_rate"]
+
+    plt.bar(x, y)
+    plt.xlabel("Ticker")
+    plt.ylabel("Return Rate (%)")
+    plt.title("Return Rate (%) by Ticker")
+    plt.axhline(0)
+    plt.savefig("output/return_rates.png")
+    plt.show()
+\end{lstlisting}
+
+% =================================================
+\section{Main Program}
+% =================================================
+
+\subsection{\texttt{main.py}}
+
+\begin{lstlisting}
+import pandas as pd
+
+from stock import Stock
+from portfolio import Portfolio
+from analysis import create_dataframe, analyze_portfolio
+from visualization import plot_returns
+
+
+df = pd.read_csv("data/portfolio.csv")
+
+portfolio = Portfolio()
+
+for _, row in df.iterrows():
+    stock = Stock(
+        row["ticker"],
+        row["shares"],
+        row["buy_price"],
+        row["current_price"]
+    )
+
+    portfolio.add_stock(stock)
+
+
+print("=== Portfolio Summary ===")
+print(f"Total Investment: {portfolio.get_total_investment()}")
+print(f"Total Current Value: {portfolio.get_total_current_value()}")
+print(f"Total Profit: {portfolio.get_total_profit()}")
+print(f"Total Return Rate: {portfolio.get_total_return_rate():.2f}%")
+
+print()
+
+analysis_df = create_dataframe(portfolio)
+
+print(analysis_df)
+print()
+
+analyze_portfolio(analysis_df)
+
+analysis_df.to_csv(
+    "output/portfolio_analysis.csv",
+    index=False
+)
+
+plot_returns(analysis_df)
+\end{lstlisting}
+
+% =================================================
+\section{Output Files}
+% =================================================
+
+프로그램을 실행하면 \texttt{output/} 폴더에 분석 결과와 그래프가 저장된다.
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{portfolio\_analysis.csv}: 종목별 투자금액, 현재 평가금액, 손익, 수익률을 저장한다.
+    \item \texttt{return\_rates.png}: 종목별 수익률 막대그래프를 저장한다.
+\end{itemize}
+
+\subsection{\texttt{output/portfolio\_analysis.csv}}
+
+\begin{lstlisting}[language={}]
+ticker,shares,investment,current_value,profit,return_rate
+AAPL,10,1800,2100,300,16.666666666666664
+MSFT,5,2000,2250,250,12.5
+NVDA,8,960,1200,240,25.0
+GOOGL,6,1020,960,-60,-5.88235294117647
+TSLA,4,1200,1000,-200,-16.666666666666664
+\end{lstlisting}
+
+% =================================================
+\section{Day 12 핵심 요약}
+% =================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item CSV 파일에서 포트폴리오 입력 데이터를 읽어 DataFrame으로 변환한다.
+    \item CSV의 각 행을 Stock 객체로 변환하여 실제 데이터와 객체 지향 구조를 연결한다.
+    \item Stock 클래스는 한 종목의 투자금액, 현재 평가금액, 손익, 수익률 계산을 담당한다.
+    \item Portfolio 클래스는 여러 Stock 객체를 리스트로 관리하고 전체 포트폴리오 값을 계산한다.
+    \item 함수에 전달된 객체는 필요한 속성과 메서드를 가지고 있으면 해당 기능을 사용할 수 있다.
+    \item Pandas DataFrame으로 객체의 계산 결과를 표 형태로 구성한다.
+    \item \texttt{sort\_values()}와 \texttt{iloc}를 이용해 최고 및 최저 수익률 종목을 찾는다.
+    \item Matplotlib의 \texttt{bar()}를 이용해 종목별 수익률을 시각화한다.
+    \item \texttt{to\_csv()}와 \texttt{savefig()}를 이용해 분석 결과와 그래프를 파일로 저장한다.
+    \item Day 12에서는 OOP, CSV, Pandas, Matplotlib을 하나의 미니프로젝트 안에서 통합한다.
+\end{itemize}
+
+\end{document}
