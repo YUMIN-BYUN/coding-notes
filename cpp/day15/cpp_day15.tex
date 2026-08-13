@@ -1,0 +1,605 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\definecolor{codebg}{RGB}{247,247,247}
+\definecolor{codeframe}{RGB}{210,210,210}
+\definecolor{keywordcolor}{RGB}{0,70,160}
+\definecolor{commentcolor}{RGB}{0,120,80}
+\definecolor{stringcolor}{RGB}{170,50,50}
+\definecolor{titleblue}{RGB}{35,75,130}
+
+\hypersetup{colorlinks=true,linkcolor=titleblue,urlcolor=titleblue}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{C++ Programming}
+\rhead{Day 15}
+\cfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{titleblue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible
+}
+\lstset{style=cppstyle}
+
+\newtcolorbox{learningbox}{colback=blue!4,colframe=titleblue,title=\textbf{학습 목표},fonttitle=\bfseries}
+\newtcolorbox{importantbox}{colback=yellow!8,colframe=orange!70!black,title=\textbf{핵심 포인트},fonttitle=\bfseries}
+\newtcolorbox{practicebox}{colback=red!3,colframe=red!55!black,title=\textbf{프로젝트 목표},fonttitle=\bfseries}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries C++ Programming\par}
+    \vspace{0.8cm}
+    {\LARGE Day 15: Two-Body Gravity Simulator\par}
+    \vspace{2cm}
+    {\large OOP, Struct, Numerical Integration, Multi-file Project, CSV Output\par}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{학습 목표}
+\begin{learningbox}
+이 장을 마치면 다음 내용을 설명하고 직접 코드로 작성할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item 두 입자의 상태를 \texttt{Particle} 클래스로 표현하기
+    \item 위치, 속도, 가속도를 \texttt{struct}로 묶어 물리량을 명확하게 표현하기
+    \item 두 입자의 상대위치로 중력가속도를 계산하기
+    \item 두 입자의 운동방정식을 직접 수치적분하기
+    \item Explicit Euler method로 한 timestep을 구현하기
+    \item 헤더와 구현 파일을 분리한 다중 파일 프로젝트 구성하기
+    \item 시뮬레이션 결과를 CSV 파일로 저장하기
+    \item CSV 데이터를 Excel의 XY Scatter chart로 확인하기
+\end{itemize}
+\end{learningbox}
+
+\section{프로젝트 개요}
+Day 15는 C++ 문법을 추가로 학습하는 날이 아니라, 지금까지 배운 내용을 실제 물리 문제에 연결하는 미니프로젝트이다.
+프로젝트의 목표는 두 질점 사이에 뉴턴 중력만 작용한다고 가정하고, 두 입자의 운동을 시간에 따라 수치적으로 계산하는 것이다.
+
+\begin{practicebox}
+두 입자의 질량, 위치, 속도를 초기조건으로 설정하고, 각 timestep에서 중력가속도를 계산한 뒤 Explicit Euler method로 위치와 속도를 갱신한다. 계산된 궤적은 \texttt{trajectory.csv}에 저장한다.
+\end{practicebox}
+
+\subsection{프로젝트 파일 구조}
+\begin{verbatim}
+day15/
+|-- main.cpp
+|-- Particle.h
+|-- Particle.cpp
+|-- Physics.h
+|-- Physics.cpp
+|-- Simulation.h
+|-- Simulation.cpp
+`-- output/
+    `-- trajectory.csv
+\end{verbatim}
+
+\begin{importantbox}
+이 프로젝트에서는 환산질량을 이용해 two-body 문제를 one-body 문제로 환원하지 않는다. 수치해석에서는 두 입자의 운동방정식을 각각 직접 적분할 수 있으므로, 두 \texttt{Particle} 객체의 상태를 그대로 갱신하는 구조를 사용한다.
+\end{importantbox}
+
+\section{물리 모델}
+두 입자의 위치를 각각 $\mathbf r_1$, $\mathbf r_2$라 하고 상대위치를
+\[
+\mathbf r = \mathbf r_2 - \mathbf r_1
+\]
+로 정의한다.
+
+거리 $r$은
+\[
+r = \sqrt{x^2+y^2}
+\]
+이다.
+
+뉴턴의 만유인력 법칙에 따라 두 입자 사이 힘의 크기는
+\[
+F = G\frac{m_1m_2}{r^2}
+\]
+이고, 벡터형으로 쓰면
+\[
+\mathbf F_1 = Gm_1m_2\frac{\mathbf r}{r^3},
+\qquad
+\mathbf F_2 = -Gm_1m_2\frac{\mathbf r}{r^3}
+\]
+이다.
+
+각 입자의 가속도는
+\[
+\mathbf a_1 = Gm_2\frac{\mathbf r}{r^3},
+\qquad
+\mathbf a_2 = -Gm_1\frac{\mathbf r}{r^3}
+\]
+이 된다.
+
+\begin{importantbox}
+$1/r^2$는 힘의 크기이고, 벡터식에서 $\mathbf r/r^3$가 나타나는 이유는 방향을 나타내는 단위벡터 $\hat{\mathbf r}=\mathbf r/r$를 곱했기 때문이다.
+\end{importantbox}
+
+\section{Particle 클래스}
+\texttt{Particle}은 하나의 물체가 가진 질량, 위치, 속도를 저장한다.
+
+\subsection{Particle.h}
+\begin{lstlisting}
+#ifndef PARTICLE_H
+#define PARTICLE_H
+
+class Particle
+{
+public:
+    double mass;
+    double x;
+    double y;
+    double vx;
+    double vy;
+
+    Particle(double mass, double x, double y, double vx, double vy);
+
+    void showInfo() const;
+};
+
+#endif
+\end{lstlisting}
+
+\subsection{Particle.cpp}
+\begin{lstlisting}
+#include <iostream>
+#include "Particle.h"
+
+using namespace std;
+
+Particle::Particle(double mass, double x, double y, double vx, double vy)
+{
+    this->mass = mass;
+    this->x = x;
+    this->y = y;
+    this->vx = vx;
+    this->vy = vy;
+}
+
+void Particle::showInfo() const
+{
+    cout << "Mass: " << mass << endl;
+    cout << "Position: (" << x << ", " << y << ")" << endl;
+    cout << "Velocity: (" << vx << ", " << vy << ")" << endl;
+}
+\end{lstlisting}
+
+\section{Physics 모듈}
+물리 계산은 \texttt{Particle} 클래스와 분리하여 \texttt{Physics.h}, \texttt{Physics.cpp}에서 처리한다.
+
+\subsection{물리량 struct}
+위치, 속도, 가속도는 서로 다른 의미를 가진 물리량이므로 별도의 구조체로 분리한다.
+
+\begin{lstlisting}
+struct Position
+{
+    double x;
+    double y;
+};
+
+struct Velocity
+{
+    double vx;
+    double vy;
+};
+
+struct Acceleration
+{
+    double ax;
+    double ay;
+};
+
+struct Accelerations
+{
+    Acceleration acceleration1;
+    Acceleration acceleration2;
+};
+\end{lstlisting}
+
+\subsection{Physics.h}
+\begin{lstlisting}
+#ifndef PHYSICS_H
+#define PHYSICS_H
+
+#include "Particle.h"
+
+struct Position
+{
+    double x;
+    double y;
+};
+
+struct Velocity
+{
+    double vx;
+    double vy;
+};
+
+struct Acceleration
+{
+    double ax;
+    double ay;
+};
+
+struct Accelerations
+{
+    Acceleration acceleration1;
+    Acceleration acceleration2;
+};
+
+Position getRelativePosition(
+    const Particle& particle1,
+    const Particle& particle2
+);
+
+Accelerations getAccelerations(
+    const Particle& particle1,
+    const Particle& particle2
+);
+
+#endif
+\end{lstlisting}
+
+\subsection{Physics.cpp}
+\begin{lstlisting}
+#include "Physics.h"
+#include <cmath>
+
+Position getRelativePosition(
+    const Particle& particle1,
+    const Particle& particle2
+)
+{
+    Position relativePosition;
+    relativePosition.x = particle2.x - particle1.x;
+    relativePosition.y = particle2.y - particle1.y;
+
+    return relativePosition;
+}
+
+Accelerations getAccelerations(
+    const Particle& particle1,
+    const Particle& particle2
+)
+{
+    Position relativePosition = getRelativePosition(particle1, particle2);
+
+    double x = relativePosition.x;
+    double y = relativePosition.y;
+    double m1 = particle1.mass;
+    double m2 = particle2.mass;
+
+    double r = std::sqrt(x * x + y * y);
+
+    const double G = 6.67430e-11;
+
+    Accelerations accelerations;
+
+    accelerations.acceleration1.ax = G * m2 * x / (r * r * r);
+    accelerations.acceleration1.ay = G * m2 * y / (r * r * r);
+
+    accelerations.acceleration2.ax = -G * m1 * x / (r * r * r);
+    accelerations.acceleration2.ay = -G * m1 * y / (r * r * r);
+
+    return accelerations;
+}
+\end{lstlisting}
+
+\begin{importantbox}
+두 입자의 위치가 완전히 같아지면 $r=0$이 되어 분모가 0이 된다. 현재 프로젝트에서는 초기조건을 서로 다른 위치로 설정하고 충돌 처리는 구현하지 않는다.
+\end{importantbox}
+
+\section{Explicit Euler Method}
+현재 상태에서 가속도를 계산한 뒤 timestep $\Delta t$만큼 전진한다.
+
+위치는
+\[
+x_{n+1}=x_n+v_{x,n}\Delta t,
+\qquad
+y_{n+1}=y_n+v_{y,n}\Delta t
+\]
+로 갱신한다.
+
+속도는
+\[
+v_{x,n+1}=v_{x,n}+a_{x,n}\Delta t,
+\qquad
+v_{y,n+1}=v_{y,n}+a_{y,n}\Delta t
+\]
+로 갱신한다.
+
+\begin{importantbox}
+Explicit Euler에서는 새 위치와 새 속도를 모두 기존 상태 $n$을 이용해 계산해야 한다. 속도를 먼저 갱신한 뒤 그 새 속도로 위치를 갱신하면 Semi-Implicit Euler가 된다.
+\end{importantbox}
+
+\section{Simulation 모듈}
+\texttt{step()}은 두 입자의 상태를 reference로 받아 한 timestep만큼 직접 변경한다.
+
+\subsection{Simulation.h}
+\begin{lstlisting}
+#ifndef SIMULATION_H
+#define SIMULATION_H
+
+#include "Particle.h"
+#include "Physics.h"
+
+void step(Particle& particle1, Particle& particle2, double dt);
+
+#endif
+\end{lstlisting}
+
+\subsection{Simulation.cpp}
+\begin{lstlisting}
+#include "Simulation.h"
+
+void step(Particle& particle1, Particle& particle2, double dt)
+{
+    Accelerations accelerations
+        = getAccelerations(particle1, particle2);
+
+    Position oldPosition1;
+    oldPosition1.x = particle1.x;
+    oldPosition1.y = particle1.y;
+
+    Position oldPosition2;
+    oldPosition2.x = particle2.x;
+    oldPosition2.y = particle2.y;
+
+    Velocity oldVelocity1;
+    oldVelocity1.vx = particle1.vx;
+    oldVelocity1.vy = particle1.vy;
+
+    Velocity oldVelocity2;
+    oldVelocity2.vx = particle2.vx;
+    oldVelocity2.vy = particle2.vy;
+
+    Position newPosition1;
+    newPosition1.x = oldPosition1.x + oldVelocity1.vx * dt;
+    newPosition1.y = oldPosition1.y + oldVelocity1.vy * dt;
+
+    Position newPosition2;
+    newPosition2.x = oldPosition2.x + oldVelocity2.vx * dt;
+    newPosition2.y = oldPosition2.y + oldVelocity2.vy * dt;
+
+    Velocity newVelocity1;
+    newVelocity1.vx = oldVelocity1.vx
+                    + accelerations.acceleration1.ax * dt;
+    newVelocity1.vy = oldVelocity1.vy
+                    + accelerations.acceleration1.ay * dt;
+
+    Velocity newVelocity2;
+    newVelocity2.vx = oldVelocity2.vx
+                    + accelerations.acceleration2.ax * dt;
+    newVelocity2.vy = oldVelocity2.vy
+                    + accelerations.acceleration2.ay * dt;
+
+    particle1.x = newPosition1.x;
+    particle1.y = newPosition1.y;
+    particle1.vx = newVelocity1.vx;
+    particle1.vy = newVelocity1.vy;
+
+    particle2.x = newPosition2.x;
+    particle2.y = newPosition2.y;
+    particle2.vx = newVelocity2.vx;
+    particle2.vy = newVelocity2.vy;
+}
+\end{lstlisting}
+
+\section{초기조건과 Simulation Loop}
+테스트에서는 태양과 지구에 가까운 질량, 거리, 속도를 사용한다.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+항목 & Particle 1 & Particle 2 \\
+\midrule
+질량 & $1.989\times10^{30}$ kg & $5.972\times10^{24}$ kg \\
+초기 위치 & $(0,0)$ m & $(1.496\times10^{11},0)$ m \\
+초기 속도 & $(0,0)$ m/s & $(0,29780)$ m/s \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+시간 간격은
+\[
+\Delta t = 3600\ \text{s}
+\]
+로 두어 한 번의 \texttt{step()}이 1시간을 의미하도록 한다.
+
+\section{CSV 출력과 main.cpp}
+CSV 파일의 첫 행은 각 열의 의미를 나타낸다.
+
+\begin{verbatim}
+time,x1,y1,x2,y2
+\end{verbatim}
+
+\subsection{main.cpp}
+\begin{lstlisting}
+#include <iostream>
+#include <fstream>
+#include "Particle.h"
+#include "Physics.h"
+#include "Simulation.h"
+
+using namespace std;
+
+int main()
+{
+    Particle particle1(
+        1.989e30,
+        0.0, 0.0,
+        0.0, 0.0
+    );
+
+    Particle particle2(
+        5.972e24,
+        1.496e11, 0.0,
+        0.0, 29780.0
+    );
+
+    double dt = 3600.0;
+    double totalTime = 365.25 * 24.0 * 3600.0;
+
+    int steps = static_cast<int>(totalTime / dt);
+
+    ofstream file("output/trajectory.csv");
+
+    if (!file.is_open())
+    {
+        cout << "Failed to open file" << endl;
+        return 1;
+    }
+
+    file << "time,x1,y1,x2,y2" << endl;
+
+    for (int i = 0; i <= steps; i++)
+    {
+        double time = i * dt;
+
+        file << time << ","
+             << particle1.x << ","
+             << particle1.y << ","
+             << particle2.x << ","
+             << particle2.y << endl;
+
+        if (i < steps)
+        {
+            step(particle1, particle2, dt);
+        }
+    }
+
+    file.close();
+
+    cout << "Simulation completed." << endl;
+    cout << "Data saved to output/trajectory.csv" << endl;
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{Build와 실행}
+모든 구현 파일을 함께 컴파일해야 한다.
+
+\begin{lstlisting}
+g++ main.cpp Particle.cpp Physics.cpp Simulation.cpp -o simulation
+\end{lstlisting}
+
+실행 후 \texttt{output/trajectory.csv}가 생성되면 시뮬레이션이 정상적으로 완료된 것이다.
+
+\begin{importantbox}
+\texttt{main.cpp}만 컴파일하면 \texttt{Particle.cpp}, \texttt{Physics.cpp}, \texttt{Simulation.cpp}에 있는 구현을 linker가 찾지 못해 \texttt{undefined reference} 오류가 발생한다.
+\end{importantbox}
+
+\section{CSV 데이터로 궤도 확인}
+CSV 자체는 그래프를 저장하는 형식이 아니므로 Excel에서 데이터를 불러온 뒤 XY Scatter chart를 사용한다.
+
+Particle 2의 궤도는
+\begin{itemize}[leftmargin=1.5em]
+    \item X 값: \texttt{x2}
+    \item Y 값: \texttt{y2}
+\end{itemize}
+로 설정한다.
+
+\begin{importantbox}
+Excel이 과학적 표기법 데이터를 문자열로 인식하면 셀 앞에 작은따옴표가 붙을 수 있다. 이 경우 숫자로 변환한 뒤 XY Scatter chart를 생성해야 한다. 단순 Line chart를 사용하면 행 번호나 시간에 대한 그래프가 되어 실제 궤도가 아니다.
+\end{importantbox}
+
+\section{프로젝트에서 사용한 C++ 개념}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+개념 & 프로젝트에서의 역할 \\
+\midrule
+Class & Particle 객체 정의 \\
+Struct & Position, Velocity, Acceleration 데이터 묶음 \\
+Reference & \texttt{step()}에서 원본 Particle 상태 변경 \\
+Const reference & 물리 계산 함수에서 불필요한 복사 방지 \\
+Header / cpp 분리 & 선언과 구현 분리 \\
+Function & 물리 계산과 시뮬레이션 역할 분리 \\
+File I/O & CSV 출력 \\
+Loop & timestep 반복 \\
+\texttt{static\_cast} & 반복 횟수를 정수로 변환 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Numerical Method의 한계}
+Explicit Euler method는 구현이 단순하지만 장시간 궤도 계산에서 에너지 오차가 누적될 수 있다.
+따라서 원에 가까운 초기조건을 사용해도 궤도가 완전히 닫히지 않거나 점점 변형될 수 있다.
+
+향후 확장에서는 다음 방법을 비교할 수 있다.
+\begin{itemize}[leftmargin=1.5em]
+    \item timestep $\Delta t$ 감소
+    \item Semi-Implicit Euler
+    \item Velocity Verlet
+    \item Runge--Kutta method
+    \item total energy와 angular momentum의 시간 변화 확인
+\end{itemize}
+
+\section{Day 15 정리}
+Day 15에서는 두 입자 중력 문제를 C++ 다중 파일 프로젝트로 구현했다.
+핵심은 물리식을 코드로 직접 변환하고, 각 timestep에서 두 입자의 가속도, 속도, 위치를 순서대로 계산하는 것이다.
+
+프로그램의 전체 흐름은 다음과 같다.
+
+\begin{verbatim}
+Initial Conditions
+       |
+       v
+Particle 1 + Particle 2
+       |
+       v
+Relative Position
+       |
+       v
+Gravitational Accelerations
+       |
+       v
+Explicit Euler step
+       |
+       v
+Updated Particle States
+       |
+       v
+CSV Output
+       |
+       v
+Repeat
+\end{verbatim}
+
+이 프로젝트를 통해 클래스, 구조체, 참조, 함수 분리, 헤더 파일, 수치해석, 파일 입출력을 하나의 물리 시뮬레이션 프로그램 안에서 연결했다.
+
+\end{document}
