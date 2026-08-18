@@ -1,0 +1,4 @@
+time,position,position_error
+0.0,0.12,0.02
+0.1,,0.02
+0.2,0.51,0.03
