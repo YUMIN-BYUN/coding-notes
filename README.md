@@ -1,32 +1,3 @@
-# Coding Notes
-
-A personal repository documenting my study of programming, scientific computing, and computational physics.
-
-## Purpose
-
-This repository contains my learning materials, source code, LaTeX documents, and projects created while studying
-
-* Python
-* C++
-* Arduino
-* Scientific Computing
-* Computational Physics
-
-The notes are written during the learning process and are continuously improved as my understanding grows.
-
-AI is used as a learning assistant for concept explanations, discussions, code review, practice design, and document generation. All example code and practice problems are reviewed, implemented, and studied by myself.
-
-## Repository Structure
-
-```text
-coding-notes/
-
-├── python/
-├── cpp/
-├── arduino/
-└── projects/
-```
-
 ## Progress
 
 ### Python
@@ -37,10 +8,12 @@ coding-notes/
 * [x] Day 4 — Modules and File I/O
 * [x] Day 5 — OOP Basics
 * [x] Day 6 — Inheritance
-* [ ] Day 7
-* [ ] Day 8
-* [ ] Day 9
-* [ ] Day 10
+* [x] Day 7 — NumPy Basics
+* [x] Day 8 — Pandas
+* [x] Day 9 — Matplotlib
+* [x] Day 10 — Python Project Preparation
+* [x] Day 11 — Comprehensive Practice
+* [x] Day 12 — Stock Portfolio Analyzer
 
 ### C++
 
@@ -48,42 +21,55 @@ coding-notes/
 * [x] Day 2 — Control Flow
 * [x] Day 3 — Pointers and Arrays
 * [x] Day 4 — References and Dynamic Memory
-* [x] Day 5 — Struct and Header Files
+* [x] Day 5 — Struct & Header Files
 * [x] Day 6 — Classes
 * [x] Day 7 — Deep Copy and RAII
 * [x] Day 8 — Inheritance and Polymorphism
-* [ ] Day 9
-* [ ] Day 10
-* [ ] Day 11
-* [ ] Day 12
-* [ ] Day 13
-* [ ] Day 14
+* [x] Day 9 — Templates
+* [x] Day 10 — STL Basics
+* [x] Day 11 — STL Associative Containers
+* [x] Day 12 — STL Advanced
+* [x] Day 13 — File I/O and Exception Handling
+* [x] Day 14 — C++ Integration
+* [x] Day 15 — Two-Body Gravity Simulation
 
-## Learning Workflow
+## Projects
 
-1. Study programming concepts
-2. Review complete example code
-3. Solve practice problems independently
-4. Receive code review and corrections
-5. Write LaTeX study notes
-6. Generate PDF documentation
-7. Apply concepts through projects
+### Project 1 — Python Experimental Data Fitting & Analysis Tool
 
-## AI-Assisted Learning
+**Status:** In Progress
 
-AI tools are used throughout this repository as study assistants.
+A scientific data analysis tool designed for experimental physics data.
 
-They are used for
+Planned features include:
 
-* explaining unfamiliar concepts
-* discussing implementation details
-* reviewing code
-* creating practice problems
-* organizing study notes
-* assisting with LaTeX documentation
+* CSV-based experimental data input
+* Linear and polynomial fitting
+* Nonlinear fitting
+* Error bars and weighted least squares
+* Parameter uncertainty estimation
+* R², RMSE, residual, and χ² analysis
+* Quick and Detail analysis modes
+* CSV, JSON, and PNG result export
 
-The code is written and tested during the learning process, and the final understanding and implementation are verified through direct practice.
+Current progress:
 
----
+* [x] Day 1 — Project architecture and experimental data input
+* [ ] Day 2 — Linear and polynomial least squares
+* [ ] Day 3 — Fit quality and residual analysis
+* [ ] Day 4 — Nonlinear least squares
+* [ ] Day 5 — Gaussian fitting, initial guess, and parameter uncertainty
+* [ ] Day 6 — Error bars, weighted least squares, χ², and custom functions
+* [ ] Day 7 — Result saving, Quick/Detail Mode, and full validation
 
-*Last updated: August 2026*
+### Project 2 — C++ Extensible Physics Simulator
+
+**Status:** Planned
+
+An extensible C++ framework for implementing and simulating multiple physical systems.
+
+### Project 3 — Sensor / Tracking Project
+
+**Status:** Planned
+
+A physics-oriented measurement or motion-tracking project combining experimental data acquisition and computational analysis.
