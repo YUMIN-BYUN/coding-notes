@@ -3,7 +3,8 @@ import numpy as np
 from src.data_loader import load_experimental_data
 from src.models import linear_model, polynomial_model 
 from src.fitting import fit_linear, fit_polynomial
-from src.plotting import plot_fit
+from src.plotting import plot_fit, plot_residuals, show_plots
+from src.metrics import calculate_residuals, calculate_r_squared, calculate_rmse
 
 PLOT_POINTS = 500
 
@@ -26,6 +27,7 @@ x_fit = np.linspace(x.min(), x.max(), PLOT_POINTS)
 if choice == 1:
     a, b = fit_linear(x, y)
     y_fit = linear_model(x_fit, a, b)
+    y_pred = linear_model(x, a, b)
 
     print("\n=== Linear Fit Result ===")
     print("Slope: ", a)
@@ -35,6 +37,7 @@ elif choice == 2:
     degree = int(input("Enter the degree: "))
     coefficients = fit_polynomial(x, y, degree)
     y_fit = polynomial_model(x_fit, coefficients)
+    y_pred = polynomial_model(x, coefficients)
 
     print("\n=== Polynomial Fit Result ===")
     print("Degree: ", degree)
@@ -44,11 +47,19 @@ else:
     print("Invalid choice")
     exit()
 
-# 5. Plot settings
-x_label = input("Enter the label of x axis: ")
-y_label = input("Enter the label of y axis: ")
-title = input("Enter the title of plot: ")
+residuals = calculate_residuals(y, y_pred)
+rmse = calculate_rmse(y, y_pred)
+r_squared = calculate_r_squared(y, y_pred)
 
+print(f"RMSE: {rmse}")
+print(f"R^2: {r_squared}")
+# 5. Plot settings
+
+x_label = input("Enter the label of x axis: ")
+x_unit = input("Enter the unit of x axis (leave blank if none): ")
+y_label = input("Enter the label of y axis: ")
+y_unit = input("Enter the unit of y axis (leave blank if none): ")
+title = input("Enter the title of plot: ")
 
 # 6. Plot
 plot_fit(
@@ -57,6 +68,19 @@ plot_fit(
     x_fit,
     y_fit,
     x_label,
+    x_unit,
     y_label,
+    y_unit,
     title
 )
+
+# 7. Residual plot
+plot_residuals(
+    x,
+    residuals,
+    x_label,
+    x_unit,
+    y_unit
+)
+
+show_plots()
