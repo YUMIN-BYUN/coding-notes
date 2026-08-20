@@ -1,8 +1,8 @@
 import numpy as np
 
 from src.data_loader import load_experimental_data
-from src.models import linear_model, polynomial_model 
-from src.fitting import fit_linear, fit_polynomial
+from src.models import linear_model, polynomial_model, exponential_model, sinusoidal_model
+from src.fitting import fit_linear, fit_polynomial, fit_exponential, fit_sinusoidal, estimate_exponential_guess, estimate_sinusoidal_guess
 from src.plotting import plot_fit, plot_residuals, show_plots
 from src.metrics import calculate_residuals, calculate_r_squared, calculate_rmse
 
@@ -17,6 +17,8 @@ x, y, yerr =  load_experimental_data(file_path)
 print("\nSelect model:")
 print("1. Linear")
 print("2. Polynomial")
+print("3. Exponential")
+print("4. Sinusoidal")
 
 choice = int(input("Choice: "))
 
@@ -42,6 +44,37 @@ elif choice == 2:
     print("\n=== Polynomial Fit Result ===")
     print("Degree: ", degree)
     print("Coefficients: ", coefficients)
+
+elif choice == 3:
+    initial_guess = estimate_exponential_guess(x, y)
+    print("Initial guess:", initial_guess)
+
+    popt, pcov = fit_exponential(x, y, initial_guess)
+    A, B, C= popt
+
+    y_fit = exponential_model(x_fit, A, B, C)
+    y_pred = exponential_model(x, A, B, C)
+
+    print("\n=== Exponential Fit Result ===")
+    print("A: ", A)
+    print("B: ", B)
+    print("C: ", C)
+
+elif choice == 4:
+    initial_guess = estimate_sinusoidal_guess(x, y)
+    print("Initial guess:", initial_guess)
+    
+    popt, pcov = fit_sinusoidal(x, y, initial_guess)
+    A, omega, phi, C = popt
+
+    y_fit = sinusoidal_model(x_fit, A, omega, phi, C)
+    y_pred = sinusoidal_model(x, A, omega, phi, C)
+
+    print("\n=== Sinusoidal Fit Result ===")
+    print("A: ", A)
+    print("omega: ", omega)
+    print("phi: ", phi)
+    print("C: ", C)
 
 else: 
     print("Invalid choice")
