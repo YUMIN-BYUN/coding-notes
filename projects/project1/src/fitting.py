@@ -1,14 +1,16 @@
 import numpy as np
 from scipy.optimize import curve_fit, minimize_scalar
-from .models import exponential_model, sinusoidal_model
+from .models import exponential_model, sinusoidal_model, gaussian_model
 
 def fit_linear(x, y):
-    a_1, a_0 = np.polyfit(x, y, 1)
-    return a_1, a_0
+    coefficients, pcov = np.polyfit(x, y, 1, cov=True)
+    a_1, a_0 = coefficients
+
+    return a_1, a_0, pcov
 
 def fit_polynomial(x, y, degree):
-    coefficients = np.polyfit(x,y,degree)
-    return coefficients
+    coefficients, pcov = np.polyfit(x, y, degree, cov=True)
+    return coefficients, pcov
 
 def fit_exponential(x, y, initial_guess):
     popt, pcov = curve_fit(
@@ -127,3 +129,49 @@ def estimate_sinusoidal_guess(x, y):
     phi0 = (phi0 + np.pi) % (2 * np.pi) - np.pi
 
     return [A0, omega0, phi0, C0]
+
+def fit_gaussian(x, y, initial_guess):
+    popt, pcov = curve_fit(
+        gaussian_model,
+        x,
+        y,
+        p0=initial_guess
+    )
+
+    return popt, pcov
+
+def estimate_gaussian_guess(x, y):
+    edge_count = max(1, len(y) // 10)
+
+    C0 = np.mean(
+        np.concatenate([
+            y[:edge_count],
+            y[-edge_count:]
+        ])
+    )
+
+    peak_index = np.argmax(y)
+
+    mu0 = x[peak_index]
+    A0 = y[peak_index] - C0
+
+    # Estimate sigma using FWHM
+    half_max = C0 + A0 / 2
+
+    left_index = np.argmin(
+        np.abs(y[:peak_index] - half_max)
+    )
+
+    right_index = peak_index + np.argmin(
+        np.abs(y[peak_index:] - half_max)
+    )
+
+    fwhm = x[right_index] - x[left_index]
+
+    sigma0 = fwhm / (2 * np.sqrt(2 * np.log(2)))
+
+    return [A0, mu0, sigma0, C0]
+
+
+def calculate_parameter_uncertainties(pcov):
+    return np.sqrt(np.diag(pcov))

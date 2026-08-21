@@ -13,3 +13,6 @@ def exponential_model(x, A, B, C):
 
 def sinusoidal_model(x, A, omega, phi, C):
     return A * np.sin(omega * x + phi) + C
+
+def gaussian_model(x, A, mu, sigma, C):
+    return A * np.exp(-((x-mu)**2)/(2*sigma ** 2)) + C
