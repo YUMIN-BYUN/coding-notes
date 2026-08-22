@@ -17,7 +17,8 @@ from src.fitting import (
     estimate_sinusoidal_guess,
     fit_gaussian,
     estimate_gaussian_guess,
-    calculate_parameter_uncertainties
+    calculate_parameter_uncertainties,
+    fit_custom
 )
 from src.plotting import (
     plot_raw_data,
@@ -28,7 +29,9 @@ from src.plotting import (
 from src.metrics import (
     calculate_residuals,
     calculate_r_squared,
-    calculate_rmse
+    calculate_rmse,
+    calculate_chi_squared,
+    calculate_reduced_chi_squared
 )
 
 PLOT_POINTS = 500
@@ -58,6 +61,7 @@ while True:
             x_unit,
             y_label,
             y_unit,
+            yerr,
             x_scale,
             y_scale
         )
@@ -74,6 +78,7 @@ print("2. Polynomial")
 print("3. Exponential")
 print("4. Sinusoidal")
 print("5. Gaussian")
+print("6. Custom")
 
 choice = int(input("Choice: "))
 
@@ -82,7 +87,8 @@ x_fit = np.linspace(x.min(), x.max(), PLOT_POINTS)
 
 # 6. Fit
 if choice == 1:
-    a, b, pcov = fit_linear(x, y)
+    n_parameters = 2
+    a, b, pcov = fit_linear(x, y, yerr)
 
     a_err, b_err = calculate_parameter_uncertainties(pcov)
 
@@ -95,8 +101,9 @@ if choice == 1:
 
 elif choice == 2:
     degree = int(input("Enter the degree: "))
+    n_parameters = degree + 1
 
-    coefficients, pcov = fit_polynomial(x, y, degree)
+    coefficients, pcov = fit_polynomial(x, y, degree, yerr)
 
     parameter_errors = calculate_parameter_uncertainties(pcov)
 
@@ -113,13 +120,14 @@ elif choice == 2:
 
 elif choice == 3:
     initial_guess = estimate_exponential_guess(x, y)
-
+    n_parameters = 3
     print("Initial guess:", initial_guess)
 
     popt, pcov = fit_exponential(
         x,
         y,
-        initial_guess
+        initial_guess,
+        yerr
     )
 
     A, B, C = popt
@@ -136,13 +144,14 @@ elif choice == 3:
 
 elif choice == 4:
     initial_guess = estimate_sinusoidal_guess(x, y)
-
+    n_parameters = 4
     print("Initial guess:", initial_guess)
 
     popt, pcov = fit_sinusoidal(
         x,
         y,
-        initial_guess
+        initial_guess,
+        yerr
     )
 
     A, omega, phi, C = popt
@@ -175,13 +184,14 @@ elif choice == 4:
 
 elif choice == 5:
     initial_guess = estimate_gaussian_guess(x, y)
-
+    n_parameters = 4
     print("Initial guess:", initial_guess)
 
     popt, pcov = fit_gaussian(
         x,
         y,
-        initial_guess
+        initial_guess,
+        yerr
     )
 
     A, mu, sigma, C = popt
@@ -212,6 +222,71 @@ elif choice == 5:
     print(f"Sigma: {sigma} ± {sigma_err}")
     print(f"C: {C} ± {C_err}")
 
+elif choice == 6:
+    expression = input(
+        "Enter custom function expression: "
+    ).strip()
+
+    parameter_input = input(
+        "Enter parameter names separated by commas: "
+    ).strip()
+
+    parameter_names = [
+        name.strip()
+        for name in parameter_input.split(",")
+    ]
+
+    initial_guess_input = input(
+        "Enter initial guesses separated by commas: "
+    ).strip()
+
+    initial_guess = [
+        float(value.strip())
+        for value in initial_guess_input.split(",")
+    ]
+
+    if len(parameter_names) != len(initial_guess):
+        raise ValueError(
+            "The number of parameter names and initial guesses must match."
+        )
+
+    n_parameters = len(parameter_names)
+
+    popt, pcov, custom_model = fit_custom(
+        x,
+        y,
+        expression,
+        parameter_names,
+        initial_guess,
+        yerr
+    )
+
+    parameter_errors = (
+        calculate_parameter_uncertainties(pcov)
+    )
+
+    y_fit = custom_model(
+        x_fit,
+        *popt
+    )
+
+    y_pred = custom_model(
+        x,
+        *popt
+    )
+
+    print("\n=== Custom Function Fit Result ===")
+    print("Expression:", expression)
+
+    for name, value, error in zip(
+        parameter_names,
+        popt,
+        parameter_errors
+    ):
+        print(
+            f"{name}: {value} ± {error}"
+        )
+
 else:
     print("Invalid choice")
     exit()
@@ -232,6 +307,25 @@ r_squared = calculate_r_squared(
     y_pred
 )
 
+if yerr is not None:
+    chi_squared = calculate_chi_squared(
+        y,
+        y_pred,
+        yerr
+    )
+
+    reduced_chi_squared = calculate_reduced_chi_squared(
+        chi_squared,
+        len(y),
+        n_parameters
+    )
+
+    print(f"Chi-squared: {chi_squared}")
+    print(
+        f"Reduced chi-squared: "
+        f"{reduced_chi_squared}"
+    )
+
 print(f"RMSE: {rmse}")
 print(f"R^2: {r_squared}")
 
@@ -248,7 +342,8 @@ plot_fit(
     x_unit,
     y_label,
     y_unit,
-    title
+    title,
+    yerr
 )
 
 # 10. Residual plot

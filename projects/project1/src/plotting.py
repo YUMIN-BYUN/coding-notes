@@ -8,6 +8,7 @@ def plot_raw_data(
     x_unit,
     y_label,
     y_unit,
+    yerr=None,
     x_scale="linear",
     y_scale="linear"
 ):
@@ -28,8 +29,16 @@ def plot_raw_data(
         )
 
     plt.figure()
-
-    plt.scatter(x, y)
+    if yerr is None:
+        plt.scatter(x, y)
+    else:
+        plt.errorbar(
+            x,
+            y,
+            yerr=yerr,
+            fmt="o",
+            capsize=3
+        )
 
     plt.xscale(x_scale)
     plt.yscale(y_scale)
@@ -49,10 +58,21 @@ def plot_raw_data(
 
     plt.show()
 
-def plot_fit(x, y, x_fit, y_fit, xlabel, xunit, ylabel, yunit, title):
+def plot_fit(x, y, x_fit, y_fit, xlabel, xunit, ylabel, yunit, title, yerr=None):
     plt.figure()
     plt.plot(x_fit, y_fit, label="Fitted curve")
-    plt.scatter(x, y, label="Raw Data")
+
+    if yerr is None:
+        plt.scatter(x, y, label="Raw Data")
+    else:
+        plt.errorbar(
+            x,
+            y,
+            yerr=yerr,
+            fmt="o",
+            capsize=3,
+            label="Raw Data"
+        )
 
     if xunit == "":
         plt.xlabel(xlabel) #dimensionless

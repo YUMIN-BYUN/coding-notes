@@ -2,23 +2,38 @@ import numpy as np
 from scipy.optimize import curve_fit, minimize_scalar
 from .models import exponential_model, sinusoidal_model, gaussian_model
 
-def fit_linear(x, y):
-    coefficients, pcov = np.polyfit(x, y, 1, cov=True)
+def fit_linear(x, y, yerr=None):
+    if yerr is None:
+        coefficients, pcov = np.polyfit(x, y, 1, cov=True)
+    else: 
+        coefficients, pcov = np.polyfit(x, y, 1, w=1/yerr, cov="unscaled")
     a_1, a_0 = coefficients
-
     return a_1, a_0, pcov
 
-def fit_polynomial(x, y, degree):
-    coefficients, pcov = np.polyfit(x, y, degree, cov=True)
+def fit_polynomial(x, y, degree, yerr=None):
+    if yerr is None:
+        coefficients, pcov = np.polyfit(x, y, degree, cov=True)
+    else:
+        coefficients, pcov = np.polyfit(x, y, degree, w=1/yerr, cov="unscaled")
     return coefficients, pcov
 
-def fit_exponential(x, y, initial_guess):
-    popt, pcov = curve_fit(
-        exponential_model,
-        x,
-        y,
-        p0 = initial_guess
-    )
+def fit_exponential(x, y, initial_guess, yerr=None):
+    if yerr is None:
+        popt, pcov = curve_fit(
+            exponential_model,
+            x,
+            y,
+            p0 = initial_guess
+        )
+    else: 
+        popt, pcov = curve_fit(
+            exponential_model,
+            x,
+            y,
+            p0=initial_guess,
+            sigma=yerr,
+            absolute_sigma=True
+        )
     return popt, pcov
 
 def exponential_guess_error(C0, x, y):
@@ -87,13 +102,23 @@ def estimate_exponential_guess(x, y):
 
     return [A0, B0, C0]
 
-def fit_sinusoidal(x, y, initial_guess):
-    popt, pcov = curve_fit(
-        sinusoidal_model,
-        x,
-        y,
-        p0 = initial_guess
-    )
+def fit_sinusoidal(x, y, initial_guess, yerr=None):
+    if yerr is None:
+        popt, pcov = curve_fit(
+            sinusoidal_model,
+            x,
+            y,
+            p0 = initial_guess
+        )
+    else: 
+        popt, pcov = curve_fit(
+            sinusoidal_model,
+            x,
+            y,
+            p0=initial_guess,
+            sigma=yerr,
+            absolute_sigma=True
+        )
     return popt, pcov
 
 def estimate_sinusoidal_guess(x, y):
@@ -130,13 +155,23 @@ def estimate_sinusoidal_guess(x, y):
 
     return [A0, omega0, phi0, C0]
 
-def fit_gaussian(x, y, initial_guess):
-    popt, pcov = curve_fit(
-        gaussian_model,
-        x,
-        y,
-        p0=initial_guess
-    )
+def fit_gaussian(x, y, initial_guess, yerr=None):
+    if yerr is None:
+        popt, pcov = curve_fit(
+            gaussian_model,
+            x,
+            y,
+            p0=initial_guess
+        )
+    else:
+        popt, pcov = curve_fit(
+            gaussian_model,
+            x,
+            y,
+            p0=initial_guess,
+            sigma=yerr,
+            absolute_sigma=True
+        )
 
     return popt, pcov
 
@@ -175,3 +210,61 @@ def estimate_gaussian_guess(x, y):
 
 def calculate_parameter_uncertainties(pcov):
     return np.sqrt(np.diag(pcov))
+
+def create_custom_model(expression, parameter_names):
+    def custom_model(x, *params):
+        local_variables = {
+            "x": x
+        }
+
+        for name, value in zip(parameter_names, params):
+            local_variables[name] = value
+
+        safe_namespace = {
+            "np": np
+        }
+
+        return eval(
+            expression,
+            {"__builtins__": {}},
+            {
+                **safe_namespace,
+                **local_variables
+            }
+        )
+
+    return custom_model
+
+
+def fit_custom(
+    x,
+    y,
+    expression,
+    parameter_names,
+    initial_guess,
+    yerr=None
+):
+    custom_model = create_custom_model(
+        expression,
+        parameter_names
+    )
+
+    if yerr is None:
+        popt, pcov = curve_fit(
+            custom_model,
+            x,
+            y,
+            p0=initial_guess
+        )
+
+    else:
+        popt, pcov = curve_fit(
+            custom_model,
+            x,
+            y,
+            p0=initial_guess,
+            sigma=yerr,
+            absolute_sigma=True
+        )
+
+    return popt, pcov, custom_model
