@@ -11,6 +11,10 @@ def calculate_rmse(y, y_pred):
 def calculate_r_squared(y, y_pred):
     ss_res = np.sum(calculate_residuals(y, y_pred)**2)
     ss_tot = np.sum((y-np.mean(y))**2)
+
+    if np.isclose(ss_tot,0.0):
+        return None
+
     return 1 - ss_res / ss_tot
 
 def calculate_chi_squared(y, y_pred, yerr):

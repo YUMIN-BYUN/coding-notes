@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def plot_raw_data(
     x,
     y,
@@ -13,10 +14,14 @@ def plot_raw_data(
     y_scale="linear"
 ):
     if x_scale not in ("linear", "log"):
-        raise ValueError("x_scale must be 'linear' or 'log'.")
+        raise ValueError(
+            "x_scale must be 'linear' or 'log'."
+        )
 
     if y_scale not in ("linear", "log"):
-        raise ValueError("y_scale must be 'linear' or 'log'.")
+        raise ValueError(
+            "y_scale must be 'linear' or 'log'."
+        )
 
     if x_scale == "log" and np.any(x <= 0):
         raise ValueError(
@@ -28,11 +33,15 @@ def plot_raw_data(
             "Log y-axis requires all y values to be positive."
         )
 
-    plt.figure()
+    fig, ax = plt.subplots()
+
     if yerr is None:
-        plt.scatter(x, y)
+        ax.scatter(
+            x,
+            y
+        )
     else:
-        plt.errorbar(
+        ax.errorbar(
             x,
             y,
             yerr=yerr,
@@ -40,32 +49,90 @@ def plot_raw_data(
             capsize=3
         )
 
-    plt.xscale(x_scale)
-    plt.yscale(y_scale)
+    ax.set_xscale(x_scale)
+    ax.set_yscale(y_scale)
 
     if x_unit:
-        plt.xlabel(f"{x_label} ({x_unit})")
+        ax.set_xlabel(
+            f"{x_label} ({x_unit})"
+        )
     else:
-        plt.xlabel(x_label)
+        ax.set_xlabel(
+            x_label
+        )
 
     if y_unit:
-        plt.ylabel(f"{y_label} ({y_unit})")
+        ax.set_ylabel(
+            f"{y_label} ({y_unit})"
+        )
     else:
-        plt.ylabel(y_label)
+        ax.set_ylabel(
+            y_label
+        )
 
-    plt.title("Raw Data")
-    plt.grid(True)
+    ax.set_title(
+        "Raw Data"
+    )
 
-    plt.show()
+    ax.grid(True)
 
-def plot_fit(x, y, x_fit, y_fit, xlabel, xunit, ylabel, yunit, title, yerr=None):
-    plt.figure()
-    plt.plot(x_fit, y_fit, label="Fitted curve")
+    return fig
+
+
+def plot_fit(
+    x,
+    y,
+    x_fit,
+    y_fit,
+    xlabel,
+    xunit,
+    ylabel,
+    yunit,
+    title,
+    yerr=None,
+    x_scale="linear",
+    y_scale="linear"
+):
+    if x_scale not in ("linear", "log"):
+        raise ValueError(
+            "x_scale must be 'linear' or 'log'."
+        )
+
+    if y_scale not in ("linear", "log"):
+        raise ValueError(
+            "y_scale must be 'linear' or 'log'."
+        )
+
+    if x_scale == "log" and np.any(x <= 0):
+        raise ValueError(
+            "Log x-axis requires all x values to be positive."
+        )
+
+    if y_scale == "log" and (
+        np.any(y <= 0)
+        or np.any(y_fit <= 0)
+    ):
+        raise ValueError(
+            "Log y-axis requires all y values "
+            "and fitted values to be positive."
+        )
+
+    fig, ax = plt.subplots()
+
+    ax.plot(
+        x_fit,
+        y_fit,
+        label="Fitted Curve"
+    )
 
     if yerr is None:
-        plt.scatter(x, y, label="Raw Data")
+        ax.scatter(
+            x,
+            y,
+            label="Raw Data"
+        )
     else:
-        plt.errorbar(
+        ax.errorbar(
             x,
             y,
             yerr=yerr,
@@ -74,38 +141,93 @@ def plot_fit(x, y, x_fit, y_fit, xlabel, xunit, ylabel, yunit, title, yerr=None)
             label="Raw Data"
         )
 
-    if xunit == "":
-        plt.xlabel(xlabel) #dimensionless
+    ax.set_xscale(x_scale)
+    ax.set_yscale(y_scale)
+
+    if xunit:
+        ax.set_xlabel(
+            f"{xlabel} ({xunit})"
+        )
     else:
-        plt.xlabel(f"{xlabel} ({xunit})")
+        ax.set_xlabel(
+            xlabel
+        )
 
-    if yunit == "":
-        plt.ylabel(ylabel) #dimensionless
+    if yunit:
+        ax.set_ylabel(
+            f"{ylabel} ({yunit})"
+        )
     else:
-        plt.ylabel(f"{ylabel} ({yunit})")
+        ax.set_ylabel(
+            ylabel
+        )
 
-    plt.title(title)
-    plt.legend()
-    plt.grid()
+    ax.set_title(
+        title
+    )
+
+    ax.legend()
+    ax.grid(True)
+
+    return fig
 
 
-def plot_residuals(x, residuals, xlabel, xunit, yunit):
-    plt.figure()
-    plt.scatter(x, residuals)
+def plot_residuals(
+    x,
+    residuals,
+    xlabel,
+    xunit,
+    yunit,
+    x_scale="linear"
+):
+    if x_scale not in ("linear", "log"):
+        raise ValueError(
+            "x_scale must be 'linear' or 'log'."
+        )
 
-    if xunit == "":
-        plt.xlabel(xlabel) #dimensionless
+    if x_scale == "log" and np.any(x <= 0):
+        raise ValueError(
+            "Log x-axis requires all x values to be positive."
+        )
+
+    fig, ax = plt.subplots()
+
+    ax.scatter(
+        x,
+        residuals
+    )
+
+    ax.set_xscale(
+        x_scale
+    )
+
+    if xunit:
+        ax.set_xlabel(
+            f"{xlabel} ({xunit})"
+        )
     else:
-        plt.xlabel(f"{xlabel} ({xunit})")
+        ax.set_xlabel(
+            xlabel
+        )
 
-    if yunit == "":
-        plt.ylabel("Residual") #dimensionless
+    if yunit:
+        ax.set_ylabel(
+            f"Residual ({yunit})"
+        )
     else:
-        plt.ylabel(f"Residual ({yunit})")
+        ax.set_ylabel(
+            "Residual"
+        )
 
-    plt.title(f"Residual vs {xlabel}")
-    plt.axhline(0)
-    plt.grid()
+    ax.set_title(
+        f"Residual vs {xlabel}"
+    )
+
+    ax.axhline(0)
+    ax.grid(True)
+
+    return fig
+
 
 def show_plots():
     plt.show()
