@@ -1,8 +1,17 @@
-#include "simulations/DummySimulation.h"
+#include "simulations/Projectile/ProjectileSimulation.h"
 
 int main()
 {
-    DummySimulation simulation(1.0, 5.0);
+    ProjectileSimulation simulation(
+        0,
+        0,
+        20,
+        45,
+        9.81,
+        0.01,
+        3,
+        "projectile.csv"
+    );
 
     simulation.run();
 
