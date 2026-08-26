@@ -1,16 +1,16 @@
-#include "simulations/Projectile/ProjectileSimulation.h"
+#include "simulations/DampedOscillator/DampedOscillatorSimulation.h"
 
 int main()
 {
-    ProjectileSimulation simulation(
-        0,
-        0,
-        20,
-        45,
-        9.81,
+    DampedOscillatorSimulation simulation(
+        1.0,
+        0.0,
+        1.0,
+        4.0,
+        0.4,
         0.01,
-        3,
-        "projectile.csv"
+        15.0,
+        "damped_oscillator.csv"
     );
 
     simulation.run();
