@@ -9,37 +9,63 @@ ProjectileSimulation::ProjectileSimulation(
     double g,
     double dt,
     double endTime,
+    const Integrator& integrator,
     const std::string& filename)
     : Simulation(dt, endTime),
-      x(x0),
-      y(y0),
-      vx(0.0),
-      vy(0.0),
+      state{x0,y0,0.0,0.0},
       g(g),
+      integrator(integrator),
       writer(filename)
 
 {
     double angleRad = angleDeg * 3.141592653589793 / 180.0;
-    vx = v0 * std::cos(angleRad);
-    vy = v0 * std::sin(angleRad);
+    state[2] = v0 * std::cos(angleRad);
+    state[3] = v0 * std::sin(angleRad);
 
-    initialX = x;
-    initialY = y;
-    initialVx = vx;
-    initialVy = vy;
+    initialX = state[0];
+    initialY = state[1];
+    initialVx = state[2];
+    initialVy = state[3];
 
     writer.writeHeader("Time,X,Y,Vx,Vy,Speed,X_exact,Y_exact,X_error,Y_error");
 }
 
+State ProjectileSimulation::derivative(
+    double time,
+    const State& state
+) const
+{
+    double vx = state[2];
+    double vy = state[3];
+
+    double dxdt = vx;
+    double dydt = vy;
+    double dvxdt = 0.0;
+    double dvydt = -g;
+
+    return {dxdt, dydt, dvxdt, dvydt};
+}
+
 void ProjectileSimulation::step()
 {
-    x += vx * dt;
-    y += vy * dt;
-    vy -= g* dt;
+    state = integrator.step(
+        state,
+        time,
+        dt,
+        [this](double t, const State& s)
+        {
+            return derivative(t, s);
+        }
+    );
 }
 
 void ProjectileSimulation::record()
 {
+    double x = state[0];
+    double y = state[1];
+    double vx = state[2];
+    double vy = state[3];
+
     double xExact = initialX + initialVx * time;
 
     double yExact =

@@ -9,16 +9,17 @@ DampedOscillatorSimulation::DampedOscillatorSimulation(
     double b,
     double dt,
     double endTime,
+    const Integrator& integrator,
     const std::string& filename
 )
     : Simulation(dt, endTime),
-    x(x0),
-    v(v0),
+    state{x0, v0},
     m(m),
     k(k),
     b(b),
     initialX(x0),
     initialV(v0),
+    integrator(integrator),
     writer(filename)
 {
     writer.writeHeader(
@@ -31,17 +32,39 @@ DampedOscillatorSimulation::DampedOscillatorSimulation(
 );
 }
 
+State DampedOscillatorSimulation::derivative(
+    double time,
+    const State& state
+) const
+{
+    double x = state[0];
+    double v = state[1];
+
+    double dxdt = v;
+    double dvdt = -(k/m)*x - (b/m)*v;
+
+    return {dxdt, dvdt};
+}
+
 void DampedOscillatorSimulation::step()
 {
-    double acceleration = -(k/m)*x -(b/m)*v;
-
-    x += v * dt;
-    v += acceleration * dt;
+    state = integrator.step(
+        state,
+        time,
+        dt,
+        [this](double t, const State& s)
+        {
+            return derivative(t, s);
+        }
+    );
 }
 
 void DampedOscillatorSimulation::record()
 {
-    //analytic validation is only for underdamped case
+    double x = state[0];
+    double v = state[1];
+
+    // analytic validation is only for underdamped case
     double acceleration = -(k/m)*x -(b/m)*v;
     double kineticEnergy = 0.5 * m * v * v;
     double potentialEnergy = 0.5 * k * x * x;
@@ -52,14 +75,24 @@ void DampedOscillatorSimulation::record()
     double C1 = initialX;
     double C2 = (initialV+gamma*initialX)/omega_d;
 
-    double xExact = exp(-gamma*time)*(C1*cos(omega_d*time) + C2*sin(omega_d*time));
-    double vExact = exp(-gamma*time)*((-gamma*C1+omega_d*C2)*cos(omega_d*time) + (-gamma*C2-omega_d*C1)*sin(omega_d*time));
+    double xExact =
+        exp(-gamma*time)
+        * (C1*cos(omega_d*time) + C2*sin(omega_d*time));
+
+    double vExact =
+        exp(-gamma*time)
+        * (
+            (-gamma*C1 + omega_d*C2)*cos(omega_d*time)
+            + (-gamma*C2 - omega_d*C1)*sin(omega_d*time)
+        );
+
     double kineticEnergyExact = 0.5 * m * vExact * vExact;
     double potentialEnergyExact = 0.5 * k * xExact * xExact;
     double totalEnergyExact = kineticEnergyExact + potentialEnergyExact;
 
     double xError = x - xExact;
     double vError = v - vExact;
+
     double kineticEnergyError = kineticEnergy - kineticEnergyExact;
     double potentialEnergyError = potentialEnergy - potentialEnergyExact;
     double totalEnergyError = totalEnergy - totalEnergyExact;
@@ -101,3 +134,5 @@ void DampedOscillatorSimulation::record()
         
     writer.writeRow(row);
 }
+
+    
