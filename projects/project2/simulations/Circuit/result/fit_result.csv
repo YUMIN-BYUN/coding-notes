@@ -1,0 +1,16 @@
+Item,Value
+Model,custom
+Fit Method,Ordinary Nonlinear Least Squares
+Custom Expression,A*np.exp(B*x)+C
+Initial Guess,"[5.0, -1.0, 0.0]"
+
+Parameter,Value,Uncertainty
+A,4.999999980369199,5.4809496603925965e-08
+B,-1.0000000033854866,2.3702567534392727e-08
+C,-4.727772121990263e-09,2.4110872175317733e-08
+
+RMSE,2.751648670169956e-07
+R Squared,0.9999999999999504
+Chi Squared,
+Reduced Chi Squared,
+Degrees of Freedom,498
