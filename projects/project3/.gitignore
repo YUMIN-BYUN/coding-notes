@@ -1,0 +1,11 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Video data
+data/*.mp4
+data/*.avi
+data/*.mov
+
+# Generated results
+results/*
