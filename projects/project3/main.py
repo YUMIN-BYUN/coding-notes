@@ -2,8 +2,11 @@ import cv2
 
 from src.video_loader import VideoLoader
 from src.tracking_data import save_tracking_data
+from src.automatic_tracker import select_and_initialize_tracker
+
 
 tracking_data = []
+automatic_tracking_data = []
 
 
 def mouse_callback(event, x, y, flags, param):
@@ -60,6 +63,7 @@ print("Q     : Quit")
 frame_index = 0
 displayed_frame_index = 0
 paused = False
+tracker_initialized = False
 
 
 mouse_data = {
@@ -89,6 +93,67 @@ while True:
 
         displayed_frame_index = frame_index
 
+        # -------------------------
+        # Tracker initialization
+        # -------------------------
+        if not tracker_initialized:
+            tracker, bbox = select_and_initialize_tracker(frame)
+
+            print("Tracker initialized.")
+            print("Initial bounding box:", bbox)
+
+            tracker_initialized = True
+
+        # -------------------------
+        # Automatic tracking
+        # -------------------------
+        tracking_success, bbox = tracker.update(frame)
+
+        if tracking_success:
+            x, y, w, h = map(int, bbox)
+
+            center_x = x + w // 2
+            center_y = y + h // 2
+
+            time = video.frame_to_time(displayed_frame_index)
+
+            automatic_tracking_data.append({
+                "frame": displayed_frame_index,
+                "time": time,
+                "x_pixel": center_x,
+                "y_pixel": center_y,
+            })
+
+            cv2.rectangle(
+                frame,
+                (x, y),
+                (x + w, y + h),
+                (255, 0, 0),
+                2
+            )
+
+            cv2.circle(
+                frame,
+                (center_x, center_y),
+                5,
+                (0, 255, 255),
+                -1
+            )
+
+        else:
+            cv2.putText(
+                frame,
+                "Tracking lost",
+                (20, 80),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                (0, 0, 255),
+                2,
+            )
+
+        # -------------------------
+        # Frame / time display
+        # -------------------------
         time = video.frame_to_time(displayed_frame_index)
 
         cv2.putText(
@@ -191,6 +256,11 @@ while True:
 save_tracking_data(
     "results/manual_tracking.csv",
     tracking_data
+)
+
+save_tracking_data(
+    "results/automatic_tracking.csv",
+    automatic_tracking_data
 )
 
 video.release()
