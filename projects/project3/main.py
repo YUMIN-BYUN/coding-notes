@@ -19,6 +19,10 @@ from src.display_utils import (
     display_to_original_point,
 )
 
+from src.motion_plotting import (
+    plot_motion,
+)
+
 
 tracking_data = []
 automatic_tracking_data = []
@@ -448,7 +452,7 @@ while True:
 
             cv2.putText(
                 frame,
-                "Tracking lost",
+                "Tracking lost - reselect ROI",
                 (20, 80),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1,
@@ -456,6 +460,33 @@ while True:
                 2,
             )
 
+            show_video_frame(
+                frame,
+                display_scale
+            )
+
+            print(
+                "\nTracking lost."
+            )
+
+            print(
+                "Please select a new ROI"
+            )
+
+            tracker, bbox = (
+                select_and_initialize_tracker(
+                    frame
+                )
+            )
+
+            print(
+                "Tracker reinitialized."
+            )
+
+            print(
+                "New bounding box:",
+                bbox
+            )
 
         # ----------------------------------------------------
         # Frame / time display
@@ -703,3 +734,8 @@ print(
     f"Automatic tracking points: "
     f"{len(automatic_tracking_data)}"
 )
+
+if automatic_tracking_data:
+    plot_motion(
+        automatic_tracking_data
+    )

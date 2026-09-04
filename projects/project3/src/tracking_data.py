@@ -1,5 +1,5 @@
 import csv
-
+import os
 
 def save_tracking_data(
     filename,
@@ -11,6 +11,16 @@ def save_tracking_data(
             f"{filename}"
         )
         return
+
+    directory = os.path.dirname(
+        filename
+    )
+
+    if directory:
+        os.makedirs(
+            directory,
+            exist_ok=True
+        )
 
     fieldnames = list(
         tracking_data[0].keys()
