@@ -7,5 +7,3 @@ data/*.mp4
 data/*.avi
 data/*.mov
 
-# Generated results
-results/*

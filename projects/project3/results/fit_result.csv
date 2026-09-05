@@ -1,0 +1,14 @@
+Item,Value
+Model,polynomial
+Fit Method,Ordinary Polynomial Least Squares
+
+Parameter,Value,Uncertainty
+a_2,-5.118720451056552,0.11499937905849829
+a_1,1.9642266556574441,0.09217215903987314
+a_0,-0.184335222747161,0.017514831018641916
+
+RMSE,0.0031610562922744956
+R Squared,0.9998060439637508
+Chi Squared,
+Reduced Chi Squared,
+Degrees of Freedom,8

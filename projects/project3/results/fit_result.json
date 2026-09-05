@@ -1,0 +1,60 @@
+{
+    "model": "polynomial",
+    "fit_method": "Ordinary Polynomial Least Squares",
+    "parameter_names": [
+        "a_2",
+        "a_1",
+        "a_0"
+    ],
+    "parameters": [
+        -5.118720451056552,
+        1.9642266556574441,
+        -0.184335222747161
+    ],
+    "parameter_uncertainties": [
+        0.11499937905849829,
+        0.09217215903987314,
+        0.017514831018641916
+    ],
+    "initial_guess": null,
+    "custom_expression": null,
+    "y_pred": [
+        -0.004228800907148833,
+        -0.023559794667202177,
+        -0.05415590907584078,
+        -0.09601714413306449,
+        -0.14914349983887346,
+        -0.21353497619326745,
+        -0.2891915731962469,
+        -0.3761132908478113,
+        -0.47430012914796094,
+        -0.5837520880966961,
+        -0.7044691676940164
+    ],
+    "residuals": [
+        0.000887814555096933,
+        0.0018433833788648775,
+        -0.0009703657330155172,
+        -0.0008714600764406083,
+        -0.0028713791794880428,
+        -0.003629136690106144,
+        0.0018667469197832798,
+        0.00025232624197230047,
+        0.006562039860694646,
+        0.0024204628396650163,
+        -0.005490432117012944
+    ],
+    "rmse": 0.0031610562922744956,
+    "r_squared": 0.9998060439637508,
+    "chi_squared": null,
+    "reduced_chi_squared": null,
+    "degrees_of_freedom": 8,
+    "input_file": "C:/Users/qusdb/OneDrive/바탕 화면/Summer_coding/coding-notes/projects/project3/results/automatic_tracking.csv",
+    "x_column": "time",
+    "y_column": "y",
+    "yerr_column": "None",
+    "x_label": "Time",
+    "x_unit": "s",
+    "y_label": "Vertical displacement",
+    "y_unit": "m"
+}

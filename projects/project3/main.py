@@ -18,7 +18,6 @@ from src.display_utils import (
     resize_for_display,
     display_to_original_point,
 )
-
 from src.motion_plotting import (
     plot_motion,
 )
@@ -238,7 +237,7 @@ video.seek_frame(0)
 
 
 # ============================================================
-# 3. Display / Tracking setup
+# 3. Display setup
 # ============================================================
 
 display_scale = (
@@ -253,6 +252,151 @@ print(
     f"{display_scale:.3f}"
 )
 
+
+# ============================================================
+# 4. Select tracking start frame
+# ============================================================
+
+print(
+    "\n=== Select Tracking Start Frame ==="
+)
+
+print(
+    "A : Previous frame"
+)
+
+print(
+    "D : Next frame"
+)
+
+print(
+    "S : Start tracking"
+)
+
+print(
+    "Q : Quit"
+)
+
+
+start_frame_index = 0
+
+
+cv2.namedWindow(
+    "Video"
+)
+
+
+while True:
+
+    video.seek_frame(
+        start_frame_index
+    )
+
+    success, start_frame = (
+        video.read_frame()
+    )
+
+    if not success:
+        raise RuntimeError(
+            "Could not read start frame."
+        )
+
+
+    display_frame = (
+        start_frame.copy()
+    )
+
+
+    time = (
+        video.frame_to_time(
+            start_frame_index
+        )
+    )
+
+
+    cv2.putText(
+        display_frame,
+        (
+            f"Frame: "
+            f"{start_frame_index}  "
+            f"Time: {time:.3f} s"
+        ),
+        (20, 40),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (0, 255, 0),
+        2,
+    )
+
+
+    cv2.putText(
+        display_frame,
+        "A/D: Move   S: Start",
+        (20, 80),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.8,
+        (0, 255, 255),
+        2,
+    )
+
+
+    show_video_frame(
+        display_frame,
+        display_scale
+    )
+
+
+    key = (
+        cv2.waitKey(0)
+        & 0xFF
+    )
+
+
+    if key == ord("d"):
+
+        start_frame_index = min(
+            start_frame_index + 1,
+            video.frame_count - 1
+        )
+
+
+    elif key == ord("a"):
+
+        start_frame_index = max(
+            start_frame_index - 1,
+            0
+        )
+
+
+    elif key == ord("s"):
+
+        break
+
+
+    elif key == ord("q"):
+
+        video.release()
+
+        cv2.destroyAllWindows()
+
+        raise SystemExit
+
+
+print(
+    f"\nTracking start frame: "
+    f"{start_frame_index}"
+)
+
+
+# 선택한 frame부터 다시 읽도록 설정
+video.seek_frame(
+    start_frame_index
+)
+
+
+# ============================================================
+# 5. Tracking setup
+# ============================================================
 
 print(
     "\nControls:"
@@ -275,24 +419,33 @@ print(
 )
 
 
-frame_index = 0
-displayed_frame_index = 0
+frame_index = (
+    start_frame_index
+)
+
+displayed_frame_index = (
+    start_frame_index
+)
 
 paused = False
+
 tracker_initialized = False
 
 
 mouse_data = {
-    "frame_index": 0,
-    "fps": video.fps,
-    "frame": None,
-    "display_scale": display_scale,
+    "frame_index":
+        start_frame_index,
+
+    "fps":
+        video.fps,
+
+    "frame":
+        None,
+
+    "display_scale":
+        display_scale,
 }
 
-
-cv2.namedWindow(
-    "Video"
-)
 
 cv2.setMouseCallback(
     "Video",
@@ -302,7 +455,7 @@ cv2.setMouseCallback(
 
 
 # ============================================================
-# 4. Main loop
+# 6. Main loop
 # ============================================================
 
 while True:
@@ -315,6 +468,7 @@ while True:
 
         if not success:
             break
+
 
         displayed_frame_index = (
             frame_index
@@ -350,7 +504,9 @@ while True:
         # ----------------------------------------------------
 
         tracking_success, bbox = (
-            tracker.update(frame)
+            tracker.update(
+                frame
+            )
         )
 
 
@@ -360,6 +516,7 @@ while True:
                 int,
                 bbox
             )
+
 
             center_x = (
                 x + w // 2
@@ -412,7 +569,10 @@ while True:
 
             cv2.rectangle(
                 frame,
-                (x, y),
+                (
+                    x,
+                    y
+                ),
                 (
                     x + w,
                     y + h
@@ -460,10 +620,12 @@ while True:
                 2,
             )
 
+
             show_video_frame(
                 frame,
                 display_scale
             )
+
 
             print(
                 "\nTracking lost."
@@ -473,11 +635,13 @@ while True:
                 "Please select a new ROI"
             )
 
+
             tracker, bbox = (
                 select_and_initialize_tracker(
                     frame
                 )
             )
+
 
             print(
                 "Tracker reinitialized."
@@ -487,6 +651,7 @@ while True:
                 "New bounding box:",
                 bbox
             )
+
 
         # ----------------------------------------------------
         # Frame / time display
@@ -524,6 +689,7 @@ while True:
             "frame_index"
         ] = displayed_frame_index
 
+
         mouse_data[
             "frame"
         ] = frame
@@ -546,12 +712,15 @@ while True:
 
 
     key = (
-        cv2.waitKey(delay)
+        cv2.waitKey(
+            delay
+        )
         & 0xFF
     )
 
 
     if key == ord("q"):
+
         break
 
 
@@ -618,6 +787,7 @@ while True:
             mouse_data[
                 "frame_index"
             ] = displayed_frame_index
+
 
             mouse_data[
                 "frame"
@@ -689,6 +859,7 @@ while True:
                 "frame_index"
             ] = displayed_frame_index
 
+
             mouse_data[
                 "frame"
             ] = frame
@@ -701,7 +872,7 @@ while True:
 
 
 # ============================================================
-# 5. Save results
+# 7. Save results
 # ============================================================
 
 save_tracking_data(
@@ -725,17 +896,21 @@ print(
     "\nTracking finished."
 )
 
+
 print(
     f"Manual tracking points: "
     f"{len(tracking_data)}"
 )
+
 
 print(
     f"Automatic tracking points: "
     f"{len(automatic_tracking_data)}"
 )
 
+
 if automatic_tracking_data:
+
     plot_motion(
         automatic_tracking_data
     )
